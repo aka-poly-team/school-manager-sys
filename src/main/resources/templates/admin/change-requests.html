@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duyệt Đơn Xin Nghỉ / Dạy Thay - Admin AKA</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- ADMIN SIDEBAR FRAGMENT -->
+        <div th:replace="~{admin/fragments/sidebar :: sidebar('change-requests')}"></div>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Duyệt Đơn Xin Nghỉ & Dạy Thay</h1>
+                    <p class="page-subtitle">Phê duyệt yêu cầu nghỉ phép và phân công ca dạy thay của giáo viên</p>
+                </div>
+            </div>
+
+            <!-- TABLE OF CHANGE REQUESTS -->
+            <div class="card-box">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>MÃ</th>
+                            <th>GIÁO VIÊN</th>
+                            <th>LOẠI ĐƠN</th>
+                            <th>NGÀY NGHỈ</th>
+                            <th>CA DẠY</th>
+                            <th>LÝ DO</th>
+                            <th>TRẠNG THÁI</th>
+                            <th>HÀNH ĐỘNG</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="req : ${changeRequests}">
+                            <td th:text="${'#' + req.id}">#1</td>
+                            <td th:text="${req.teacher != null ? req.teacher.name : 'Giáo viên'}">GV Mai</td>
+                            <td>
+                                <strong th:text="${req.requestType == 'LEAVE' ? 'Xin nghỉ phép' : 'Xin dạy thay'}">Xin nghỉ phép</strong>
+                            </td>
+                            <td th:text="${#temporals.format(req.date, 'dd/MM/yyyy')}">29/07/2026</td>
+                            <td th:text="${req.session}">Ca 1</td>
+                            <td th:text="${req.reason}">Lý do nghỉ</td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${req.status == 'approved' ? 'approved' : (req.status == 'rejected' ? 'rejected' : 'pending')}" 
+                                      th:text="${req.status == 'approved' ? 'Đã duyệt' : (req.status == 'rejected' ? 'Từ chối' : 'Chờ duyệt')}">Chờ duyệt</span>
+                            </td>
+                            <td>
+                                <div class="form-actions form-actions-reset">
+                                    <form th:action="@{/admin/change-requests/{id}/approve(id=${req.id})}" method="post">
+                                        <button type="submit" class="action-btn green">Duyệt</button>
+                                    </form>
+                                    <form th:action="@{/admin/change-requests/{id}/reject(id=${req.id})}" method="post">
+                                        <button type="submit" class="action-btn gray">Từ chối</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(changeRequests)}">
+                            <td colspan="8" class="empty-table-cell">Không có yêu cầu nghỉ phép hay dạy thay nào.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script th:src="@{/js/teacher-dashboard.js}"></script>
+    <script>
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

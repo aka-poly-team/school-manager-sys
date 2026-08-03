@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập hệ thống - AKA School Manager</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+    <!-- Lucide iOS Vector Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="login-container">
+        <!-- LEFT HERO PANEL -->
+        <div class="hero-panel">
+            <div class="brand-header">
+                <div class="brand-logo-badge">A</div>
+                <div class="brand-text">
+                    <span class="brand-name">AKA</span>
+                    <span class="brand-subtext">SCHOOL MANAGER</span>
+                </div>
+            </div>
+
+            <div class="hero-content">
+                <div class="accent-line"></div>
+                <h1 class="hero-title">Quản lý giảng dạy <span class="highlight">hiệu quả</span> hơn.</h1>
+                <p class="hero-description">
+                    Nền tảng quản lý giáo viên, lịch dạy, điểm danh và xử lý khiếu nại dành riêng cho hệ thống trường đối tác AKA.
+                </p>
+
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-icon"><i data-lucide="calendar"></i></div>
+                        <span>Quản lý lịch dạy theo tuần</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon"><i data-lucide="check-circle-2"></i></div>
+                        <span>Điểm danh &amp; xác nhận buổi dạy</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon"><i data-lucide="file-text"></i></div>
+                        <span>Theo dõi yêu cầu &amp; khiếu nại</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-footer">
+                &copy; 2026 AKA Education. All rights reserved.
+            </div>
+        </div>
+
+        <!-- RIGHT FORM PANEL -->
+        <div class="form-panel">
+            <div class="form-wrapper">
+                <div class="form-header">
+                    <h2 class="form-title">Đăng nhập hệ thống</h2>
+                    <p class="form-subtitle">Nhập thông tin tài khoản để tiếp tục.</p>
+                </div>
+
+                <!-- ALERTS (Chỉ hiển thị khi có thông báo) -->
+                <div th:if="${param.error}" class="alert-box alert-error">
+                    Tên đăng nhập hoặc mật khẩu không chính xác. Vui lòng thử lại!
+                </div>
+
+                <div th:if="${param.logout}" class="alert-box alert-success">
+                    Đã đăng xuất khỏi hệ thống thành công.
+                </div>
+
+                <div th:if="${param.resetSuccess}" class="alert-box alert-success" th:text="${resetSuccessMessage != null ? resetSuccessMessage : 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập bằng mật khẩu mới.'}">
+                    Đặt lại mật khẩu thành công! Vui lòng đăng nhập bằng mật khẩu mới.
+                </div>
+
+                <!-- FORM -->
+                <form th:action="@{/auth/login}" method="post" class="auth-form">
+                    <div class="form-group">
+                        <label class="form-label">Tên đăng nhập</label>
+                        <input type="text" name="username" class="form-input" th:value="${rememberedUsername}" placeholder="Nhập tên đăng nhập..." required autofocus>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Mật khẩu</label>
+                        <input type="password" name="password" class="form-input" placeholder="Nhập mật khẩu..." required>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="remember-label">
+                            <input type="checkbox" name="remember-me" class="remember-checkbox" th:checked="${rememberedUsername != null}">
+                            <span>Ghi nhớ đăng nhập</span>
+                        </label>
+                        <a th:href="@{/auth/forgot-password}" class="forgot-link">Quên mật khẩu?</a>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Đăng nhập</button>
+                </form>
+            </div>
+
+            <!-- FLOATING HELP BUTTON -->
+            <a href="#" class="help-button" title="Trợ giúp">
+                <i data-lucide="help-circle"></i>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo khiếu nại - AKA School Manager</title>
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR NAVIGATION -->
+        <div th:replace="~{teacher/fragments/sidebar :: sidebar('complaints')}"></div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Gửi khiếu nại chấm công</h1>
+                    <p class="page-subtitle">Báo cáo các sai sót hoặc khiếu nại về số tiết dạy với Quản lý</p>
+                </div>
+            </div>
+
+            <!-- FORM BOX -->
+            <div class="card-box card-box-sm">
+                <form th:action="@{/teacher/complaints/new}" method="post" class="form-layout">
+                    <div class="form-group">
+                        <label class="form-label">Chọn buổi dạy cần khiếu nại</label>
+                        <select name="attendanceId" required class="form-control">
+                            <option th:each="att : ${attendances}" 
+                                    th:value="${att.id}" 
+                                    th:text="${#temporals.format(att.date, 'dd/MM/yyyy') + ' - ' + (att.school != null ? att.school.name : 'Trường') + ' (' + att.session + ')'}">
+                                29/07/2026 - Trường Mầm Non Hoa Mai (Ca 1)
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Số tiết thực tế yêu cầu</label>
+                        <input type="number" name="expectedPeriods" value="2" min="1" max="10" required class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Nội dung khiếu nại</label>
+                        <textarea name="content" rows="4" placeholder="Nhập mô tả chi tiết vấn đề..." required class="form-control"></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="action-btn orange btn-submit-flex">
+                            <i data-lucide="send"></i> Gửi Khiếu Nại
+                        </button>
+                        <a th:href="@{/teacher/complaints}" class="action-btn gray btn-cancel-link">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script th:src="@{/js/teacher-dashboard.js}"></script>
+    <script>
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo & Lịch sử cá nhân - AKA School Manager</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR NAVIGATION FRAGMENT -->
+        <div th:replace="~{teacher/fragments/sidebar :: sidebar('dashboard')}"></div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <!-- TOP BAR -->
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Báo Cáo & Lịch Sử Cá Nhân</h1>
+                    <p class="page-subtitle" th:text="${'Xin chào, ' + (teacherName != null ? teacherName : 'Giáo viên') + '! Theo dõi hoạt động giảng dạy hôm nay (' + todayFormatted + ')'}"></p>
+                </div>
+            </div>
+
+            <!-- STATS GRID -->
+            <div class="stats-grid">
+                <div class="stat-card blue">
+                    <div>
+                        <div class="stat-header">
+                            <span class="stat-value" th:text="${thisWeekClassesCount}">0</span>
+                            <i data-lucide="calendar" class="stat-icon"></i>
+                        </div>
+                        <div class="stat-subtext">Số ca phân công trong CSDL</div>
+                    </div>
+                    <div class="stat-footer-label">Lịch giảng dạy</div>
+                </div>
+
+                <div class="stat-card orange">
+                    <div>
+                        <div class="stat-header">
+                            <span class="stat-value" th:text="${totalAttendancesCount}">0</span>
+                            <i data-lucide="camera" class="stat-icon"></i>
+                        </div>
+                        <div class="stat-subtext">Lượt Selfie thành công</div>
+                    </div>
+                    <div class="stat-footer-label">Tổng lần chấm công</div>
+                </div>
+
+                <div class="stat-card purple">
+                    <div>
+                        <div class="stat-header">
+                            <span class="stat-value" th:text="${totalPeriodsTaught}">0</span>
+                            <i data-lucide="award" class="stat-icon"></i>
+                        </div>
+                        <div class="stat-subtext">Tổng tiết đã hoàn thành</div>
+                    </div>
+                    <div class="stat-footer-label">Tổng số tiết dạy</div>
+                </div>
+
+                <div class="stat-card green">
+                    <div>
+                        <div class="stat-header">
+                            <span class="stat-value" th:text="${approvedAbsencesCount}">0</span>
+                            <i data-lucide="check-circle-2" class="stat-icon"></i>
+                        </div>
+                        <div class="stat-subtext">Đã được phê duyệt</div>
+                    </div>
+                    <div class="stat-footer-label">Buổi vắng tháng này</div>
+                </div>
+            </div>
+
+            <!-- MIDDLE CONTENT GRID -->
+            <div class="content-grid content-grid-stretch">
+                <!-- LEFT BOX: UPCOMING CLASSES -->
+                <div class="card-box card-box-flex-col">
+                    <div class="box-header">
+                        <h2 class="box-title">Buổi dạy sắp tới</h2>
+                        <a th:href="@{/teacher/schedules}" class="box-link">
+                            Xem lịch <i data-lucide="arrow-right" class="link-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="class-list flex-1">
+                        <div th:each="sch : ${upcomingClasses}" class="compact-class-item">
+                            <div class="compact-class-item-left">
+                                <div class="class-info-title">
+                                    <span th:text="${sch.schoolClass != null ? sch.schoolClass.name : 'Lớp Aerobic'}"></span>
+                                    — <span th:text="${sch.session}"></span>
+                                </div>
+                                <div class="class-info-sub" th:text="${sch.school != null ? sch.school.name : 'Trường'}"></div>
+                                <div class="class-info-meta">
+                                    <span th:text="${sch.startTime}"></span> - <span th:text="${sch.endTime}"></span>
+                                    &bull; <span th:text="${sch.periods}"></span> tiết
+                                </div>
+                            </div>
+
+                            <div class="class-action-col">
+                                <span class="tag-today">Thứ <span th:text="${sch.dayOfWeek}"></span></span>
+                                
+                                <th:block th:if="${scheduleAttendanceMap != null and scheduleAttendanceMap.containsKey(sch.id)}">
+                                    <span th:with="att=${scheduleAttendanceMap.get(sch.id)}"
+                                          class="status-badge badge-compact"
+                                          th:classappend="${att.status == 'APPROVED' ? 'approved' : (att.status == 'REJECTED' ? 'rejected' : 'pending')}"
+                                          th:text="${att.status == 'APPROVED' ? 'Đã duyệt' : (att.status == 'REJECTED' ? 'Từ chối' : 'Chờ duyệt')}">
+                                        Đã duyệt
+                                    </span>
+                                </th:block>
+
+                                <a th:unless="${scheduleAttendanceMap != null and scheduleAttendanceMap.containsKey(sch.id)}"
+                                   th:href="@{/teacher/attendance/new}" 
+                                   class="btn-checkin">
+                                    Điểm danh
+                                </a>
+                            </div>
+                        </div>
+
+                        <div th:if="${#lists.isEmpty(upcomingClasses)}" class="empty-state-text">
+                            Chưa có lịch dạy được phân công trong CSDL.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT BOX: RECENT ATTENDANCE -->
+                <div class="card-box card-box-flex-col">
+                    <div class="box-header">
+                        <h2 class="box-title">Điểm danh gần đây</h2>
+                        <a th:href="@{/teacher/complaints}" class="box-link">
+                            Tạo khiếu nại <i data-lucide="arrow-right" class="link-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="class-list flex-1">
+                        <div th:each="att : ${recentAttendances}" class="compact-class-item">
+                            <div class="compact-class-item-left">
+                                <div class="class-info-title">
+                                    <span th:text="${att.schoolClass != null ? att.schoolClass.name : (att.schoolAndClassName != null ? att.schoolAndClassName : 'Lớp Aerobic')}">Lớp Aerobic</span>
+                                    — <span th:text="${att.session}">Ca 1</span>
+                                </div>
+                                <div class="class-info-sub" th:text="${att.school != null ? att.school.name : 'Trường Mầm Non'}">Trường Mầm Non</div>
+                                <div class="class-info-meta" th:text="${'Ngày ' + #temporals.format(att.date, 'dd/MM/yyyy') + ' • Lúc ' + att.checkInTime + ' • ' + att.periods + ' tiết'}"></div>
+                            </div>
+                            <div class="class-action-side">
+                                <span class="status-badge badge-compact" 
+                                      th:classappend="${att.status == 'APPROVED' ? 'approved' : (att.status == 'REJECTED' ? 'rejected' : 'pending')}"
+                                      th:text="${att.status == 'APPROVED' ? 'Đã duyệt' : (att.status == 'REJECTED' ? 'Từ chối' : 'Chờ duyệt')}">
+                                    Chờ duyệt
+                                </span>
+                            </div>
+                        </div>
+
+                        <div th:if="${#lists.isEmpty(recentAttendances)}" class="empty-state-text">
+                            Chưa có dữ liệu điểm danh nào trong CSDL.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script th:src="@{/js/teacher-dashboard.js}"></script>
+    <script>
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

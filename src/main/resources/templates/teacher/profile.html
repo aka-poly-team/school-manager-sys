@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ cá nhân - AKA School Manager</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR NAVIGATION -->
+        <div th:replace="~{teacher/fragments/sidebar :: sidebar('profile')}"></div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Hồ Sơ Cá Nhân</h1>
+                    <p class="page-subtitle">Thông tin tài khoản và thông tin cá nhân của bạn</p>
+                </div>
+            </div>
+
+            <!-- PROFILE EDIT FORM BOX COMPACT -->
+            <div class="card-box card-box-sm">
+                <!-- ALERTS -->
+                <div th:if="${success}" class="alert-box alert-success" th:text="${success}">Cập nhật hồ sơ thành công.</div>
+                <div th:if="${error}" class="alert-box alert-error" th:text="${error}">Đã xảy ra lỗi.</div>
+
+                <div class="user-profile-summary profile-summary-header">
+                    <div class="top-avatar avatar-lg">
+                        <img th:if="${currentUser != null and currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl)}" 
+                             th:src="@{${currentUser.avatarUrl}}" alt="Avatar" class="avatar-img">
+                        <i th:unless="${currentUser != null and currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl)}" 
+                           data-lucide="user" class="avatar-icon-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="profile-title-text" th:text="${teacherName}">Họ tên Giáo viên</h2>
+                        <span class="status-badge approved" th:text="${currentUser != null ? currentUser.role : 'ROLE_TEACHER'}">ROLE_TEACHER</span>
+                    </div>
+                </div>
+
+                <form th:action="@{/teacher/profile}" method="post" enctype="multipart/form-data" class="form-layout">
+                    <div class="form-group">
+                        <label class="form-label">Email / Username (Bảo mật - Chỉ đọc)</label>
+                        <input type="text" th:value="${maskedEmail}" disabled class="form-control form-control-disabled">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Họ và tên</label>
+                        <input type="text" name="name" th:value="${teacher != null ? teacher.name : ''}" required placeholder="Nhập họ và tên..." class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Số điện thoại</label>
+                        <input type="text" name="phone" th:value="${teacher != null ? teacher.phone : ''}" placeholder="Nhập số điện thoại..." class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Địa chỉ liên hệ</label>
+                        <input type="text" name="address" th:value="${teacher != null ? teacher.address : ''}" placeholder="Nhập địa chỉ..." class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tải lên ảnh đại diện mới</label>
+                        <input type="file" name="avatarFile" accept="image/*" class="form-control-file">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="action-btn orange btn-submit-flex">
+                            <i data-lucide="save"></i> <span>Lưu Thay Đổi Hồ Sơ</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script th:src="@{/js/teacher-dashboard.js}"></script>
+    <script>
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

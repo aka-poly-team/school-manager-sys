@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duyệt Chấm Công - Admin AKA</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- ADMIN SIDEBAR FRAGMENT -->
+        <div th:replace="~{admin/fragments/sidebar :: sidebar('attendances')}"></div>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Duyệt Chấm Công & Điểm Danh</h1>
+                    <p class="page-subtitle">Xác minh ảnh Selfie và duyệt số tiết thực tế của giáo viên</p>
+                </div>
+            </div>
+
+            <!-- TABLE OF ATTENDANCES -->
+            <div class="card-box">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>MÃ</th>
+                            <th>GIÁO VIÊN</th>
+                            <th>ẢNH XÁC MINH</th>
+                            <th>TRƯỜNG</th>
+                            <th>LỚP HỌC</th>
+                            <th>CA DẠY</th>
+                            <th>SỐ TIẾT</th>
+                            <th>TRẠNG THÁI</th>
+                            <th>HÀNH ĐỘNG</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="att : ${attendances}">
+                            <td th:text="${'#' + att.id}">#1</td>
+                            <td th:text="${att.teacher != null ? att.teacher.name : 'Giáo viên'}">GV Mai</td>
+                            <td>
+                                <a th:if="${att.selfieImage != null}" th:href="@{${att.selfieImage}}" target="_blank" title="Xem ảnh đầy đủ">
+                                    <img th:src="@{${att.selfieImage}}" alt="Selfie" class="selfie-thumb">
+                                </a>
+                                <span th:unless="${att.selfieImage != null}" class="empty-table-cell">Không có</span>
+                            </td>
+                            <td th:text="${att.school != null ? att.school.name : 'N/A'}">Trường Hoa Mai</td>
+                            <td th:text="${att.schoolClass != null ? att.schoolClass.name : 'N/A'}">Lớp 8A</td>
+                            <td th:text="${att.session}">Ca 1</td>
+                            <td th:text="${att.periods}">2</td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${att.status == 'APPROVED' ? 'approved' : (att.status == 'REJECTED' ? 'rejected' : 'pending')}" 
+                                      th:text="${att.status == 'APPROVED' ? 'Đã duyệt' : (att.status == 'REJECTED' ? 'Từ chối' : 'Chờ duyệt')}">Chờ duyệt</span>
+                            </td>
+                            <td>
+                                <div class="form-actions form-actions-reset">
+                                    <form th:action="@{/admin/attendances/{id}/approve(id=${att.id})}" method="post">
+                                        <button type="submit" class="action-btn green">Duyệt</button>
+                                    </form>
+                                    <form th:action="@{/admin/attendances/{id}/reject(id=${att.id})}" method="post">
+                                        <button type="submit" class="action-btn gray">Từ chối</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(attendances)}">
+                            <td colspan="9" class="empty-table-cell">Chưa có dữ liệu điểm danh nào trong CSDL.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script th:src="@{/js/teacher-dashboard.js}"></script>
+    <script>
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

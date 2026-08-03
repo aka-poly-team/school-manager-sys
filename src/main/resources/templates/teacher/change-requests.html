@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nghỉ phép / Đổi ca - AKA School Manager</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR NAVIGATION -->
+        <div th:replace="~{teacher/fragments/sidebar :: sidebar('change-requests')}"></div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Yêu cầu Nghỉ phép / Dạy thay</h1>
+                    <p class="page-subtitle">Danh sách đơn từ đã tạo từ CSDL</p>
+                </div>
+                <a th:href="@{/teacher/change-requests/new}" class="btn-primary-action blue">
+                    <i data-lucide="plus-circle"></i>
+                    <span>Tạo đơn xin nghỉ / đổi ca</span>
+                </a>
+            </div>
+
+            <!-- CHANGE REQUESTS TABLE BOX -->
+            <div class="card-box">
+                <table class="attendance-table">
+                    <thead>
+                        <tr>
+                            <th>LOẠI YÊU CẦU</th>
+                            <th>NGÀY NGHỈ</th>
+                            <th>CA DẠY</th>
+                            <th>LÝ DO</th>
+                            <th>NGÀY TẠO</th>
+                            <th>TRẠNG THÁI</th>
+                            <th>GHI CHÚ ADMIN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="req : ${changeRequests}">
+                            <td>
+                                <strong th:text="${req.requestType == 'LEAVE' ? 'Xin nghỉ phép' : 'Xin dạy thay'}">Xin nghỉ phép</strong>
+                            </td>
+                            <td th:text="${#temporals.format(req.date, 'dd/MM/yyyy')}">13/07/2026</td>
+                            <td th:text="${req.session}">Ca 1</td>
+                            <td th:text="${req.reason}">Lý do nghỉ</td>
+                            <td th:text="${#temporals.format(req.createdAt, 'dd/MM/yyyy')}">10/07/2026</td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${req.status == 'approved' ? 'approved' : 'pending'}"
+                                      th:text="${req.status == 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}">Chờ duyệt</span>
+                            </td>
+                            <td th:text="${req.adminNotes != null ? req.adminNotes : 'Chưa có'}">Chưa có</td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(changeRequests)}">
+                            <td colspan="7" class="empty-state-text">
+                                Chưa có yêu cầu nghỉ phép hay dạy thay nào trong CSDL.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script th:src="@{/js/teacher-dashboard.js}"></script>
+    <script>
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

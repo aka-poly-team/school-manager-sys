@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+</head>
+<body>
+    <!-- ADMIN & MANAGER SIDEBAR FRAGMENT -->
+    <aside class="sidebar" th:fragment="sidebar(activePage)">
+        <div>
+            <div class="sidebar-header">
+                <div class="brand-wrapper">
+                    <div class="brand-logo-badge">
+                        <img th:src="@{/images/logo.png}" alt="Logo AKA" class="brand-logo-img">
+                    </div>
+                    <div class="brand-text">
+                        <span class="brand-name">AKA</span>
+                        <span class="brand-subtext">SCHOOL MANAGER</span>
+                    </div>
+                </div>
+                <button id="sidebarToggleBtn" class="sidebar-toggle-btn" title="Thu gọn Menu">
+                    <i data-lucide="chevron-left"></i>
+                </button>
+            </div>
+
+            <!-- SECTION 1: QUẢN LÝ VẬN HÀNH -->
+            <div class="menu-section-label">QUẢN LÝ VẬN HÀNH</div>
+            <nav class="sidebar-nav">
+                <a th:href="@{/admin/dashboard}" class="nav-item" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">
+                    <i data-lucide="layout-dashboard" class="nav-icon"></i>
+                    <span class="nav-text">Dashboard Cơ sở</span>
+                </a>
+                <a th:href="@{/admin/schools}" class="nav-item" th:classappend="${activePage == 'schools' ? 'active' : ''}">
+                    <i data-lucide="building" class="nav-icon"></i>
+                    <span class="nav-text">Trường & Lớp mầm non</span>
+                </a>
+                <a th:href="@{/admin/schedules}" class="nav-item" th:classappend="${activePage == 'schedules' ? 'active' : ''}">
+                    <i data-lucide="calendar" class="nav-icon"></i>
+                    <span class="nav-text">Phân công Lịch dạy</span>
+                </a>
+                <a th:href="@{/admin/change-requests}" class="nav-item" th:classappend="${activePage == 'change-requests' ? 'active' : ''}">
+                    <i data-lucide="file-text" class="nav-icon"></i>
+                    <span class="nav-text">Duyệt Nghỉ / Dạy thay</span>
+                </a>
+                <a th:href="@{/admin/attendances}" class="nav-item" th:classappend="${activePage == 'attendances' ? 'active' : ''}">
+                    <i data-lucide="check-square" class="nav-icon"></i>
+                    <span class="nav-text">Duyệt Chấm công</span>
+                </a>
+                <a th:href="@{/admin/complaints}" class="nav-item" th:classappend="${activePage == 'complaints' ? 'active' : ''}">
+                    <i data-lucide="message-square" class="nav-icon"></i>
+                    <span class="nav-text">Giải quyết Khiếu nại</span>
+                </a>
+            </nav>
+
+            <!-- SECTION 2: QUẢN TRỊ HỆ THỐNG -->
+            <div th:if="${userRole == 'ROLE_ADMIN'}" class="menu-section-label margin-top-1">QUẢN TRỊ HỆ THỐNG</div>
+            <nav th:if="${userRole == 'ROLE_ADMIN'}" class="sidebar-nav">
+                <a th:href="@{/admin/teachers}" class="nav-item" th:classappend="${activePage == 'teachers' ? 'active' : ''}">
+                    <i data-lucide="users" class="nav-icon"></i>
+                    <span class="nav-text">Tài khoản & Phân quyền</span>
+                </a>
+                <a th:href="@{/admin/documents}" class="nav-item" th:classappend="${activePage == 'documents' ? 'active' : ''}">
+                    <i data-lucide="folder-check" class="nav-icon"></i>
+                    <span class="nav-text">Biểu mẫu & Chứng từ</span>
+                </a>
+                <a th:href="@{/admin/system-logs}" class="nav-item" th:classappend="${activePage == 'system-logs' ? 'active' : ''}">
+                    <i data-lucide="activity" class="nav-icon"></i>
+                    <span class="nav-text">Nhật ký Hệ thống</span>
+                </a>
+            </nav>
+
+            <!-- SECTION 3: KẾ THỪA TRANG GIÁO VIÊN -->
+            <nav class="sidebar-nav sidebar-nav-divider">
+                <a th:href="@{/teacher/dashboard}" class="nav-item">
+                    <i data-lucide="user-check" class="nav-icon"></i>
+                    <span class="nav-text">Trang Giáo viên</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-profile-summary">
+                <div class="profile-avatar">
+                    <img th:if="${currentUser != null and currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl)}" 
+                         th:src="@{${currentUser.avatarUrl}}" alt="Avatar" class="avatar-img">
+                    <i th:unless="${currentUser != null and currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl)}" 
+                       data-lucide="shield-check" class="avatar-default-icon"></i>
+                </div>
+                <div class="profile-info">
+                    <span class="profile-name" th:text="${teacherName != null ? teacherName : 'Quản trị viên'}">Quản trị viên</span>
+                    <span class="profile-role" th:text="${userRole != null ? userRole : 'ROLE_ADMIN'}">ROLE_ADMIN</span>
+                </div>
+            </div>
+            <a th:href="@{/auth/logout}" class="btn-logout">
+                <i data-lucide="log-out" class="logout-icon"></i>
+                <span>Đăng xuất</span>
+            </a>
+        </div>
+    </aside>
+</body>
+</html>

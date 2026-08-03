@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khiếu nại - AKA School Manager</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR NAVIGATION -->
+        <div th:replace="~{teacher/fragments/sidebar :: sidebar('complaints')}"></div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Khiếu nại Tiết dạy</h1>
+                    <p class="page-subtitle">Danh sách yêu cầu điều chỉnh số tiết thực tế từ CSDL</p>
+                </div>
+                <a th:href="@{/teacher/complaints/new}" class="btn-primary-action blue">
+                    <i data-lucide="plus-circle"></i>
+                    <span>Gửi khiếu nại mới</span>
+                </a>
+            </div>
+
+            <!-- COMPLAINTS TABLE BOX -->
+            <div class="card-box">
+                <table class="attendance-table">
+                    <thead>
+                        <tr>
+                            <th>MÃ KHIẾU NẠI</th>
+                            <th>NỘI DUNG KHIẾU NẠI</th>
+                            <th>SỐ TIẾT YÊU CẦU</th>
+                            <th>TRẠNG THÁI</th>
+                            <th>PHẢN HỒI ADMIN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="cmp : ${complaints}">
+                            <td th:text="${'#' + cmp.id}">#1</td>
+                            <td th:text="${cmp.content}">Nội dung khiếu nại</td>
+                            <td><strong th:text="${cmp.expectedPeriods}">3</strong> tiết</td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${cmp.status == 1 ? 'approved' : 'pending'}"
+                                      th:text="${cmp.status == 1 ? 'Đã duyệt' : 'Chờ duyệt'}">Chờ duyệt</span>
+                            </td>
+                            <td th:text="${cmp.adminNotes != null ? cmp.adminNotes : 'Chưa có'}">Chưa có</td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(complaints)}">
+                            <td colspan="5" class="empty-state-text">
+                                Chưa có khiếu nại nào được tạo trong CSDL.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script th:src="@{/js/teacher-dashboard.js}"></script>
+    <script>
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
