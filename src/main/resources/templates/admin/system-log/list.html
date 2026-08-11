@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhật ký hệ thống - Admin AKA</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <style>
+        .log-action-badge {
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.25rem 0.65rem;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        .action-create { background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+        .action-update { background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .action-delete { background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+        .action-login { background-color: #faf5ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+        .action-default { background-color: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- ADMIN SIDEBAR FRAGMENT -->
+        <div th:replace="~{admin/fragments/sidebar :: sidebar('system-logs')}"></div>
+
+        <main class="main-content">
+            <div class="top-bar margin-bottom-1">
+                <div>
+                    <h1 class="page-title">Nhật Ký Hoạt Động Hệ Thống (System Logs)</h1>
+                    <p class="page-subtitle">Theo dõi toàn bộ lịch sử thao tác, phê duyệt và hoạt động của người dùng trong CSDL</p>
+                </div>
+            </div>
+
+            <!-- SYSTEM LOGS TABLE BOX -->
+            <div class="card-box">
+                <div class="box-header margin-bottom-1">
+                    <h2 class="box-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="ri-history-line" style="color: #2563eb;"></i> Danh Sách Nhật Ký Thao Tác Hệ Thống
+                    </h2>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>MÃ LOG</th>
+                                <th>THỜI GIAN GHI nhận</th>
+                                <th>TÀI KHOẢN THỰC HIỆN</th>
+                                <th class="text-center">VAI TRÒ</th>
+                                <th>HÀNH ĐỘNG</th>
+                                <th>CHI TIẾT THAO TÁC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="log : ${logs}">
+                                <td th:text="${'#' + log.id}">#1</td>
+                                <td><strong th:text="${log.timestamp != null ? #temporals.format(log.timestamp, 'dd/MM/yyyy HH:mm:ss') : 'N/A'}">04/08/2026 00:00:00</strong></td>
+                                <td>
+                                    <strong th:text="${log.user != null ? (log.user.teacher != null ? log.user.teacher.name : log.user.username) : 'Hệ thống'}">Admin</strong>
+                                </td>
+                                <td class="text-center">
+                                     <span class="status-badge" 
+                                           th:classappend="${log.role == 'ROLE_ADMIN' or log.role == 'ADMIN' ? 'approved' : 'rejected'}" 
+                                           th:text="${log.role != null ? log.role : 'HỆ THỐNG'}">ROLE_ADMIN</span>
+                                </td>
+                                <td>
+                                    <span class="log-action-badge action-update" th:text="${log.action}">Tạo phân công</span>
+                                </td>
+                                <td th:text="${log.details}">Chi tiết thao tác</td>
+                            </tr>
+
+                            <tr th:if="${#lists.isEmpty(logs)}">
+                                <td colspan="6" class="empty-table-cell">
+                                    Chưa có nhật ký thao tác nào được ghi lại trong CSDL.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

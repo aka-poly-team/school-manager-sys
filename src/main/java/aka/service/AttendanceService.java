@@ -19,4 +19,7 @@ public interface AttendanceService {
     long countByStatus(String status);
     boolean existsByTeacherIdAndSchoolIdAndSchoolClassIdAndSessionAndDate(Integer teacherId, Integer schoolId, Integer classId, String session, LocalDate date);
     long count();
+
+    List<Attendance> filterAttendancesByQuery(Integer month, Integer year, Integer teacherId, Integer schoolId, String status);
+    List<Object[]> queryTeacherPeriodStats(Integer month, Integer year, Integer teacherId, Integer schoolId, String status);
 }

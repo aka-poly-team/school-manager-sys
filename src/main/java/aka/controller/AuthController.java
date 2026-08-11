@@ -21,8 +21,7 @@ public class AuthController {
             return "redirect:/auth/login";
         }
 
-        if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")) ||
-            auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_MANAGER"))) {
+        if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
             return "redirect:/admin/dashboard";
         }
 

@@ -16,9 +16,7 @@ import aka.model.Schedule;
 import aka.model.Teacher;
 import aka.service.AttendanceService;
 import aka.service.ChangeRequestService;
-import aka.service.ComplaintService;
 import aka.service.ScheduleService;
-import aka.service.UserService;
 import aka.util.DateUtils;
 import aka.util.SecurityUtils;
 import lombok.AccessLevel;
@@ -31,16 +29,13 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TeacherController {
 
-    UserService userService;
     ScheduleService scheduleService;
     AttendanceService attendanceService;
-    ComplaintService complaintService;
     ChangeRequestService changeRequestService;
 
-    @GetMapping("/dashboard")
+    @GetMapping({"", "/", "/dashboard"})
     public String index(Model model) {
-        SecurityUtils.populate(model, userService);
-        Teacher teacher = SecurityUtils.getTeacher(userService);
+        Teacher teacher = SecurityUtils.getTeacher();
         Integer teacherId = teacher != null ? teacher.getId() : null;
 
         List<Schedule> upcomingClasses = teacherId != null 
@@ -93,6 +88,6 @@ public class TeacherController {
         model.addAttribute("scheduleAttendanceMap", scheduleAttendanceMap);
         model.addAttribute("todayFormatted", DateUtils.today());
 
-        return "teacher/dashboard";
+        return "teacher/dashboard/index";
     }
 }

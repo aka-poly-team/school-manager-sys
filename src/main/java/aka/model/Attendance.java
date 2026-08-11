@@ -69,17 +69,4 @@ public class Attendance {
     @Builder.Default
     @Column(nullable = false, length = 20)
     String status = "PENDING";
-
-    // Helper Getters cho HTML hiển thị siêu ngắn gọn
-    public String getTeacherName() {
-        return teacher != null ? teacher.getName() : "Giáo viên";
-    }
-
-    public String getSchoolAndClassName() {
-        String sName = school != null ? school.getName() : "";
-        String cName = schoolClass != null ? schoolClass.getName() : "";
-        if (sName.isEmpty()) return cName;
-        if (cName.isEmpty()) return sName;
-        return sName + " - " + cName;
-    }
 }

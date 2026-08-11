@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm Trường Mầm Non - Admin AKA</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- ADMIN SIDEBAR FRAGMENT -->
+        <div th:replace="~{admin/fragments/sidebar :: sidebar('schools')}"></div>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Thêm Trường Mầm Non Mới</h1>
+                    <p class="page-subtitle">Nhập thông tin đối tác Trường Mầm Non vào hệ thống</p>
+                </div>
+            </div>
+
+            <div class="card-box card-box-md margin-center">
+                <div class="box-header">
+                    <h2 class="box-title">Thông Tin Trường Mầm Non</h2>
+                </div>
+
+                <form th:action="@{/admin/schools/new}" method="post" class="form-layout">
+                    <div class="form-group">
+                        <label class="form-label">Tên Trường Mầm Non *</label>
+                        <input type="text" name="name" placeholder="Nhập tên trường mầm non..." class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Địa chỉ cơ sở</label>
+                        <input type="text" name="address" placeholder="Nhập địa chỉ..." class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Người liên hệ</label>
+                        <input type="text" name="contactPerson" placeholder="Họ tên đại diện trường..." class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Số điện thoại</label>
+                        <input type="text" name="phone" placeholder="Số điện thoại liên hệ..." class="form-control">
+                    </div>
+
+                    <div class="form-actions modal-actions">
+                        <a th:href="@{/admin/schools}" class="action-btn gray">Hủy bỏ</a>
+                        <button type="submit" class="action-btn blue">Lưu Trường Mầm Non</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -43,4 +43,13 @@ public class DateUtils {
     public static String getDayOfWeekText(Integer day) {
         return dayText(day);
     }
+
+    /**
+     * Convert LocalDate to custom DayOfWeek number (Monday=2, ..., Sunday=8).
+     */
+    public static int toCustomDayOfWeek(LocalDate date) {
+        if (date == null) return 2;
+        int dow = date.getDayOfWeek().getValue();
+        return (dow == 7) ? 8 : dow + 1;
+    }
 }

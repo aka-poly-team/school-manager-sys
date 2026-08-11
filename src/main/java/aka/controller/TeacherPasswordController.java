@@ -3,14 +3,19 @@ package aka.controller;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
+import aka.dto.teacher.PasswordChangeForm;
 import aka.model.User;
+import aka.service.SystemLogService;
 import aka.service.UserService;
 import aka.util.SecurityUtils;
+import aka.util.ValidationUtils;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -23,45 +28,46 @@ public class TeacherPasswordController {
 
     UserService userService;
     PasswordEncoder passwordEncoder;
+    SystemLogService systemLogService;
 
     @GetMapping("/change-password")
     public String index(Model model) {
-        SecurityUtils.populate(model, userService);
-        return "teacher/change-password";
+        return "teacher/change-password/index";
     }
 
     @PostMapping("/change-password")
-    public String update(@RequestParam("currentPassword") String currentPassword,
-                         @RequestParam("newPassword") String newPassword,
-                         @RequestParam("confirmPassword") String confirmPassword,
+    public String update(@Valid @ModelAttribute("passwordChangeForm") PasswordChangeForm form,
+                         BindingResult bindingResult,
                          Model model) {
-        SecurityUtils.populate(model, userService);
-        User currentUser = SecurityUtils.getUser(userService);
+        User currentUser = SecurityUtils.getUser();
 
         if (currentUser == null) {
             model.addAttribute("error", "Phiên làm việc hết hạn. Vui lòng đăng nhập lại!");
-            return "teacher/change-password";
+            return "teacher/change-password/index";
         }
 
-        if (!passwordEncoder.matches(currentPassword, currentUser.getPassword())) {
+        String errorMsg = ValidationUtils.getFirstError(bindingResult);
+        if (errorMsg != null) {
+            model.addAttribute("error", errorMsg);
+            return "teacher/change-password/index";
+        }
+
+        if (!passwordEncoder.matches(form.getCurrentPassword(), currentUser.getPassword())) {
             model.addAttribute("error", "Mật khẩu hiện tại không chính xác!");
-            return "teacher/change-password";
+            return "teacher/change-password/index";
         }
 
-        if (!newPassword.equals(confirmPassword)) {
+        if (!form.getNewPassword().equals(form.getConfirmPassword())) {
             model.addAttribute("error", "Mật khẩu mới và xác nhận mật khẩu không trùng khớp!");
-            return "teacher/change-password";
+            return "teacher/change-password/index";
         }
 
-        if (newPassword.length() < 6) {
-            model.addAttribute("error", "Mật khẩu mới phải có tối thiểu 6 ký tự!");
-            return "teacher/change-password";
-        }
-
-        currentUser.setPassword(passwordEncoder.encode(newPassword));
+        currentUser.setPassword(passwordEncoder.encode(form.getNewPassword()));
         userService.save(currentUser);
 
+        systemLogService.log(currentUser, "ĐỔI MẬT KHẨU", "Đổi mật khẩu tài khoản cá nhân thành công.");
+
         model.addAttribute("success", "Đổi mật khẩu thành công!");
-        return "teacher/change-password";
+        return "teacher/change-password/index";
     }
 }

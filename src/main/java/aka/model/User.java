@@ -48,7 +48,7 @@ public class User {
     Boolean enabled = true;
 
     @OneToOne
-    @JoinColumn(name = "teacherId", unique = true)
+    @JoinColumn(name = "teacherId")
     Teacher teacher;
 
     @Column(length = 500)

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Điểm danh ca dạy - AKA School Manager</title>
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR NAVIGATION -->
+        <div th:replace="~{teacher/fragments/sidebar :: sidebar('attendance')}"></div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Thực hiện Điểm danh ca dạy</h1>
+                    <p class="page-subtitle">Xác nhận thông tin buổi dạy và tải ảnh xác minh từ CSDL</p>
+                </div>
+            </div>
+
+            <!-- ATTENDANCE FORM BOX -->
+            <div class="card-box card-box-sm">
+                <!-- ALERTS -->
+                <div th:if="${error}" class="alert-box alert-error" th:text="${error}">Đã xảy ra lỗi.</div>
+                <div th:if="${warning}" class="alert-box alert-warning" th:text="${warning}">Cảnh báo.</div>
+
+                <form th:action="@{/teacher/attendance/new}" method="post" enctype="multipart/form-data" class="form-layout">
+                    <div class="form-group">
+                        <label class="form-label">Trường mầm non</label>
+                        <select name="schoolId" class="form-control">
+                            <option th:each="sch : ${schools}" th:value="${sch.id}" th:text="${sch.name}">Trường Mầm Non Hoa Mai</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Lớp học</label>
+                        <select name="classId" class="form-control">
+                            <option th:each="cls : ${classes}" th:value="${cls.id}" th:text="${cls.name}">Lớp Aerobic Chồi 1</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Ca dạy</label>
+                        <select name="session" class="form-control">
+                            <option value="Ca 1">Ca 1</option>
+                            <option value="Ca 2">Ca 2</option>
+                            <option value="Ca 3">Ca 3</option>
+                            <option value="Ca 4">Ca 4</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Số tiết đã dạy</label>
+                        <input type="number" name="periods" value="2" min="1" max="10" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="ri-camera-line"></i> Ảnh xác minh điểm danh (Bắt buộc chọn file)
+                        </label>
+                        <input type="file" name="selfieFile" accept="image/*" class="form-control-file">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Ghi chú buổi dạy</label>
+                        <textarea name="notes" rows="3" placeholder="Nhập ghi chú (nếu có)..." class="form-control"></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="action-btn orange btn-submit-flex">
+                            <i class="ri-check-line"></i> Gửi Điểm danh
+                        </button>
+                        <a th:href="@{/teacher/attendance}" class="action-btn gray btn-cancel-link">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

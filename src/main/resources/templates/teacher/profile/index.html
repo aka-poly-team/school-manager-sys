@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ cá nhân - AKA School Manager</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR NAVIGATION -->
+        <div th:replace="~{teacher/fragments/sidebar :: sidebar('profile')}"></div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Hồ Sơ Cá Nhân</h1>
+                    <p class="page-subtitle">Xem thông tin tài khoản và thông tin giảng dạy của bạn (Chế độ chỉ đọc)</p>
+                </div>
+            </div>
+
+            <!-- PROFILE VIEW BOX -->
+            <div class="card-box card-box-sm">
+                <!-- ALERTS -->
+                <div th:if="${error}" class="alert-box alert-error" th:text="${error}"></div>
+
+                <div class="user-profile-summary profile-summary-header">
+                    <div class="top-avatar avatar-lg">
+                        <img th:if="${currentUser != null and currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl)}" 
+                             th:src="@{${currentUser.avatarUrl}}" alt="Avatar" class="avatar-img">
+                        <i th:unless="${currentUser != null and currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl)}" 
+                           class="ri-user-line avatar-icon-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="profile-title-text" th:text="${teacherName}">Họ tên Giáo viên</h2>
+                        <span class="status-badge approved" th:text="${currentUser != null ? currentUser.role : 'ROLE_TEACHER'}">ROLE_TEACHER</span>
+                    </div>
+                </div>
+
+                <div class="form-layout" style="margin-top: 1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label">Tài khoản / Email đăng nhập</label>
+                        <input type="text" th:value="${currentUser != null ? currentUser.username : ''}" disabled class="form-control form-control-disabled">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Họ và tên Giáo viên</label>
+                        <input type="text" th:value="${teacher != null ? teacher.name : 'Chưa cập nhật'}" disabled class="form-control form-control-disabled">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Ngày sinh</label>
+                        <input type="text" th:value="${teacher != null and teacher.dob != null ? #temporals.format(teacher.dob, 'dd/MM/yyyy') : 'Chưa cập nhật'}" disabled class="form-control form-control-disabled">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Số điện thoại liên hệ</label>
+                        <input type="text" th:value="${teacher != null and teacher.phone != null ? teacher.phone : 'Chưa cập nhật'}" disabled class="form-control form-control-disabled">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Hòm thư Email</label>
+                        <input type="text" th:value="${teacher != null and teacher.email != null ? teacher.email : 'Chưa cập nhật'}" disabled class="form-control form-control-disabled">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Địa chỉ liên hệ</label>
+                        <input type="text" th:value="${teacher != null and teacher.address != null ? teacher.address : 'Chưa cập nhật'}" disabled class="form-control form-control-disabled">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Trạng thái công tác</label>
+                        <input type="text" th:value="${teacher != null and teacher.status != null ? (teacher.status == 'ACTIVE' ? 'Đang giảng dạy' : teacher.status) : 'Đang giảng dạy'}" disabled class="form-control form-control-disabled">
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

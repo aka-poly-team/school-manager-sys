@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- TỔNG HỢP KPI BỘ LỌC FRAGMENT -->
+    <div th:fragment="kpi" class="stats-grid margin-bottom-1">
+        <div class="stat-card blue">
+            <div>
+                <div class="stat-header">
+                    <span class="stat-value" th:text="${filteredCount}">0</span>
+                    <i class="ri-calendar-check-line stat-icon"></i>
+                </div>
+                <div class="stat-subtext">Khớp với bộ lọc truy vấn</div>
+            </div>
+            <div class="stat-footer-label">Tổng lượt điểm danh</div>
+        </div>
+
+        <div class="stat-card green">
+            <div>
+                <div class="stat-header">
+                    <span class="stat-value" th:text="${filteredApprovedPeriods + ' tiết'}">0 tiết</span>
+                    <i class="ri-checkbox-circle-line stat-icon"></i>
+                </div>
+                <div class="stat-subtext">Đã được phê duyệt hợp lệ</div>
+            </div>
+            <div class="stat-footer-label">Tiết dạy hoàn thành</div>
+        </div>
+
+        <div class="stat-card purple">
+            <div>
+                <div class="stat-header">
+                    <span class="stat-value" th:text="${filteredPendingPeriods + ' tiết'}">0 tiết</span>
+                    <i class="ri-time-line stat-icon"></i>
+                </div>
+                <div class="stat-subtext">Đang trong hàng chờ duyệt</div>
+            </div>
+            <div class="stat-footer-label">Tiết chờ phê duyệt</div>
+        </div>
+    </div>
+</body>
+</html>

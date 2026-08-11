@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khiếu nại - AKA School Manager</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR NAVIGATION -->
+        <div th:replace="~{teacher/fragments/sidebar :: sidebar('complaints')}"></div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Khiếu nại Tiết dạy</h1>
+                    <p class="page-subtitle">Danh sách yêu cầu điều chỉnh số tiết thực tế từ CSDL</p>
+                </div>
+                <a th:href="@{/teacher/complaints/new}" class="btn-primary-action blue">
+                    <i class="ri-add-circle-line"></i>
+                    <span>Gửi khiếu nại mới</span>
+                </a>
+            </div>
+
+            <!-- THÔNG BÁO ALERT (1 DÒNG DUY NHẤT) -->
+            <div th:if="${error}" class="alert-box alert-error" th:text="${error}"></div>
+            <div th:if="${success}" class="alert-box alert-success" th:text="${success}"></div>
+
+            <!-- COMPLAINTS TABLE BOX -->
+            <div class="card-box">
+                <table class="attendance-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 100px; text-align: center;">MÃ KHIẾU NẠI</th>
+                            <th style="width: 110px;">NGÀY DẠY</th>
+                            <th style="width: 170px;">TRƯỜNG</th>
+                            <th style="width: 80px; text-align: center;">CA DẠY</th>
+                            <th>NỘI DUNG KHIẾU NẠI</th>
+                            <th style="width: 120px; text-align: center;">SỐ TIẾT YÊU CẦU</th>
+                            <th style="width: 110px; text-align: center;">TRẠNG THÁI</th>
+                            <th>PHẢN HỒI ADMIN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="cmp : ${complaints}">
+                            <td class="text-center" th:text="${'#' + cmp.id}">#1</td>
+                            <td th:text="${#temporals.format(cmp.attendance.date, 'dd/MM/yyyy')}">04/08/2026</td>
+                            <td th:text="${cmp.attendance.school.name}">Trường Hoa Mai</td>
+                            <td class="text-center" th:text="${cmp.attendance.session}">Ca 1</td>
+                            <td th:text="${cmp.content}">Nội dung khiếu nại</td>
+                            <td class="text-center"><strong th:text="${cmp.expectedPeriods}">3</strong> tiết</td>
+                            <td class="text-center">
+                                <span class="status-badge" 
+                                      th:classappend="${cmp.status == 1 ? 'approved' : (cmp.status == 2 ? 'rejected' : 'pending')}"
+                                      th:text="${cmp.status == 1 ? 'Đã duyệt' : (cmp.status == 2 ? 'Từ chối' : 'Chờ duyệt')}">Chờ duyệt</span>
+                            </td>
+                            <td th:text="${cmp.adminNotes != null and !#strings.isEmpty(cmp.adminNotes) ? cmp.adminNotes : 'Chưa có'}">Chưa có</td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(complaints)}">
+                            <td colspan="8" class="empty-state-text">
+                                Chưa có khiếu nại nào được tạo trong CSDL.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

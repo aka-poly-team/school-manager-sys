@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch giảng dạy - AKA School Manager</title>
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR NAVIGATION -->
+        <div th:replace="~{teacher/fragments/sidebar :: sidebar('schedules')}"></div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Lịch giảng dạy theo tuần</h1>
+                    <p class="page-subtitle">Danh sách lịch dạy chi tiết từ CSDL</p>
+                </div>
+            </div>
+
+            <!-- SCHEDULES TABLE BOX -->
+            <div class="card-box">
+                <table class="attendance-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 100px; text-align: center;">THỨ</th>
+                            <th style="width: 80px; text-align: center;">CA DẠY</th>
+                            <th style="width: 180px;">TRƯỜNG MẦM NON</th>
+                            <th style="width: 140px;">LỚP HỌC</th>
+                            <th style="width: 130px; text-align: center;">THỜI GIAN</th>
+                            <th style="width: 90px; text-align: center;">SỐ TIẾT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="sch : ${schedules}">
+                            <td class="text-center"><strong th:text="${sch.dayOfWeek == 8 ? 'Chủ nhật' : 'Thứ ' + sch.dayOfWeek}">Thứ 2</strong></td>
+                            <td class="text-center" th:text="${sch.session}">Ca 1</td>
+                            <td th:text="${sch.school.name}">Trường Mầm Nông</td>
+                            <td><strong th:text="${sch.schoolClass.name}">Lớp 12A3</strong></td>
+                            <td class="text-center" th:text="${sch.startTime + ' - ' + sch.endTime}">08:00 - 09:30</td>
+                            <td class="text-center"><span class="status-badge approved" th:text="${sch.periods + ' tiết'}">2 tiết</span></td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(schedules)}">
+                            <td colspan="6" style="text-align:center;color:#94a3b8;padding:2rem 0;">
+                                Chưa có lịch giảng dạy nào được phân công trong CSDL.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

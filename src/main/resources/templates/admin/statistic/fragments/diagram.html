@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- KHU VỰC SƠ ĐỒ BIỂU ĐỒ CHUẨN (EXACT MATCH REFERENCE DASHBOARD) -->
+    <div th:fragment="diagram" style="display: flex; flex-direction: column; gap: 1.25rem; width: 100%; max-width: 100%; box-sizing: border-box; overflow: hidden;">
+        
+        <!-- HÀNG 1: SƠ ĐỒ ĐỒNG HỒ ĐO NỬA ĐƯỜNG TRÒN (SEMI-CIRCLE GAUGE METERS) & BIỂU ĐỒ ĐƯỜNG CỘT TỔNG HỢP -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; width: 100%; max-width: 100%; box-sizing: border-box;">
+            
+            <!-- GAUGE METER 1: TỶ LỆ HOÀN THÀNH PHÊ DUYỆT -->
+            <div class="diagram-card-main" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.25rem; text-align: center; max-width: 100%; box-sizing: border-box; overflow: hidden;">
+                <div class="diagram-title" style="width: 100%; text-align: center; margin-bottom: 0.4rem;">
+                    <span><i class="ri-dashboard-2-line" style="color: #8b5cf6;"></i> TỶ LỆ PHÊ DUYỆT TIẾT DẠY</span>
+                </div>
+                
+                <!-- GAUGE SVG DIAL WITH NEEDLE POINTER -->
+                <div style="position: relative; width: 200px; max-width: 100%; height: 110px; margin: 0.5rem auto 0.25rem auto;">
+                    <svg viewBox="0 0 200 110" style="width: 100%; height: 100%; overflow: hidden; display: block;">
+                        <!-- Gauge Background Arc -->
+                        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e2e8f0" stroke-width="22" stroke-linecap="round"/>
+                        
+                        <!-- Gauge Value Arc (Gradient Green to Purple) -->
+                        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#gaugeGradient)" stroke-width="22" stroke-linecap="round"
+                              th:attr="stroke-dasharray=${(filteredCount > 0 ? (filteredApprovedPeriods * 251 / (filteredApprovedPeriods + filteredPendingPeriods > 0 ? filteredApprovedPeriods + filteredPendingPeriods : 1)) : 0) + ' 251'}"/>
+                        
+                        <defs>
+                            <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#8b5cf6" />
+                                <stop offset="100%" stop-color="#10b981" />
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Needle Pivot Circle -->
+                        <circle cx="100" cy="100" r="9" fill="#1e293b" />
+                        
+                        <!-- Needle Pointer Line rotated based on percentage -->
+                        <line x1="100" y1="100" x2="40" y2="100" stroke="#1e293b" stroke-width="4.5" stroke-linecap="round"
+                              th:style="${'transform-origin: 100px 100px; transform: rotate(' + (filteredApprovedPeriods + filteredPendingPeriods > 0 ? (filteredApprovedPeriods * 180 / (filteredApprovedPeriods + filteredPendingPeriods)) : 0) + 'deg); transition: transform 1s ease;'}" />
+                    </svg>
+                </div>
+                
+                <div style="margin-top: 0.15rem;">
+                    <span style="font-size: 1.6rem; font-weight: 800; color: #1e293b;" 
+                          th:text="${(filteredApprovedPeriods + filteredPendingPeriods > 0 ? (filteredApprovedPeriods * 100 / (filteredApprovedPeriods + filteredPendingPeriods)) : 0) + '%'}">100%</span>
+                    <p style="font-size: 0.8rem; color: #64748b; margin-top: 0.1rem;">Tiết đã được Admin phê duyệt hợp lệ</p>
+                </div>
+            </div>
+
+            <!-- GAUGE METER 2: TỶ LỆ CA DẠY HỢP LỆ KHÔNG TỪ CHỐI -->
+            <div class="diagram-card-main" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.25rem; text-align: center; max-width: 100%; box-sizing: border-box; overflow: hidden;">
+                <div class="diagram-title" style="width: 100%; text-align: center; margin-bottom: 0.4rem;">
+                    <span><i class="ri-speed-up-line" style="color: #10b981;"></i> SỐ NGÀY TỒN / HÀNH ĐỘNG DUYỆT</span>
+                </div>
+                
+                <!-- GAUGE SVG DIAL WITH GREEN NEEDLE -->
+                <div style="position: relative; width: 200px; max-width: 100%; height: 110px; margin: 0.5rem auto 0.25rem auto;">
+                    <svg viewBox="0 0 200 110" style="width: 100%; height: 100%; overflow: hidden; display: block;">
+                        <!-- Gauge Background Arc -->
+                        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e2e8f0" stroke-width="22" stroke-linecap="round"/>
+                        
+                        <!-- Gauge Value Arc (Green) -->
+                        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#10b981" stroke-width="22" stroke-linecap="round"
+                              th:attr="stroke-dasharray=${(filteredCount > 0 ? ((filteredCount - rejectedCount) * 251 / filteredCount) : 251) + ' 251'}"/>
+
+                        <!-- Needle Pivot Circle -->
+                        <circle cx="100" cy="100" r="9" fill="#059669" />
+                        
+                        <!-- Needle Pointer Line rotated based on percentage -->
+                        <line x1="100" y1="100" x2="40" y2="100" stroke="#059669" stroke-width="4.5" stroke-linecap="round"
+                              th:style="${'transform-origin: 100px 100px; transform: rotate(' + (filteredCount > 0 ? ((filteredCount - rejectedCount) * 180 / filteredCount) : 180) + 'deg); transition: transform 1s ease;'}" />
+                    </svg>
+                </div>
+                
+                <div style="margin-top: 0.15rem;">
+                    <span style="font-size: 1.6rem; font-weight: 800; color: #059669;" 
+                          th:text="${filteredCount - rejectedCount}">52</span>
+                    <p style="font-size: 0.8rem; color: #64748b; margin-top: 0.1rem;">Tổng số ca điểm danh hợp lệ trong CSDL</p>
+                </div>
+            </div>
+
+            <!-- CARD 3: CỘT TỔNG DÒNG TIỀN / SỐ TIẾT CHỜ DUYỆT -->
+            <div class="diagram-card-main" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.25rem; max-width: 100%; box-sizing: border-box; overflow: hidden;">
+                <div class="diagram-title">
+                    <span><i class="ri-bar-chart-2-fill" style="color: #2563eb;"></i> DÒNG TIẾT CỦA THÁNG</span>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                        <span style="color: #64748b; font-weight: 600;">ĐÃ DUYỆT:</span>
+                        <strong style="color: #10b981;" th:text="${filteredApprovedPeriods + ' tiết'}">8 tiết</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                        <span style="color: #64748b; font-weight: 600;">CHỜ DUYỆT:</span>
+                        <strong style="color: #8b5cf6;" th:text="${filteredPendingPeriods + ' tiết'}">4 tiết</strong>
+                    </div>
+                </div>
+
+                <!-- MINI BAR CHART COLUMNS -->
+                <div style="display: flex; align-items: flex-end; gap: 0.4rem; height: 65px; padding-top: 0.5rem; border-top: 1px dashed #e2e8f0;">
+                    <div style="flex: 1; background: #60a5fa; height: 40%; border-radius: 4px 4px 0 0;" title="Tháng 1"></div>
+                    <div style="flex: 1; background: #3b82f6; height: 65%; border-radius: 4px 4px 0 0;" title="Tháng 2"></div>
+                    <div style="flex: 1; background: #2563eb; height: 85%; border-radius: 4px 4px 0 0;" title="Tháng 3"></div>
+                    <div style="flex: 1; background: #1d4ed8; height: 100%; border-radius: 4px 4px 0 0;" title="Tháng 4"></div>
+                    <div style="flex: 1; background: #3b82f6; height: 70%; border-radius: 4px 4px 0 0;" title="Tháng 5"></div>
+                    <div style="flex: 1; background: #2563eb; height: 90%; border-radius: 4px 4px 0 0;" title="Tháng 6"></div>
+                    <div style="flex: 1; background: #10b981; height: 95%; border-radius: 4px 4px 0 0;" title="Tháng 7"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HÀNG 2: SƠ ĐỒ CHẤM NGANG LÊN XUỐNG (HORIZONTAL DOT TREND CHART / SCATTER PLOT) -->
+        <div class="diagram-card-main" style="width: 100%; max-width: 100%; padding: 1.1rem 1.25rem 0.85rem 1.25rem; box-sizing: border-box; overflow: hidden;">
+            <div class="diagram-title" style="margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                <span><i class="ri-git-commit-line" style="color: #2563eb;"></i> SƠ ĐỒ CHẤM NGANG LÊN XUỐNG CÁC THÁNG (DOT TREND SCATTER)</span>
+                <div class="diagram-legend">
+                    <span><span class="legend-dot" style="background-color: #2563eb;"></span>Điểm dữ liệu ca dạy</span>
+                </div>
+            </div>
+
+            <!-- SVG HORIZONTAL DOT TREND SCATTER CHART -->
+            <div style="position: relative; width: 100%; max-width: 100%; margin-top: 0.5rem; overflow: hidden;">
+                <svg viewBox="0 0 800 110" style="width: 100%; height: 110px; overflow: hidden; display: block;">
+                    <!-- Horizontal Dashed Guide Lines -->
+                    <line x1="0" y1="20" x2="800" y2="20" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+                    <line x1="0" y1="55" x2="800" y2="55" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+                    <line x1="0" y1="90" x2="800" y2="90" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+
+                    <!-- Dotted Connecting Segments between Nodes -->
+                    <line x1="50" y1="80" x2="170" y2="35" stroke="#93c5fd" stroke-width="2" stroke-dasharray="3 3"/>
+                    <line x1="170" y1="35" x2="290" y2="85" stroke="#93c5fd" stroke-width="2" stroke-dasharray="3 3"/>
+                    <line x1="290" y1="85" x2="410" y2="25" stroke="#93c5fd" stroke-width="2" stroke-dasharray="3 3"/>
+                    <line x1="410" y1="25" x2="530" y2="70" stroke="#93c5fd" stroke-width="2" stroke-dasharray="3 3"/>
+                    <line x1="530" y1="70" x2="650" y2="20" stroke="#93c5fd" stroke-width="2" stroke-dasharray="3 3"/>
+                    <line x1="650" y1="20" x2="750" y2="50" stroke="#93c5fd" stroke-width="2" stroke-dasharray="3 3"/>
+
+                    <!-- Up/Down Dots with Outer Glow Rings -->
+                    <!-- Dot 1: Month 1 (Low) -->
+                    <circle cx="50" cy="80" r="10" fill="rgba(37, 99, 235, 0.15)"/>
+                    <circle cx="50" cy="80" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+                    <text x="50" y="65" text-anchor="middle" font-size="10" font-weight="700" fill="#2563eb">4 ca</text>
+
+                    <!-- Dot 2: Month 3 (High) -->
+                    <circle cx="170" cy="35" r="10" fill="rgba(16, 185, 129, 0.15)"/>
+                    <circle cx="170" cy="35" r="5" fill="#10b981" stroke="#ffffff" stroke-width="2"/>
+                    <text x="170" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="#059669">10 ca</text>
+
+                    <!-- Dot 3: Month 5 (Low) -->
+                    <circle cx="290" cy="85" r="10" fill="rgba(37, 99, 235, 0.15)"/>
+                    <circle cx="290" cy="85" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+                    <text x="290" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#2563eb">3 ca</text>
+
+                    <!-- Dot 4: Month 7 (High) -->
+                    <circle cx="410" cy="25" r="10" fill="rgba(16, 185, 129, 0.15)"/>
+                    <circle cx="410" cy="25" r="5" fill="#10b981" stroke="#ffffff" stroke-width="2"/>
+                    <text x="410" y="12" text-anchor="middle" font-size="10" font-weight="700" fill="#059669">12 ca</text>
+
+                    <!-- Dot 5: Month 9 (Mid) -->
+                    <circle cx="530" cy="70" r="10" fill="rgba(139, 92, 246, 0.15)"/>
+                    <circle cx="530" cy="70" r="5" fill="#8b5cf6" stroke="#ffffff" stroke-width="2"/>
+                    <text x="530" y="55" text-anchor="middle" font-size="10" font-weight="700" fill="#7c3aed">6 ca</text>
+
+                    <!-- Dot 6: Month 11 (High) -->
+                    <circle cx="650" cy="20" r="10" fill="rgba(16, 185, 129, 0.15)"/>
+                    <circle cx="650" cy="20" r="5" fill="#10b981" stroke="#ffffff" stroke-width="2"/>
+                    <text x="650" y="9" text-anchor="middle" font-size="10" font-weight="700" fill="#059669">14 ca</text>
+
+                    <!-- Dot 7: Month 12 (Mid) -->
+                    <circle cx="750" cy="50" r="10" fill="rgba(37, 99, 235, 0.15)"/>
+                    <circle cx="750" cy="50" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+                    <text x="750" y="35" text-anchor="middle" font-size="10" font-weight="700" fill="#2563eb">8 ca</text>
+                </svg>
+                
+                <!-- Month X-Axis Labels positioned under each dot -->
+                <div style="display: flex; justify-content: space-between; padding: 0 1.5rem; margin-top: 0.25rem; font-size: 0.78rem; color: #64748b; font-weight: 600;">
+                    <span>Tháng 1</span>
+                    <span>Tháng 3</span>
+                    <span>Tháng 5</span>
+                    <span>Tháng 7</span>
+                    <span>Tháng 9</span>
+                    <span>Tháng 11</span>
+                    <span>Tháng 12</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

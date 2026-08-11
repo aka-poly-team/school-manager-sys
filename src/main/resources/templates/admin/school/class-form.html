@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm Lớp Học Mới - Admin AKA</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- ADMIN SIDEBAR FRAGMENT -->
+        <div th:replace="~{admin/fragments/sidebar :: sidebar('schools')}"></div>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Thêm Lớp Học Mới</h1>
+                    <p class="page-subtitle">Khai báo danh mục Lớp học giảng dạy cho Trường Mầm Non</p>
+                </div>
+            </div>
+
+            <div class="card-box card-box-md margin-center">
+                <div class="box-header">
+                    <h2 class="box-title">Thông Tin Lớp Học</h2>
+                </div>
+
+                <form th:action="@{/admin/classes/new}" method="post" class="form-layout">
+                    <div class="form-group">
+                        <label class="form-label">Thuộc Trường Mầm Non *</label>
+                        <select name="schoolId" class="form-control">
+                            <option th:each="s : ${schools}" th:value="${s.id}" th:text="${s.name}">Trường Mầm Non Hoa Mai</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tên Lớp Học *</label>
+                        <input type="text" name="name" placeholder="Ví dụ: Lớp Aerobic Chồi 1..." class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Sĩ số học sinh</label>
+                        <input type="number" name="studentCount" value="25" min="1" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Số tiết chuẩn / buổi</label>
+                        <input type="number" name="standardPeriods" value="2" min="1" class="form-control">
+                    </div>
+
+                    <div class="form-actions modal-actions">
+                        <a th:href="@{/admin/schools}" class="action-btn gray">Hủy bỏ</a>
+                        <button type="submit" class="action-btn blue">Lưu Lớp Học</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

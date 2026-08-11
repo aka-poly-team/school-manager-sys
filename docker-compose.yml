@@ -1,0 +1,30 @@
+services:
+  # Container 1: CSDL Microsoft SQL Server 2022
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: aka-sqlserver-db
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=AkaSystem@123456
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+
+  # Container 2: Ứng dụng Web Spring Boot AKA-SYSTEM
+  aka-app:
+    build: .
+    container_name: aka-system-web
+    ports:
+      - "8081:8081"
+    depends_on:
+      - sqlserver
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:sqlserver://sqlserver:1433;databaseName=aka;encrypt=true;trustServerCertificate=true;createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=AkaSystem@123456
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+volumes:
+  mssql_data:

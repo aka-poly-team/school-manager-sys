@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nghỉ phép / Đổi ca - AKA School Manager</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR NAVIGATION -->
+        <div th:replace="~{teacher/fragments/sidebar :: sidebar('change-requests')}"></div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Yêu cầu Nghỉ phép / Dạy thay</h1>
+                    <p class="page-subtitle">Danh sách đơn từ đã tạo từ CSDL</p>
+                </div>
+                <a th:href="@{/teacher/change-requests/new}" class="btn-primary-action blue">
+                    <i class="ri-add-circle-line"></i>
+                    <span>Tạo đơn xin nghỉ / đổi ca</span>
+                </a>
+            </div>
+
+            <!-- THÔNG BÁO ALERT (1 DÒNG DUY NHẤT) -->
+            <div th:if="${error}" class="alert-box alert-error" th:text="${error}"></div>
+            <div th:if="${success}" class="alert-box alert-success" th:text="${success}"></div>
+
+            <!-- CHANGE REQUESTS TABLE BOX -->
+            <div class="card-box">
+                <table class="attendance-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 140px;">LOẠI YÊU CẦU</th>
+                            <th style="width: 170px;">TRƯỜNG</th>
+                            <th style="width: 110px; text-align: center;">NGÀY NGHỈ</th>
+                            <th style="width: 80px; text-align: center;">CA DẠY</th>
+                            <th>LÝ DO</th>
+                            <th style="width: 110px; text-align: center;">NGÀY TẠO</th>
+                            <th style="width: 110px; text-align: center;">TRẠNG THÁI</th>
+                            <th>GHI CHÚ ADMIN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="req : ${changeRequests}">
+                            <td>
+                                <strong th:text="${req.requestType == 'LEAVE' ? 'Xin nghỉ phép' : 'Dạy thay / Đổi ca'}">Xin nghỉ phép</strong>
+                            </td>
+                            <td th:text="${req.schedule != null and req.schedule.school != null ? req.schedule.school.name : 'N/A'}">Trường Hoa Mai</td>
+                            <td class="text-center" th:text="${#temporals.format(req.date, 'dd/MM/yyyy')}">13/07/2026</td>
+                            <td class="text-center" th:text="${req.session}">Ca 1</td>
+                            <td th:text="${req.reason}">Lý do nghỉ</td>
+                            <td class="text-center" th:text="${req.createdAt != null ? #temporals.format(req.createdAt, 'dd/MM/yyyy') : 'N/A'}">10/07/2026</td>
+                            <td class="text-center">
+                                <span class="status-badge" 
+                                      th:classappend="${req.status == 'approved' ? 'approved' : (req.status == 'rejected' ? 'rejected' : 'pending')}"
+                                      th:text="${req.status == 'approved' ? 'Đã duyệt' : (req.status == 'rejected' ? 'Từ chối' : 'Chờ duyệt')}">Chờ duyệt</span>
+                            </td>
+                            <td th:text="${req.adminNotes != null and !#strings.isEmpty(req.adminNotes) ? req.adminNotes : 'Chưa có'}">Chưa có</td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(changeRequests)}">
+                            <td colspan="8" class="empty-state-text">
+                                Chưa có yêu cầu nghỉ phép hay dạy thay nào trong CSDL.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

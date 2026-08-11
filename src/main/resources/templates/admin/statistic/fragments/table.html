@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- KHU VỰC BẢNG CHI TIẾT CA DẠY ĐIỂM DANH FRAGMENT -->
+    <div th:fragment="table" class="table-container">
+        <table class="data-table" id="attendance-table">
+            <thead>
+                <tr>
+                    <th>MÃ</th>
+                    <th>NGÀY</th>
+                    <th>CHECK-IN</th>
+                    <th>GIÁO VIÊN</th>
+                    <th>TRƯỜNG MẦM NON</th>
+                    <th>LỚP HỌC</th>
+                    <th>CA DẠY</th>
+                    <th class="text-center">SỐ TIẾT</th>
+                    <th>ẢNH XÁC MINH</th>
+                    <th class="text-center">TRẠNG THÁI</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="att : ${attendances}">
+                    <td th:text="${'#' + att.id}">#1</td>
+                    <td><strong th:text="${#temporals.format(att.date, 'dd/MM/yyyy')}">04/08/2026</strong></td>
+                    <td th:text="${att.checkInTime}">07:55</td>
+                    <td><strong th:text="${att.teacher.name}">GV Mai</strong></td>
+                    <td th:text="${att.school.name}">Trường Hoa Mai</td>
+                    <td th:text="${att.schoolClass.name}">Lớp 8A</td>
+                    <td th:text="${att.session}">Ca 1</td>
+                    <td class="text-center"><strong th:text="${att.periods}">2</strong> tiết</td>
+                    <td>
+                        <a th:if="${att.selfieImage != null}" th:href="${#strings.startsWith(att.selfieImage, 'http') ? att.selfieImage : @{${att.selfieImage}}}" target="_blank" title="Xem ảnh đầy đủ">
+                            <img th:src="${#strings.startsWith(att.selfieImage, 'http') ? att.selfieImage : @{${att.selfieImage}}}" alt="Selfie" class="selfie-thumb" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80';">
+                        </a>
+                        <span th:unless="${att.selfieImage != null}" class="empty-table-cell">Không có</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="status-badge" 
+                              th:classappend="${att.status == 'APPROVED' ? 'approved' : (att.status == 'REJECTED' ? 'rejected' : 'pending')}" 
+                              th:text="${att.status == 'APPROVED' ? 'Đã duyệt' : (att.status == 'REJECTED' ? 'Từ chối' : 'Chờ duyệt')}">Chờ duyệt</span>
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(attendances)}">
+                    <td colspan="10" class="empty-table-cell">Không tìm thấy dữ liệu điểm danh phù hợp.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

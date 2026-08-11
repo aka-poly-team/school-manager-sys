@@ -10,12 +10,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
+import aka.dto.admin.TeacherForm;
 import aka.model.RoleName;
 import aka.model.Teacher;
 import aka.model.User;
 import aka.service.TeacherService;
 import aka.service.UserService;
-import aka.util.SecurityUtils;
+import aka.util.ValidationUtils;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -30,34 +35,63 @@ public class AdminTeacherController {
     TeacherService teacherService;
     PasswordEncoder passwordEncoder;
 
+    // 1. TRANG QUẢN LÝ TÀI KHOẢN & PHÂN QUYỀN (GET /admin/teachers)
     @GetMapping("/teachers")
-    public String list(Model model) {
-        SecurityUtils.populate(model, userService);
-        model.addAttribute("teachers", teacherService.findAll());
+    public String list(@RequestParam(value = "showAdd", required = false) Boolean showAdd,
+                       @RequestParam(value = "editId", required = false) Integer editId, 
+                       Model model) {
         model.addAttribute("users", userService.findAll());
-        return "admin/teachers";
+        if (Boolean.TRUE.equals(showAdd)) {
+            model.addAttribute("showAdd", true);
+        }
+        if (editId != null) {
+            User editUser = userService.findById(editId).orElse(null);
+            model.addAttribute("editUser", editUser);
+        }
+        return "admin/teacher/list";
     }
 
-    @PostMapping({"/teachers/new", "/teachers/create", "/teachers"})
-    public String create(@RequestParam(value = "name", required = false) String name,
-                         @RequestParam(value = "email", required = false) String email,
-                         @RequestParam(value = "phone", required = false) String phone,
-                         @RequestParam(value = "username", required = false) String username,
-                         @RequestParam(value = "password", required = false) String password,
-                         @RequestParam(value = "role", required = false, defaultValue = "ROLE_TEACHER") String roleNameStr,
-                         RedirectAttributes redirectAttributes) {
+    // 1b. TRANG FORM THÊM MỚI TÀI KHOẢN (GET /admin/teachers/new)
+    @GetMapping("/teachers/new")
+    public String showCreateForm(Model model) {
+        return "admin/teacher/form";
+    }
 
-        if (name == null || name.isBlank()) {
-            setFlashError(redirectAttributes, "Họ tên Giáo viên không được để trống!");
+    // 1c. TRANG FORM CHỈNH SỬA TÀI KHOẢN (GET /admin/teachers/edit/{id})
+    @GetMapping("/teachers/edit/{id}")
+    public String showEditForm(@PathVariable("id") Integer id, Model model) {
+        User editUser = userService.findById(id).orElse(null);
+        if (editUser == null) {
             return "redirect:/admin/teachers";
         }
+        model.addAttribute("editUser", editUser);
+        return "admin/teacher/form";
+    }
+
+    // 2. THÊM MỚI TÀI KHOẢN & HỒ SƠ GIÁO VIÊN (POST /admin/teachers/new)
+    @PostMapping("/teachers/new")
+    public String create(@Valid @ModelAttribute("teacherForm") TeacherForm form,
+                         BindingResult bindingResult,
+                         RedirectAttributes redirectAttributes) {
+        String errorMsg = ValidationUtils.getFirstError(bindingResult);
+        if (errorMsg != null) {
+            redirectAttributes.addFlashAttribute("error", errorMsg);
+            return "redirect:/admin/teachers";
+        }
+
+        String name = form.getName();
+        String email = form.getEmail();
+        String phone = form.getPhone();
+        String username = form.getUsername();
+        String password = form.getPassword();
+        String roleNameStr = form.getRole();
 
         String accountUsername = (username != null && !username.isBlank()) 
                 ? username.trim() 
                 : ((email != null && !email.isBlank()) ? email.trim() : "user" + System.currentTimeMillis());
 
         if (userService.existsByUsername(accountUsername)) {
-            setFlashError(redirectAttributes, "Email / Tên đăng nhập '" + accountUsername + "' đã tồn tại trong hệ thống!");
+            redirectAttributes.addFlashAttribute("error", "Email / Tên đăng nhập '" + accountUsername + "' đã tồn tại trong hệ thống!");
             return "redirect:/admin/teachers";
         }
 
@@ -72,10 +106,7 @@ public class AdminTeacherController {
 
             String rawPassword = (password != null && !password.isBlank()) ? password.trim() : "123456";
 
-            RoleName role = RoleName.ROLE_TEACHER;
-            try {
-                role = RoleName.valueOf(roleNameStr);
-            } catch (Exception ignored) {}
+            RoleName role = RoleName.of(roleNameStr, RoleName.ROLE_TEACHER);
 
             User user = User.builder()
                     .username(accountUsername)
@@ -86,22 +117,32 @@ public class AdminTeacherController {
                     .build();
             userService.save(user);
 
-            setFlashSuccess(redirectAttributes, "Tạo tài khoản và hồ sơ mới cho '" + teacher.getName() + "' thành công!");
+            redirectAttributes.addFlashAttribute("success", "Tạo tài khoản và hồ sơ mới cho '" + teacher.getName() + "' thành công!");
         } catch (Exception e) {
-            setFlashError(redirectAttributes, "Lỗi khi tạo tài khoản: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Lỗi khi tạo tài khoản: " + e.getMessage());
         }
 
         return "redirect:/admin/teachers";
     }
 
-    @PostMapping({"/teachers/{id}/edit", "/teachers/edit/{id}"})
+    // 3. CHỈNH SỬA TÀI KHOẢN & HỒ SƠ GIÁO VIÊN (POST /admin/teachers/edit/{id})
+    @PostMapping("/teachers/edit/{id}")
     public String edit(@PathVariable("id") Integer id,
-                       @RequestParam(value = "name", required = false) String name,
-                       @RequestParam(value = "email", required = false) String email,
-                       @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "password", required = false) String password,
-                       @RequestParam(value = "role", required = false, defaultValue = "ROLE_TEACHER") String roleNameStr,
+                       @Valid @ModelAttribute("teacherForm") TeacherForm form,
+                       BindingResult bindingResult,
                        RedirectAttributes redirectAttributes) {
+
+        if (bindingResult.hasErrors()) {
+            String errorMsg = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            redirectAttributes.addFlashAttribute("error", errorMsg);
+            return "redirect:/admin/teachers";
+        }
+
+        String name = form.getName();
+        String email = form.getEmail();
+        String phone = form.getPhone();
+        String password = form.getPassword();
+        String roleNameStr = form.getRole();
 
         try {
             User user = userService.findById(id).orElse(null);
@@ -129,25 +170,23 @@ public class AdminTeacherController {
                     user.setPassword(passwordEncoder.encode(password.trim()));
                 }
 
-                RoleName role = RoleName.ROLE_TEACHER;
-                try {
-                    role = RoleName.valueOf(roleNameStr);
-                } catch (Exception ignored) {}
+                RoleName role = RoleName.of(roleNameStr, RoleName.ROLE_TEACHER);
                 user.setRole(role);
                 userService.save(user);
 
-                setFlashSuccess(redirectAttributes, "Cập nhật tài khoản '" + (user.getTeacher() != null ? user.getTeacher().getName() : user.getUsername()) + "' thành công!");
+                redirectAttributes.addFlashAttribute("success", "Cập nhật tài khoản '" + (user.getTeacher() != null ? user.getTeacher().getName() : user.getUsername()) + "' thành công!");
             } else {
-                setFlashError(redirectAttributes, "Không tìm thấy tài khoản!");
+                redirectAttributes.addFlashAttribute("error", "Không tìm thấy tài khoản!");
             }
         } catch (Exception e) {
-            setFlashError(redirectAttributes, "Lỗi khi cập nhật: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Lỗi khi cập nhật: " + e.getMessage());
         }
 
         return "redirect:/admin/teachers";
     }
 
-    @PostMapping({"/teachers/{id}/delete", "/teachers/delete/{id}"})
+    // 4. XÓA TÀI KHOẢN & HỒ SƠ GIÁO VIÊN (POST /admin/teachers/delete/{id})
+    @PostMapping("/teachers/delete/{id}")
     public String delete(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) {
         try {
             User user = userService.findById(id).orElse(null);
@@ -157,23 +196,14 @@ public class AdminTeacherController {
                 if (teacher != null) {
                     teacherService.deleteById(teacher.getId());
                 }
-                setFlashSuccess(redirectAttributes, "Xóa tài khoản thành công!");
+                redirectAttributes.addFlashAttribute("success", "Xóa tài khoản thành công!");
             } else {
-                setFlashError(redirectAttributes, "Không tìm thấy tài khoản cần xóa!");
+                redirectAttributes.addFlashAttribute("error", "Không tìm thấy tài khoản cần xóa!");
             }
         } catch (Exception e) {
-            setFlashError(redirectAttributes, "Không thể xóa tài khoản này vì đã có dữ liệu giảng dạy/chấm công liên quan!");
+            redirectAttributes.addFlashAttribute("error", "Không thể xóa tài khoản này vì đã có dữ liệu giảng dạy/chấm công liên quan!");
         }
+
         return "redirect:/admin/teachers";
-    }
-
-    private void setFlashSuccess(RedirectAttributes ra, String msg) {
-        ra.addFlashAttribute("successMessage", msg);
-        ra.addFlashAttribute("success", msg);
-    }
-
-    private void setFlashError(RedirectAttributes ra, String msg) {
-        ra.addFlashAttribute("errorMessage", msg);
-        ra.addFlashAttribute("error", msg);
     }
 }

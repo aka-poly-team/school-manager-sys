@@ -7,14 +7,15 @@
     <title>Đăng nhập hệ thống - AKA School Manager</title>
     <link rel="stylesheet" th:href="@{/css/login.css}">
     <!-- Lucide iOS Vector Icons CDN -->
-    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <div class="login-container">
         <!-- LEFT HERO PANEL -->
         <div class="hero-panel">
             <div class="brand-header">
-                <div class="brand-logo-badge">A</div>
+                <div class="brand-logo-badge">
+                    <img th:src="@{/images/logo.png}" alt="Logo AKA" class="brand-logo-img">
+                </div>
                 <div class="brand-text">
                     <span class="brand-name">AKA</span>
                     <span class="brand-subtext">SCHOOL MANAGER</span>
@@ -30,15 +31,15 @@
 
                 <div class="feature-list">
                     <div class="feature-item">
-                        <div class="feature-icon"><i data-lucide="calendar"></i></div>
+                        <div class="feature-icon"><i class="ri-calendar-event-line"></i></div>
                         <span>Quản lý lịch dạy theo tuần</span>
                     </div>
                     <div class="feature-item">
-                        <div class="feature-icon"><i data-lucide="check-circle-2"></i></div>
+                        <div class="feature-icon"><i class="ri-checkbox-circle-line"></i></div>
                         <span>Điểm danh &amp; xác nhận buổi dạy</span>
                     </div>
                     <div class="feature-item">
-                        <div class="feature-icon"><i data-lucide="file-text"></i></div>
+                        <div class="feature-icon"><i class="ri-file-text-line"></i></div>
                         <span>Theo dõi yêu cầu &amp; khiếu nại</span>
                     </div>
                 </div>
@@ -74,12 +75,12 @@
                 <form th:action="@{/auth/login}" method="post" class="auth-form">
                     <div class="form-group">
                         <label class="form-label">Tên đăng nhập</label>
-                        <input type="text" name="username" class="form-input" th:value="${rememberedUsername}" placeholder="Nhập tên đăng nhập..." required autofocus>
+                        <input type="text" name="username" class="form-input" th:value="${rememberedUsername}" placeholder="Nhập tên đăng nhập..." autofocus>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Mật khẩu</label>
-                        <input type="password" name="password" class="form-input" placeholder="Nhập mật khẩu..." required>
+                        <input type="password" name="password" class="form-input" placeholder="Nhập mật khẩu...">
                     </div>
 
                     <div class="form-options">
@@ -96,15 +97,10 @@
 
             <!-- FLOATING HELP BUTTON -->
             <a href="#" class="help-button" title="Trợ giúp">
-                <i data-lucide="help-circle"></i>
+                <i class="ri-question-line"></i>
             </a>
         </div>
     </div>
 
-    <script>
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-    </script>
 </body>
 </html>

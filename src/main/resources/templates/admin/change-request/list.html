@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duyệt Đơn Xin Nghỉ / Dạy Thay - Admin AKA</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- ADMIN SIDEBAR FRAGMENT -->
+        <div th:replace="~{admin/fragments/sidebar :: sidebar('change-requests')}"></div>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Duyệt Đơn Xin Nghỉ & Dạy Thay</h1>
+                    <p class="page-subtitle">Phê duyệt yêu cầu nghỉ phép và phân công ca dạy thay của giáo viên</p>
+                </div>
+            </div>
+
+            <!-- TABLE OF CHANGE REQUESTS -->
+            <div class="card-box">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>MÃ</th>
+                            <th>GIÁO VIÊN</th>
+                            <th>LOẠI ĐƠN</th>
+                            <th>TRƯỜNG</th>
+                            <th>NGÀY NGHỈ</th>
+                            <th>CA DẠY</th>
+                            <th style="max-width: 200px;">LÝ DO</th>
+                            <th>TRẠNG THÁI</th>
+                            <th class="text-center">HÀNH ĐỘNG</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="req : ${changeRequests}">
+                            <td th:text="${'#' + req.id}">#1</td>
+                            <td>
+                                <strong th:text="${req.teacher.name}">GV Mai</strong>
+                                <br>
+                                <small style="color: #2563eb; font-weight: 600;" th:text="${'Mã GV: #' + req.teacher.id}">Mã GV: #1</small>
+                            </td>
+                            <td>
+                                <strong th:text="${req.requestType == 'LEAVE' ? 'Xin nghỉ phép' : 'Dạy thay / Đổi ca'}">Xin nghỉ phép</strong>
+                            </td>
+                            <td th:text="${req.schedule.school.name}">Trường Hoa Mai</td>
+                            <td th:text="${#temporals.format(req.date, 'dd/MM/yyyy')}">29/07/2026</td>
+                            <td th:text="${req.session}">Ca 1</td>
+                            <td style="white-space: normal; max-width: 200px; word-break: break-word;" th:text="${req.reason}">Lý do nghỉ</td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${req.status == 'approved' ? 'approved' : (req.status == 'rejected' ? 'rejected' : 'pending')}" 
+                                      th:text="${req.status == 'approved' ? 'Đã duyệt' : (req.status == 'rejected' ? 'Từ chối' : 'Chờ duyệt')}">Chờ duyệt</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="form-actions form-actions-reset">
+                                    <form th:action="@{/admin/change-requests/approve/{id}(id=${req.id})}" method="post">
+                                        <button type="submit" class="action-btn green">Duyệt</button>
+                                    </form>
+                                    <form th:action="@{/admin/change-requests/reject/{id}(id=${req.id})}" method="post">
+                                        <button type="submit" class="action-btn gray">Từ chối</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(changeRequests)}">
+                            <td colspan="9" class="empty-table-cell">Không có yêu cầu nghỉ phép hay dạy thay nào.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

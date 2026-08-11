@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- BỘ LỌC TRUY VẤN (QUERY FILTER FORM FRAGMENT) -->
+    <div th:fragment="filter" class="card-box margin-bottom-1">
+        <div class="box-header">
+            <h2 class="box-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                <i class="ri-filter-3-line" style="color: #2563eb;"></i> Bộ Lọc Truy Vấn Thống Kê
+            </h2>
+        </div>
+
+        <form th:action="@{/admin/statistics}" method="get" class="filter-grid">
+            <input type="hidden" name="tab" th:value="${activeTab}">
+            
+            <!-- 1. CHỌN THÁNG -->
+            <div class="filter-group">
+                <label class="filter-label">Tháng</label>
+                <select name="month" class="filter-select">
+                    <option value="">-- Tất cả Tháng --</option>
+                    <option th:each="m : ${#numbers.sequence(1, 12)}" 
+                            th:value="${m}" 
+                            th:text="${'Tháng ' + m}"
+                            th:selected="${selectedMonth == m}">Tháng 1</option>
+                </select>
+            </div>
+
+            <!-- 2. CHỌN NĂM -->
+            <div class="filter-group">
+                <label class="filter-label">Năm</label>
+                <select name="year" class="filter-select">
+                    <option value="">-- Tất cả Năm --</option>
+                    <option th:each="y : ${#numbers.sequence(2024, 2027)}" 
+                            th:value="${y}" 
+                            th:text="${'Năm ' + y}"
+                            th:selected="${selectedYear == y}">Năm 2026</option>
+                </select>
+            </div>
+
+            <!-- 3. CHỌN GIÁO VIÊN -->
+            <div class="filter-group">
+                <label class="filter-label">Giáo viên</label>
+                <select name="teacherId" class="filter-select">
+                    <option value="">-- Tất cả Giáo viên --</option>
+                    <option th:each="t : ${teachers}" 
+                            th:value="${t.id}" 
+                            th:text="${t.name}"
+                            th:selected="${selectedTeacherId == t.id}">GV Mai</option>
+                </select>
+            </div>
+
+            <!-- 4. CHỌN TRƯỜNG MẦM NON -->
+            <div class="filter-group">
+                <label class="filter-label">Trường Mầm Non</label>
+                <select name="schoolId" class="filter-select">
+                    <option value="">-- Tất cả Trường --</option>
+                    <option th:each="s : ${schools}" 
+                            th:value="${s.id}" 
+                            th:text="${s.name}"
+                            th:selected="${selectedSchoolId == s.id}">Trường Hoa Mai</option>
+                </select>
+            </div>
+
+            <!-- 5. TRẠNG THÁI -->
+            <div class="filter-group">
+                <label class="filter-label">Trạng thái điểm danh</label>
+                <select name="status" class="filter-select">
+                    <option value="">-- Tất cả Trạng thái --</option>
+                    <option value="APPROVED" th:selected="${selectedStatus == 'APPROVED'}">Đã duyệt (Approved)</option>
+                    <option value="PENDING" th:selected="${selectedStatus == 'PENDING'}">Chờ duyệt (Pending)</option>
+                    <option value="REJECTED" th:selected="${selectedStatus == 'REJECTED'}">Từ chối (Rejected)</option>
+                </select>
+            </div>
+
+            <!-- NÚT LỌC VÀ HỦY LỌC -->
+            <div class="filter-actions">
+                <button type="submit" class="action-btn blue" style="padding: 0.5rem 1rem;">
+                    <i class="ri-search-line"></i> <span>Xem Thống Kê</span>
+                </button>
+                <a th:href="@{/admin/statistics}" class="action-btn gray" style="padding: 0.5rem 0.8rem;" title="Xóa bộ lọc">
+                    <i class="ri-refresh-line"></i> <span>Đặt lại</span>
+                </a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

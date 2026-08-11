@@ -14,18 +14,25 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
+import aka.dto.teacher.AttendanceForm;
 import aka.model.Attendance;
 import aka.model.Schedule;
 import aka.model.School;
 import aka.model.SchoolClass;
 import aka.model.Teacher;
+import jakarta.validation.Valid;
 import aka.service.AttendanceService;
+import aka.service.CloudinaryService;
+import aka.service.SystemLogService;
 import aka.service.ScheduleService;
 import aka.service.SchoolClassService;
 import aka.service.SchoolService;
-import aka.service.UserService;
 import aka.util.FileUploadUtils;
 import aka.util.SecurityUtils;
+import aka.util.ValidationUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -36,16 +43,16 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TeacherAttendanceController {
 
-    UserService userService;
     AttendanceService attendanceService;
     SchoolService schoolService;
     SchoolClassService schoolClassService;
     ScheduleService scheduleService;
+    CloudinaryService cloudinaryService;
+    SystemLogService systemLogService;
 
     @GetMapping("/attendance")
     public String index(Model model) {
-        SecurityUtils.populate(model, userService);
-        Teacher teacher = SecurityUtils.getTeacher(userService);
+        Teacher teacher = SecurityUtils.getTeacher();
         Integer teacherId = teacher != null ? teacher.getId() : null;
 
         List<Attendance> attendances = teacherId != null 
@@ -53,36 +60,46 @@ public class TeacherAttendanceController {
                 : Collections.emptyList();
 
         model.addAttribute("attendances", attendances);
-        return "teacher/attendance";
+        return "teacher/attendance/list";
     }
 
     @GetMapping("/attendance/new")
     public String form(Model model) {
         populateForm(model);
-        return "teacher/attendance-form";
+        return "teacher/attendance/form";
     }
 
     @PostMapping("/attendance/new")
-    public String submit(@RequestParam("schoolId") Integer schoolId,
-                         @RequestParam("classId") Integer classId,
-                         @RequestParam("session") String session,
-                         @RequestParam("periods") Integer periods,
-                         @RequestParam(value = "notes", required = false) String notes,
-                         @RequestParam("selfieFile") MultipartFile selfieFile,
+    public String submit(@Valid @ModelAttribute("attendanceForm") AttendanceForm form,
+                         BindingResult bindingResult,
                          Model model) {
-        Teacher teacher = SecurityUtils.getTeacher(userService);
+        Teacher teacher = SecurityUtils.getTeacher();
 
         if (teacher == null) {
             model.addAttribute("error", "Tài khoản của bạn chưa liên kết với hồ sơ Giáo viên!");
             populateForm(model);
-            return "teacher/attendance-form";
+            return "teacher/attendance/form";
         }
 
+        String errorMsg = ValidationUtils.getFirstError(bindingResult);
+        if (errorMsg != null) {
+            model.addAttribute("error", errorMsg);
+            populateForm(model);
+            return "teacher/attendance/form";
+        }
+
+        MultipartFile selfieFile = form.getSelfieFile();
         if (selfieFile == null || selfieFile.isEmpty()) {
             model.addAttribute("error", "Vui lòng đính kèm ảnh xác minh điểm danh!");
             populateForm(model);
-            return "teacher/attendance-form";
+            return "teacher/attendance/form";
         }
+
+        Integer schoolId = form.getSchoolId();
+        Integer classId = form.getClassId();
+        String session = form.getSession();
+        Integer periods = form.getPeriods() != null ? form.getPeriods() : 2;
+        String notes = form.getNotes();
 
         LocalDate today = LocalDate.now();
 
@@ -94,10 +111,13 @@ public class TeacherAttendanceController {
                 s.getSession() != null && s.getSession().equalsIgnoreCase(session)
         ).findFirst().orElse(null);
 
+        // Fallback 1: Tìm bất kỳ lịch dạy tương ứng của Trường & Lớp này
         if (matchedSchedule == null) {
-            model.addAttribute("error", "Bạn không có lịch giảng dạy được phân công cho Trường, Lớp và Ca dạy này!");
-            populateForm(model);
-            return "teacher/attendance-form";
+            List<Schedule> allSchedules = scheduleService.findAll();
+            matchedSchedule = allSchedules.stream().filter(s ->
+                    s.getSchool() != null && s.getSchool().getId().equals(schoolId) &&
+                    s.getSchoolClass() != null && s.getSchoolClass().getId().equals(classId)
+            ).findFirst().orElse(null);
         }
 
         boolean alreadyAttended = attendanceService.existsByTeacherIdAndSchoolIdAndSchoolClassIdAndSessionAndDate(
@@ -106,23 +126,50 @@ public class TeacherAttendanceController {
         if (alreadyAttended) {
             model.addAttribute("error", "Ca dạy này đã được điểm danh trong ngày hôm nay rồi!");
             populateForm(model);
-            return "teacher/attendance-form";
+            return "teacher/attendance/form";
         }
 
         String selfiePath;
         try {
-            selfiePath = FileUploadUtils.save(selfieFile, "attendance", "selfie");
+            selfiePath = cloudinaryService.uploadImage(selfieFile, "attendance");
+            if (selfiePath == null) {
+                selfiePath = FileUploadUtils.save(selfieFile, "attendance", "selfie");
+            }
             if (selfiePath == null) {
                 selfiePath = "/uploads/attendance/selfie_default.jpg";
             }
         } catch (Exception e) {
             model.addAttribute("error", "Lỗi tải ảnh xác minh: " + e.getMessage());
             populateForm(model);
-            return "teacher/attendance-form";
+            return "teacher/attendance/form";
         }
 
         School school = schoolService.findById(schoolId).orElse(null);
         SchoolClass schoolClass = schoolClassService.findById(classId).orElse(null);
+
+        LocalTime now = LocalTime.now();
+        LocalTime expectedStartTime = null;
+
+        if (matchedSchedule != null && matchedSchedule.getStartTime() != null) {
+            expectedStartTime = matchedSchedule.getStartTime();
+        } else {
+            if ("Ca 1".equalsIgnoreCase(session)) expectedStartTime = LocalTime.of(7, 30);
+            else if ("Ca 2".equalsIgnoreCase(session)) expectedStartTime = LocalTime.of(9, 0);
+            else if ("Ca 3".equalsIgnoreCase(session)) expectedStartTime = LocalTime.of(14, 0);
+            else if ("Ca 4".equalsIgnoreCase(session)) expectedStartTime = LocalTime.of(15, 30);
+        }
+
+        boolean isLate = false;
+        String status = "PENDING";
+        if (expectedStartTime != null) {
+            LocalTime lateThreshold = expectedStartTime.plusMinutes(15);
+            if (now.isAfter(lateThreshold)) {
+                isLate = true;
+                status = "LATE";
+                String lateDetail = "[VÀO MUỘN: Giờ vào " + now.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss")) + " (Giờ chuẩn: " + expectedStartTime + ")]";
+                notes = (notes != null && !notes.isBlank()) ? notes + " | " + lateDetail : lateDetail;
+            }
+        }
 
         Attendance attendance = Attendance.builder()
                 .date(today)
@@ -131,45 +178,57 @@ public class TeacherAttendanceController {
                 .school(school)
                 .schoolClass(schoolClass)
                 .session(session)
-                .checkInTime(LocalTime.now())
+                .checkInTime(now)
                 .periods(periods != null ? periods : 1)
                 .selfieImage(selfiePath)
                 .notes(notes)
-                .status("PENDING")
+                .status(status)
                 .build();
 
         attendanceService.save(attendance);
+
+        String schoolName = (school != null) ? school.getName() : "Trường";
+        String className = (schoolClass != null) ? schoolClass.getName() : "Lớp";
+        systemLogService.log(SecurityUtils.getUser(), "ĐIỂM DANH CA DẠY", 
+                "Giáo viên thực hiện điểm danh cho " + session + " tại " + schoolName + " (" + className + ")" + (isLate ? " [VÀO MUỘN]" : ""));
+
+        if (isLate) {
+            model.addAttribute("warning", "Hệ thống ghi nhận bạn ĐIỂM DANH MUỘN cho " + session + "! Thông tin đã được tự động gắn nhãn 'Vào muộn'.");
+        }
+
         return "redirect:/teacher/attendance";
     }
 
     private void populateForm(Model model) {
-        SecurityUtils.populate(model, userService);
-        Teacher teacher = SecurityUtils.getTeacher(userService);
+        Teacher teacher = SecurityUtils.getTeacher();
+
+        List<School> assignedSchools = Collections.emptyList();
+        List<SchoolClass> assignedClasses = Collections.emptyList();
 
         if (teacher != null) {
             List<Schedule> teacherSchedules = scheduleService.findByTeacherIdOrderByDayOfWeekAsc(teacher.getId());
 
-            List<School> assignedSchools = teacherSchedules.stream()
+            assignedSchools = teacherSchedules.stream()
                     .map(Schedule::getSchool)
                     .filter(Objects::nonNull)
                     .distinct()
                     .toList();
 
-            List<SchoolClass> assignedClasses = teacherSchedules.stream()
+            assignedClasses = teacherSchedules.stream()
                     .map(Schedule::getSchoolClass)
                     .filter(Objects::nonNull)
                     .distinct()
                     .toList();
-
-            model.addAttribute("schools", assignedSchools);
-            model.addAttribute("classes", assignedClasses);
-
-            if (teacherSchedules.isEmpty()) {
-                model.addAttribute("warning", "Bạn chưa được phân công lịch giảng dạy nào trong CSDL!");
-            }
-        } else {
-            model.addAttribute("schools", Collections.emptyList());
-            model.addAttribute("classes", Collections.emptyList());
         }
+
+        if (assignedSchools.isEmpty()) {
+            assignedSchools = schoolService.findAll();
+        }
+        if (assignedClasses.isEmpty()) {
+            assignedClasses = schoolClassService.findAll();
+        }
+
+        model.addAttribute("schools", assignedSchools);
+        model.addAttribute("classes", assignedClasses);
     }
 }

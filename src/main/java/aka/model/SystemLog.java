@@ -31,7 +31,7 @@ public class SystemLog {
     Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "userId", nullable = false)
+    @JoinColumn(name = "userId", nullable = true)
     User user;
 
     @Column(nullable = false, length = 50)

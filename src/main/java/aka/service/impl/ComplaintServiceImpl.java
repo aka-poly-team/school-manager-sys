@@ -69,6 +69,18 @@ public class ComplaintServiceImpl implements ComplaintService {
 
     @Override
     @Transactional(readOnly = true)
+    public boolean existsByAttendanceId(Long attendanceId) {
+        return complaintRepository.existsByAttendanceId(attendanceId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsById(Integer id) {
+        return complaintRepository.existsById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public long count() {
         return complaintRepository.count();
     }

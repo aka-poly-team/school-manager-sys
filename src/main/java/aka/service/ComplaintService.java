@@ -14,5 +14,7 @@ public interface ComplaintService {
     long countByAttendanceTeacherIdAndStatus(Integer teacherId, Integer status);
     List<Complaint> findAllByOrderByIdDesc();
     long countByStatus(Integer status);
+    boolean existsByAttendanceId(Long attendanceId);
+    boolean existsById(Integer id);
     long count();
 }

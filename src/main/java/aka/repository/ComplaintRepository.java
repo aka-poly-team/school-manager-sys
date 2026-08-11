@@ -9,4 +9,7 @@ public interface ComplaintRepository extends JpaRepository<Complaint, Integer> {
     long countByAttendanceTeacherIdAndStatus(Integer teacherId, Integer status);
     List<Complaint> findAllByOrderByIdDesc();
     long countByStatus(Integer status);
+
+    // Kiểm tra xem Đơn điểm danh/buổi dạy này đã được tạo Khiếu nại chưa
+    boolean existsByAttendanceId(Long attendanceId);
 }

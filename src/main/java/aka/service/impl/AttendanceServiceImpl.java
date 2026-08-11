@@ -90,4 +90,16 @@ public class AttendanceServiceImpl implements AttendanceService {
     public long count() {
         return attendanceRepository.count();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Attendance> filterAttendancesByQuery(Integer month, Integer year, Integer teacherId, Integer schoolId, String status) {
+        return attendanceRepository.filterAttendancesByQuery(month, year, teacherId, schoolId, status);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Object[]> queryTeacherPeriodStats(Integer month, Integer year, Integer teacherId, Integer schoolId, String status) {
+        return attendanceRepository.queryTeacherPeriodStats(month, year, teacherId, schoolId, status);
+    }
 }

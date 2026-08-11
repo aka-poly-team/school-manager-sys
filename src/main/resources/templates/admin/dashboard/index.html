@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - AKA School Manager</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- ADMIN SIDEBAR FRAGMENT -->
+        <div th:replace="~{admin/fragments/sidebar :: sidebar('dashboard')}"></div>
+
+        <!-- MAIN ADMIN CONTENT -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Bảng Quản Trị Cơ Sở (Admin)</h1>
+                    <p class="page-subtitle">Hệ thống quản lý điểm danh, phân công lịch dạy & phê duyệt khiếu nại</p>
+                </div>
+                <div class="top-bar-actions">
+                    <!-- Nút Chuông Thông Báo với Badge Thông Báo Chưa Đọc -->
+                    <a th:href="@{/admin/notifications}" class="top-notification-btn" title="Thông báo hệ thống">
+                        <i class="ri-notification-3-line"></i>
+                        <span class="notification-badge" th:if="${unreadNotificationsCount != null and unreadNotificationsCount > 0}" th:text="${unreadNotificationsCount}">3</span>
+                    </a>
+
+                    <!-- Profile Badge Người Dùng Đăng Nhập -->
+                    <div class="top-user-profile">
+                        <div class="top-avatar">
+                            <img th:if="${(avatarUrl != null and !#strings.isEmpty(avatarUrl)) or (currentUser != null and currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl))}" 
+                                 th:src="@{${avatarUrl != null ? avatarUrl : currentUser.avatarUrl}}" alt="Avatar" class="avatar-img">
+                            <i th:unless="${(avatarUrl != null and !#strings.isEmpty(avatarUrl)) or (currentUser != null and currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl))}" 
+                               class="ri-user-line avatar-default-icon"></i>
+                        </div>
+                        <div class="top-user-info">
+                            <span class="top-user-name" th:text="${teacherName != null ? teacherName : 'Quản trị viên'}">Quản trị viên</span>
+                            <span class="top-user-role" th:text="${userRole != null and userRole == 'ROLE_ADMIN' ? 'Quản trị viên' : 'Giáo viên'}">Quản trị viên</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATISTICS CARDS GRID -->
+            <div class="stats-grid">
+                <div class="stat-card blue">
+                    <div>
+                        <div class="stat-header">
+                            <span class="stat-value" th:text="${totalTeachers}">0</span>
+                            <i class="ri-team-line stat-icon"></i>
+                        </div>
+                        <div class="stat-subtext">Tài khoản hoạt động</div>
+                    </div>
+                    <div class="stat-footer-label">Tổng Giáo viên</div>
+                </div>
+
+                <div class="stat-card orange">
+                    <div>
+                        <div class="stat-header">
+                            <span class="stat-value" th:text="${totalSchools}">0</span>
+                            <i class="ri-building-4-line stat-icon"></i>
+                        </div>
+                        <div class="stat-subtext">Cơ sở đối tác</div>
+                    </div>
+                    <div class="stat-footer-label">Trường Mầm Non</div>
+                </div>
+
+                <div class="stat-card purple">
+                    <div>
+                        <div class="stat-header">
+                            <span class="stat-value" th:text="${totalClasses}">0</span>
+                            <i class="ri-book-open-line stat-icon"></i>
+                        </div>
+                        <div class="stat-subtext">Lớp học giảng dạy</div>
+                    </div>
+                    <div class="stat-footer-label">Tổng Lớp học</div>
+                </div>
+
+                <div class="stat-card green">
+                    <div>
+                        <div class="stat-header">
+                            <span class="stat-value" th:text="${totalSchedules}">0</span>
+                            <i class="ri-calendar-event-line stat-icon"></i>
+                        </div>
+                        <div class="stat-subtext">Ca đã phân công</div>
+                    </div>
+                    <div class="stat-footer-label">Lịch giảng dạy</div>
+                </div>
+            </div>
+
+            <!-- RECENT ATTENDANCE DATA TABLE -->
+            <div class="card-box margin-top-1">
+                <div class="box-header">
+                    <h2 class="box-title">Lịch Sử Điểm Danh Mới Nhất</h2>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>MÃ</th>
+                            <th>NGÀY</th>
+                            <th>GIÁO VIÊN</th>
+                            <th>TRƯỜNG & LỚP</th>
+                            <th>CA DẠY</th>
+                            <th>SỐ TIẾT</th>
+                            <th>ẢNH XÁC MINH</th>
+                            <th>TRẠNG THÁI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="att : ${recentAttendances}">
+                            <td th:text="${'#' + att.id}">#1</td>
+                            <td th:text="${#temporals.format(att.date, 'dd/MM/yyyy')}">29/07/2026</td>
+                            <td th:text="${att.teacher != null ? att.teacher.name : 'Giáo viên'}">GV Mai</td>
+                            <td th:text="${(att.school != null ? att.school.name : '') + (att.school != null and att.schoolClass != null ? ' - ' : '') + (att.schoolClass != null ? att.schoolClass.name : '')}">Hoa Mai - Chồi 1</td>
+                            <td th:text="${att.session}">Ca 1</td>
+                            <td th:text="${att.periods}">2</td>
+                            <td>
+                                <a th:if="${att.selfieImage != null}" th:href="${#strings.startsWith(att.selfieImage, 'http') ? att.selfieImage : @{${att.selfieImage}}}" target="_blank" title="Xem ảnh đầy đủ">
+                                    <img th:src="${#strings.startsWith(att.selfieImage, 'http') ? att.selfieImage : @{${att.selfieImage}}}" class="selfie-thumb" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80';">
+                                </a>
+                            </td>
+                            <td>
+                                <span class="status-badge" th:classappend="${att.status == 'APPROVED' ? 'approved' : 'pending'}" 
+                                      th:text="${att.status == 'APPROVED' ? 'Đã duyệt' : 'Chờ duyệt'}">Chờ duyệt</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(recentAttendances)}">
+                            <td colspan="8" class="empty-table-cell">Chưa có dữ liệu điểm danh nào trong CSDL.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -6,6 +6,9 @@
 <body>
     <!-- TEACHER SIDEBAR FRAGMENT -->
     <aside class="sidebar" th:fragment="sidebar(activePage)">
+        <!-- PURE CSS CHECKBOX HACK FOR SIDEBAR TOGGLE -->
+        <input type="checkbox" id="sidebar-toggle-check" class="sidebar-toggle-check" hidden>
+
         <div>
             <div class="sidebar-header">
                 <div class="brand-wrapper">
@@ -17,49 +20,49 @@
                         <span class="brand-subtext">SCHOOL MANAGER</span>
                     </div>
                 </div>
-                <button id="sidebarToggleBtn" class="sidebar-toggle-btn" title="Thu gọn Menu">
-                    <i data-lucide="chevron-left"></i>
-                </button>
+                <label for="sidebar-toggle-check" class="sidebar-toggle-btn" title="Thu gọn / Mở rộng Menu">
+                    <i class="ri-arrow-left-s-line"></i>
+                </label>
             </div>
 
             <div class="menu-section-label">DÀNH CHO GIÁO VIÊN</div>
             <nav class="sidebar-nav">
                 <a th:href="@{/teacher/dashboard}" class="nav-item" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">
-                    <i data-lucide="layout-dashboard" class="nav-icon"></i>
+                    <i class="ri-dashboard-3-line nav-icon"></i>
                     <span class="nav-text">Tổng quan</span>
                 </a>
                 <a th:href="@{/teacher/schedules}" class="nav-item" th:classappend="${activePage == 'schedules' ? 'active' : ''}">
-                    <i data-lucide="calendar" class="nav-icon"></i>
+                    <i class="ri-calendar-event-line nav-icon"></i>
                     <span class="nav-text">Lịch giảng dạy</span>
                 </a>
                 <a th:href="@{/teacher/attendance}" class="nav-item" th:classappend="${activePage == 'attendance' ? 'active' : ''}">
-                    <i data-lucide="check-square" class="nav-icon"></i>
+                    <i class="ri-checkbox-line nav-icon"></i>
                     <span class="nav-text">Điểm danh</span>
                 </a>
                 <a th:href="@{/teacher/change-requests}" class="nav-item" th:classappend="${activePage == 'change-requests' ? 'active' : ''}">
-                    <i data-lucide="file-text" class="nav-icon"></i>
+                    <i class="ri-file-text-line nav-icon"></i>
                     <span class="nav-text">Nghỉ phép / Đổi ca</span>
                 </a>
                 <a th:href="@{/teacher/complaints}" class="nav-item" th:classappend="${activePage == 'complaints' ? 'active' : ''}">
-                    <i data-lucide="message-square" class="nav-icon"></i>
+                    <i class="ri-message-3-line nav-icon"></i>
                     <span class="nav-text">Khiếu nại</span>
                 </a>
                 <a th:href="@{/teacher/notifications}" class="nav-item" th:classappend="${activePage == 'notifications' ? 'active' : ''}">
-                    <i data-lucide="bell" class="nav-icon"></i>
+                    <i class="ri-notification-3-line nav-icon"></i>
                     <span class="nav-text">Thông báo</span>
                 </a>
                 <a th:href="@{/teacher/profile}" class="nav-item" th:classappend="${activePage == 'profile' ? 'active' : ''}">
-                    <i data-lucide="user" class="nav-icon"></i>
+                    <i class="ri-user-3-line nav-icon"></i>
                     <span class="nav-text">Hồ sơ cá nhân</span>
                 </a>
                 <a th:href="@{/teacher/change-password}" class="nav-item" th:classappend="${activePage == 'change-password' ? 'active' : ''}">
-                    <i data-lucide="key" class="nav-icon"></i>
+                    <i class="ri-key-line nav-icon"></i>
                     <span class="nav-text">Đổi mật khẩu</span>
                 </a>
-                <a th:if="${currentUser != null and currentUser.role != null and (currentUser.role.name() == 'ROLE_ADMIN' or currentUser.role.name() == 'ROLE_MANAGER')}" 
+                <a th:if="${currentUser != null and currentUser.role != null and currentUser.role.name() == 'ROLE_ADMIN'}" 
                    th:href="@{/admin/dashboard}" class="nav-item sidebar-nav-divider">
-                    <i data-lucide="shield-check" class="nav-icon"></i>
-                    <span class="nav-text">Trang Admin / Manager</span>
+                    <i class="ri-shield-user-line nav-icon"></i>
+                    <span class="nav-text">Trang Admin</span>
                 </a>
             </nav>
         </div>
@@ -70,7 +73,7 @@
                     <img th:if="${currentUser != null and currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl)}" 
                          th:src="@{${currentUser.avatarUrl}}" alt="Avatar" class="avatar-img">
                     <i th:unless="${currentUser != null and currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl)}" 
-                       data-lucide="user" class="avatar-default-icon"></i>
+                       class="ri-user-line avatar-default-icon"></i>
                 </div>
                 <div class="profile-info">
                     <span class="profile-name" th:text="${teacherName}"></span>
@@ -78,7 +81,7 @@
                 </div>
             </div>
             <a th:href="@{/auth/logout}" class="btn-logout">
-                <i data-lucide="log-out" class="logout-icon"></i>
+                <i class="ri-logout-box-r-line logout-icon"></i>
                 <span>Đăng xuất</span>
             </a>
         </div>

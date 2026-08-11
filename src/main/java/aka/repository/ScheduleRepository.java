@@ -10,4 +10,15 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
 
     boolean existsByTeacherIdAndSchoolIdAndSchoolClassIdAndDayOfWeekAndSession(
             Integer teacherId, Integer schoolId, Integer classId, Integer dayOfWeek, String session);
+
+    // Kiểm tra Giáo viên có Lịch dạy tại Trường vào Thứ + Ca dạy không
+    boolean existsByTeacherIdAndSchoolIdAndDayOfWeekAndSession(Integer teacherId, Integer schoolId, Integer dayOfWeek, String session);
+
+    // Kiểm tra trùng lịch của Giáo viên (Cùng Thứ + Ca dạy)
+    boolean existsByTeacherIdAndDayOfWeekAndSession(Integer teacherId, Integer dayOfWeek, String session);
+    boolean existsByTeacherIdAndDayOfWeekAndSessionAndIdNot(Integer teacherId, Integer dayOfWeek, String session, Integer id);
+
+    // Kiểm tra trùng lịch của Lớp học (Cùng Thứ + Ca dạy)
+    boolean existsBySchoolClassIdAndDayOfWeekAndSession(Integer schoolClassId, Integer dayOfWeek, String session);
+    boolean existsBySchoolClassIdAndDayOfWeekAndSessionAndIdNot(Integer schoolClassId, Integer dayOfWeek, String session, Integer id);
 }

@@ -2,41 +2,42 @@ package aka.util;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.ui.Model;
 
 import aka.model.Teacher;
 import aka.model.User;
-import aka.service.UserService;
+import aka.config.CustomUserDetails;
 
 /**
  * Utility library for Security & Auth operations.
  */
 public class SecurityUtils {
 
-    public static User getUser(UserService userService) {
+    private SecurityUtils() {}
+
+    /**
+     * Get authenticated User directly from SecurityContext without DB query.
+     */
+    public static User getUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
-            return null;
+        if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof CustomUserDetails customUser) {
+            return customUser.getUser();
         }
-        return userService.findByUsername(auth.getName()).orElse(null);
+        return null;
     }
 
-    public static Teacher getTeacher(UserService userService) {
-        User user = getUser(userService);
+    /**
+     * Get authenticated Teacher.
+     */
+    public static Teacher getTeacher() {
+        User user = getUser();
         return (user != null) ? user.getTeacher() : null;
     }
 
-    public static void populate(Model model, UserService userService) {
-        User currentUser = getUser(userService);
-        Teacher teacher = (currentUser != null) ? currentUser.getTeacher() : null;
-        String teacherName = (teacher != null && teacher.getName() != null) ? teacher.getName() : "Giáo viên";
-
-        model.addAttribute("currentUser", currentUser);
-        model.addAttribute("teacher", teacher);
-        model.addAttribute("teacherName", teacherName);
-
-        if (currentUser != null && currentUser.getRole() != null) {
-            model.addAttribute("userRole", currentUser.getRole().name());
-        }
+    /**
+     * Get authenticated Teacher ID (or null if unauthenticated / no teacher profile).
+     */
+    public static Integer getTeacherId() {
+        Teacher teacher = getTeacher();
+        return teacher != null ? teacher.getId() : null;
     }
 }

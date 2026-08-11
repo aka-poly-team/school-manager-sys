@@ -54,23 +54,4 @@ public class Schedule {
 
     LocalTime startTime;
     LocalTime endTime;
-
-    // Helper Getters cho HTML hiển thị siêu ngắn gọn
-    public String getTeacherName() {
-        return teacher != null ? teacher.getName() : "Giáo viên";
-    }
-
-    public String getSchoolAndClassName() {
-        String sName = school != null ? school.getName() : "";
-        String cName = schoolClass != null ? schoolClass.getName() : "";
-        if (sName.isEmpty()) return cName;
-        if (cName.isEmpty()) return sName;
-        return sName + " - " + cName;
-    }
-
-    public String getTimeRange() {
-        String sTime = startTime != null ? startTime.toString() : "08:00";
-        String eTime = endTime != null ? endTime.toString() : "09:30";
-        return sTime + " - " + eTime;
-    }
 }

@@ -12,9 +12,7 @@ import aka.service.ScheduleService;
 import aka.service.SchoolClassService;
 import aka.service.SchoolService;
 import aka.service.TeacherService;
-import aka.service.UserService;
 import aka.util.DateUtils;
-import aka.util.SecurityUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -25,7 +23,6 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AdminDashboardController {
 
-    UserService userService;
     TeacherService teacherService;
     SchoolService schoolService;
     SchoolClassService schoolClassService;
@@ -34,9 +31,8 @@ public class AdminDashboardController {
     ComplaintService complaintService;
     ChangeRequestService changeRequestService;
 
-    @GetMapping("/dashboard")
+    @GetMapping({"", "/", "/dashboard"})
     public String index(Model model) {
-        SecurityUtils.populate(model, userService);
 
         model.addAttribute("totalTeachers", teacherService.count());
         model.addAttribute("totalSchools", schoolService.count());
@@ -51,6 +47,6 @@ public class AdminDashboardController {
         model.addAttribute("recentRequests", changeRequestService.findAllByOrderByIdDesc());
         model.addAttribute("todayFormatted", DateUtils.today());
 
-        return "admin/dashboard";
+        return "admin/dashboard/index";
     }
 }

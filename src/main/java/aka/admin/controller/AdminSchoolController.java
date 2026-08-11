@@ -2,18 +2,21 @@ package aka.admin.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import aka.dto.admin.SchoolClassForm;
+import aka.dto.admin.SchoolForm;
 import aka.model.School;
 import aka.model.SchoolClass;
 import aka.service.SchoolClassService;
 import aka.service.SchoolService;
-import aka.service.UserService;
-import aka.util.SecurityUtils;
+import aka.util.ValidationUtils;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -24,57 +27,71 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AdminSchoolController {
 
-    UserService userService;
     SchoolService schoolService;
     SchoolClassService schoolClassService;
 
     @GetMapping("/schools")
     public String list(Model model) {
-        SecurityUtils.populate(model, userService);
         model.addAttribute("schools", schoolService.findAll());
         model.addAttribute("classes", schoolClassService.findAll());
-        return "admin/schools";
+        return "admin/school/list";
+    }
+
+    @GetMapping("/schools/new")
+    public String showCreateSchoolForm(Model model) {
+        return "admin/school/school-form";
+    }
+
+    @GetMapping("/classes/new")
+    public String showCreateClassForm(Model model) {
+        model.addAttribute("schools", schoolService.findAll());
+        return "admin/school/class-form";
     }
 
     @PostMapping("/schools/new")
-    public String createSchool(@RequestParam("name") String name,
-                               @RequestParam(value = "address", required = false) String address,
-                               @RequestParam(value = "contactPerson", required = false) String contactPerson,
-                               @RequestParam(value = "phone", required = false) String phone,
+    public String createSchool(@Valid @ModelAttribute("schoolForm") SchoolForm form,
+                               BindingResult bindingResult,
                                RedirectAttributes redirectAttributes) {
-        if (name != null && !name.isBlank()) {
-            School school = School.builder()
-                    .name(name.trim())
-                    .address(address)
-                    .contactPerson(contactPerson)
-                    .phone(phone)
-                    .build();
-            schoolService.save(school);
-            redirectAttributes.addFlashAttribute("success", "Thêm trường mầm non mới thành công!");
-        } else {
-            redirectAttributes.addFlashAttribute("error", "Tên trường mầm non không được để trống!");
+        String errorMsg = ValidationUtils.getFirstError(bindingResult);
+        if (errorMsg != null) {
+            redirectAttributes.addFlashAttribute("error", errorMsg);
+            return "redirect:/admin/schools";
         }
+
+        School school = School.builder()
+                .name(form.getName().trim())
+                .address(form.getAddress())
+                .contactPerson(form.getContactPerson())
+                .phone(form.getPhone())
+                .build();
+        schoolService.save(school);
+        redirectAttributes.addFlashAttribute("success", "Thêm trường mầm non mới thành công!");
+
         return "redirect:/admin/schools";
     }
 
     @PostMapping("/classes/new")
-    public String createClass(@RequestParam("schoolId") Integer schoolId,
-                              @RequestParam("name") String name,
-                              @RequestParam(value = "studentCount", required = false, defaultValue = "20") Integer studentCount,
-                              @RequestParam(value = "standardPeriods", required = false, defaultValue = "2") Integer standardPeriods,
+    public String createClass(@Valid @ModelAttribute("schoolClassForm") SchoolClassForm form,
+                              BindingResult bindingResult,
                               RedirectAttributes redirectAttributes) {
-        School school = schoolService.findById(schoolId).orElse(null);
-        if (school != null && name != null && !name.isBlank()) {
+        String errorMsg = ValidationUtils.getFirstError(bindingResult);
+        if (errorMsg != null) {
+            redirectAttributes.addFlashAttribute("error", errorMsg);
+            return "redirect:/admin/schools";
+        }
+
+        School school = schoolService.findById(form.getSchoolId()).orElse(null);
+        if (school != null) {
             SchoolClass schoolClass = SchoolClass.builder()
                     .school(school)
-                    .name(name.trim())
-                    .studentCount(studentCount)
-                    .standardPeriods(standardPeriods)
+                    .name(form.getName().trim())
+                    .studentCount(form.getStudentCount() != null ? form.getStudentCount() : 20)
+                    .standardPeriods(form.getStandardPeriods() != null ? form.getStandardPeriods() : 2)
                     .build();
             schoolClassService.save(schoolClass);
             redirectAttributes.addFlashAttribute("success", "Thêm lớp học mới thành công!");
         } else {
-            redirectAttributes.addFlashAttribute("error", "Dữ liệu trường hoặc tên lớp không hợp lệ!");
+            redirectAttributes.addFlashAttribute("error", "Không tìm thấy Trường mầm non đã chọn!");
         }
         return "redirect:/admin/schools";
     }

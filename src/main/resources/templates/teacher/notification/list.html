@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông báo - AKA School Manager</title>
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+</head>
+<body>
+    <div class="app-container">
+        <div th:replace="~{teacher/fragments/sidebar :: sidebar('notifications')}"></div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <div class="top-bar margin-bottom-1" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h1 class="page-title">Thông Báo Hệ Thống</h1>
+                    <p class="page-subtitle">Bấm trực tiếp vào từng thông báo để tự động đánh dấu đã đọc và di chuyển tới trang chi tiết</p>
+                </div>
+                <form th:action="@{/teacher/notifications/read-all}" method="post">
+                    <button type="submit" class="action-btn blue" style="padding: 0.55rem 1.1rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+                        <i class="ri-check-double-line" style="font-size: 1.1rem;"></i>
+                        <span>Đánh dấu tất cả đã đọc</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- NOTIFICATIONS TABLE BOX -->
+            <div class="card-box">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 55%;">NỘI DUNG THÔNG BÁO (BẤM VÀO ĐỂ TỰ ĐỘNG CHUYỂN TRANG)</th>
+                            <th style="width: 20%;">THỜI GIAN NHẬN</th>
+                            <th style="width: 12%; text-align: center;">TRẠNG THÁI</th>
+                            <th style="width: 13%; text-align: center;">HÀNH ĐỘNG</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="notif : ${notifications}" th:style="${!notif.isRead ? 'background-color: #f0f7ff;' : ''}">
+                            <td>
+                                <a th:if="${notif.link != null and !#strings.isEmpty(notif.link)}" 
+                                   th:href="@{/teacher/notifications/click/{id}(id=${notif.id})}" 
+                                   style="color: #2563eb; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 0.4rem;" 
+                                   title="Bấm vào để di chuyển tới trang chức năng tương ứng">
+                                    <i class="ri-external-link-line" style="font-size: 1.05rem; flex-shrink: 0;"></i>
+                                    <span th:text="${notif.message}">Nội dung thông báo</span>
+                                </a>
+                                <span th:unless="${notif.link != null and !#strings.isEmpty(notif.link)}" 
+                                      th:style="${!notif.isRead ? 'font-weight: 700; color: #1e293b;' : ''}" 
+                                      th:text="${notif.message}">Nội dung thông báo</span>
+                            </td>
+                            <td th:text="${#temporals.format(notif.createdAt, 'dd/MM/yyyy HH:mm')}">01/08/2026 08:00</td>
+                            <td class="text-center">
+                                <span class="status-badge" 
+                                      th:classappend="${notif.isRead ? 'approved' : 'pending'}"
+                                      th:text="${notif.isRead ? 'Đã đọc' : 'Chưa đọc'}">Chưa đọc</span>
+                            </td>
+                            <td class="text-center">
+                                <form th:unless="${notif.isRead}" th:action="@{/teacher/notifications/read/{id}(id=${notif.id})}" method="post" style="display:inline;">
+                                    <button type="submit" class="action-btn gray" style="padding: 0.3rem 0.65rem; font-size: 0.78rem;">Đã đọc</button>
+                                </form>
+                                <span th:if="${notif.isRead}" style="color: #94a3b8; font-size: 0.8rem;">—</span>
+                            </td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(notifications)}">
+                            <td colspan="4" class="empty-table-cell">
+                                Chưa có thông báo nào trong CSDL.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

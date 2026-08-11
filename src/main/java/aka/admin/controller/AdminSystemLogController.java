@@ -1,12 +1,14 @@
 package aka.admin.controller;
 
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import aka.service.UserService;
-import aka.util.SecurityUtils;
+import aka.model.SystemLog;
+import aka.service.SystemLogService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -17,11 +19,12 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AdminSystemLogController {
 
-    UserService userService;
+    SystemLogService systemLogService;
 
     @GetMapping("/system-logs")
     public String list(Model model) {
-        SecurityUtils.populate(model, userService);
-        return "admin/system-logs";
+        List<SystemLog> logs = systemLogService.findAllByOrderByIdDesc();
+        model.addAttribute("logs", logs);
+        return "admin/system-log/list";
     }
 }

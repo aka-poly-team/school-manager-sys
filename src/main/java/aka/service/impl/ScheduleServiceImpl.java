@@ -63,6 +63,36 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     @Override
     @Transactional(readOnly = true)
+    public boolean existsByTeacherIdAndSchoolIdAndDayOfWeekAndSession(Integer teacherId, Integer schoolId, Integer dayOfWeek, String session) {
+        return scheduleRepository.existsByTeacherIdAndSchoolIdAndDayOfWeekAndSession(teacherId, schoolId, dayOfWeek, session);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByTeacherIdAndDayOfWeekAndSession(Integer teacherId, Integer dayOfWeek, String session) {
+        return scheduleRepository.existsByTeacherIdAndDayOfWeekAndSession(teacherId, dayOfWeek, session);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByTeacherIdAndDayOfWeekAndSessionAndIdNot(Integer teacherId, Integer dayOfWeek, String session, Integer id) {
+        return scheduleRepository.existsByTeacherIdAndDayOfWeekAndSessionAndIdNot(teacherId, dayOfWeek, session, id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsBySchoolClassIdAndDayOfWeekAndSession(Integer classId, Integer dayOfWeek, String session) {
+        return scheduleRepository.existsBySchoolClassIdAndDayOfWeekAndSession(classId, dayOfWeek, session);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsBySchoolClassIdAndDayOfWeekAndSessionAndIdNot(Integer classId, Integer dayOfWeek, String session, Integer id) {
+        return scheduleRepository.existsBySchoolClassIdAndDayOfWeekAndSessionAndIdNot(classId, dayOfWeek, session, id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public boolean existsById(Integer id) {
         return scheduleRepository.existsById(id);
     }

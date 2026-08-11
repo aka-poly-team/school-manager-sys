@@ -13,6 +13,11 @@ public interface ScheduleService {
     List<Schedule> findByTeacherIdOrderByDayOfWeekAsc(Integer teacherId);
     List<Schedule> findAllByOrderByIdDesc();
     boolean existsByTeacherIdAndSchoolIdAndSchoolClassIdAndDayOfWeekAndSession(Integer teacherId, Integer schoolId, Integer classId, Integer dayOfWeek, String session);
+    boolean existsByTeacherIdAndSchoolIdAndDayOfWeekAndSession(Integer teacherId, Integer schoolId, Integer dayOfWeek, String session);
+    boolean existsByTeacherIdAndDayOfWeekAndSession(Integer teacherId, Integer dayOfWeek, String session);
+    boolean existsByTeacherIdAndDayOfWeekAndSessionAndIdNot(Integer teacherId, Integer dayOfWeek, String session, Integer id);
+    boolean existsBySchoolClassIdAndDayOfWeekAndSession(Integer classId, Integer dayOfWeek, String session);
+    boolean existsBySchoolClassIdAndDayOfWeekAndSessionAndIdNot(Integer classId, Integer dayOfWeek, String session, Integer id);
     boolean existsById(Integer id);
     long count();
 }

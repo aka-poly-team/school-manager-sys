@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo yêu cầu - AKA School Manager</title>
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR NAVIGATION -->
+        <div th:replace="~{teacher/fragments/sidebar :: sidebar('change-requests')}"></div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Tạo đơn Xin nghỉ / Đổi ca</h1>
+                    <p class="page-subtitle">Gửi đề xuất nghỉ phép hoặc đăng ký dạy thay tới Ban quản trị (Admin)</p>
+                </div>
+            </div>
+
+            <!-- FORM BOX -->
+            <div class="card-box card-box-md">
+                <!-- ALERTS -->
+                <div th:if="${error}" class="alert-box alert-error" th:text="${error}">Đã xảy ra lỗi.</div>
+                <div th:if="${success}" class="alert-box alert-success" th:text="${success}">Thành công.</div>
+
+                <form th:action="@{/teacher/change-requests/new}" method="post" class="form-layout">
+                    <div class="form-group">
+                        <label class="form-label">Loại Yêu Cầu *</label>
+                        <select name="requestType" class="form-control">
+                            <option value="LEAVE">Xin nghỉ phép</option>
+                            <option value="SUBSTITUTE">Đăng ký dạy thay / Đổi ca</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Trường Mầm Non *</label>
+                        <select name="schoolId" class="form-control">
+                            <option value="" disabled selected>-- Chọn Trường Mầm Non --</option>
+                            <option th:each="sch : ${schools}" th:value="${sch.id}" th:text="${sch.name}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Ngày Xin Nghỉ / Đổi Ca *</label>
+                        <input type="date" name="date" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Ca Dạy *</label>
+                        <select name="session" class="form-control">
+                            <option value="Ca 1">Ca 1 (Sáng)</option>
+                            <option value="Ca 2">Ca 2 (Sáng)</option>
+                            <option value="Ca 3">Ca 3 (Chiều)</option>
+                            <option value="Ca 4">Ca 4 (Chiều)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Lý Do Chi Tiết *</label>
+                        <textarea name="reason" rows="4" placeholder="Nhập lý do chi tiết xin nghỉ phép hoặc lý do dạy thay..." class="form-control"></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="action-btn orange btn-submit-flex">
+                            <i class="ri-send-plane-fill"></i> Gửi Yêu Cầu
+                        </button>
+                        <a th:href="@{/teacher/change-requests}" class="action-btn gray btn-cancel-link">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

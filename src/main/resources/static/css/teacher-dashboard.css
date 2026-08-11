@@ -1,3 +1,4 @@
+@import url('https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 * {
@@ -64,6 +65,7 @@ img {
 /* SIDEBAR STYLES */
 .sidebar {
     width: 250px;
+    min-width: 250px;
     height: 100vh;
     position: sticky;
     top: 0;
@@ -77,13 +79,18 @@ img {
     flex-shrink: 0;
     z-index: 100;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
+/* SIDEBAR COLLAPSED RULES - SUPPORT BOTH CLASS AND PURE CSS CHECKBOX HACK */
+.app-container:has(#sidebar-toggle-check:checked) .sidebar,
 .app-container.sidebar-collapsed .sidebar {
     width: 76px;
+    min-width: 76px;
     padding: 1.25rem 0.5rem;
 }
 
+.app-container:has(#sidebar-toggle-check:checked) .sidebar-header,
 .app-container.sidebar-collapsed .sidebar-header {
     flex-direction: column;
     align-items: center;
@@ -93,61 +100,77 @@ img {
     width: 100%;
 }
 
+.app-container:has(#sidebar-toggle-check:checked) .brand-wrapper,
 .app-container.sidebar-collapsed .brand-wrapper {
     justify-content: center;
     gap: 0;
     width: 100%;
 }
 
+.app-container:has(#sidebar-toggle-check:checked) .brand-text,
 .app-container.sidebar-collapsed .brand-text {
     display: none !important;
 }
 
+.app-container:has(#sidebar-toggle-check:checked) .sidebar-toggle-btn,
 .app-container.sidebar-collapsed .sidebar-toggle-btn {
     margin: 0 auto;
 }
 
+.app-container:has(#sidebar-toggle-check:checked) .sidebar-nav,
 .app-container.sidebar-collapsed .sidebar-nav {
     width: 100%;
     align-items: center;
 }
 
+.app-container:has(#sidebar-toggle-check:checked) .nav-item,
 .app-container.sidebar-collapsed .nav-item {
     justify-content: center;
     padding: 0.75rem 0;
     width: 100%;
 }
 
+.app-container:has(#sidebar-toggle-check:checked) .nav-text,
 .app-container.sidebar-collapsed .nav-text {
     display: none !important;
 }
 
+.app-container:has(#sidebar-toggle-check:checked) .menu-section-label,
 .app-container.sidebar-collapsed .menu-section-label {
     display: none !important;
 }
 
+.app-container:has(#sidebar-toggle-check:checked) .sidebar-footer,
 .app-container.sidebar-collapsed .sidebar-footer {
     width: 100%;
     align-items: center;
 }
 
+.app-container:has(#sidebar-toggle-check:checked) .user-profile-summary,
 .app-container.sidebar-collapsed .user-profile-summary {
     justify-content: center;
     width: 100%;
 }
 
+.app-container:has(#sidebar-toggle-check:checked) .profile-info,
 .app-container.sidebar-collapsed .profile-info {
     display: none !important;
 }
 
+.app-container:has(#sidebar-toggle-check:checked) .btn-logout,
 .app-container.sidebar-collapsed .btn-logout {
     justify-content: center;
     padding: 0.65rem 0;
     width: 100%;
 }
 
+.app-container:has(#sidebar-toggle-check:checked) .btn-logout span,
 .app-container.sidebar-collapsed .btn-logout span {
     display: none !important;
+}
+
+.app-container:has(#sidebar-toggle-check:checked) .sidebar-toggle-btn i {
+    transform: rotate(180deg);
 }
 
 .sidebar-header {
@@ -155,7 +178,7 @@ img {
     align-items: center;
     justify-content: space-between;
     padding: 0 0.4rem;
-    margin-bottom: 1.25rem;
+    margin-bottom: 2.75rem;
 }
 
 .brand-wrapper {
@@ -170,12 +193,12 @@ img {
     width: 36px;
     height: 36px;
     background-color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     flex-shrink: 0;
     overflow: hidden;
     padding: 3px;
@@ -281,9 +304,11 @@ img {
     white-space: nowrap;
 }
 
+.nav-item i.nav-icon,
 .nav-item svg.nav-icon {
     width: 18px;
     height: 18px;
+    font-size: 1.15rem;
     stroke-width: 1.75;
     color: #94a3b8;
     transition: color 0.2s ease;
@@ -295,6 +320,7 @@ img {
     color: #ffffff;
 }
 
+.nav-item:hover i.nav-icon,
 .nav-item:hover svg.nav-icon {
     color: #ffffff;
 }
@@ -305,6 +331,7 @@ img {
     font-weight: 600;
 }
 
+.nav-item.active i.nav-icon,
 .nav-item.active svg.nav-icon {
     color: #ffffff;
 }
@@ -363,12 +390,18 @@ img {
 .avatar-lg {
     width: 52px !important;
     height: 52px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 .avatar-icon-lg {
-    width: 26px;
-    height: 26px;
-    stroke-width: 1.75;
+    font-size: 1.65rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
 }
 
 .avatar-img {
@@ -379,9 +412,12 @@ img {
 }
 
 .avatar-default-icon {
-    width: 18px;
-    height: 18px;
-    stroke-width: 1.75;
+    font-size: 1.15rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
 }
 
 .profile-info {
@@ -485,7 +521,82 @@ img {
 .top-bar-actions {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.85rem;
+}
+
+.top-notification-btn {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #475569;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.top-notification-btn:hover {
+    background-color: #f8fafc;
+    color: #2563eb;
+    border-color: #93c5fd;
+    transform: translateY(-1px);
+}
+
+.top-notification-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 1.75;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background-color: #ef4444;
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff;
+}
+
+.top-user-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    background-color: #ffffff;
+    padding: 0.35rem 0.75rem 0.35rem 0.45rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 30px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.top-user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.top-user-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.top-user-role {
+    font-size: 0.7rem;
+    color: #64748b;
+    font-weight: 500;
 }
 
 .date-badge {
@@ -580,6 +691,7 @@ img {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     max-width: 100%;
     min-width: 0;
+    overflow-x: auto;
 }
 
 .card-box-sm {

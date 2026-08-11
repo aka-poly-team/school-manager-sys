@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trường & Lớp Mầm Non - Admin AKA</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- ADMIN SIDEBAR FRAGMENT -->
+        <div th:replace="~{admin/fragments/sidebar :: sidebar('schools')}"></div>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Quản Lý Trường & Lớp Mầm Non</h1>
+                    <p class="page-subtitle">Danh mục các Trường Mầm Non đối tác và danh sách Lớp học giảng dạy</p>
+                </div>
+                <div class="form-actions form-actions-reset">
+                    <a th:href="@{/admin/schools/new}" class="btn-primary-action blue">
+                        <span>+ Thêm Trường Mầm Non</span>
+                    </a>
+                    <a th:href="@{/admin/classes/new}" class="btn-primary-action blue">
+                        <span>+ Thêm Lớp Học Mới</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- NOTIFICATION MESSAGES -->
+            <div th:if="${error}" class="alert-box alert-error" th:text="${error}">Lỗi thông báo.</div>
+            <div th:if="${success}" class="alert-box alert-success" th:text="${success}">Thành công.</div>
+
+            <!-- TABLE 1: TRƯỜNG MẦM NON -->
+            <div class="card-box margin-bottom-1">
+                <div class="box-header">
+                    <h2 class="box-title">Danh Sách Trường Mầm Non</h2>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>MÃ</th>
+                            <th>TÊN TRƯỜNG</th>
+                            <th>ĐỊA CHỈ CƠ SỞ</th>
+                            <th>NGƯỜI LIÊN HỆ</th>
+                            <th>SỐ ĐIỆN THOẠI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="s : ${schools}">
+                            <td th:text="${'#' + s.id}">#1</td>
+                            <td><strong th:text="${s.name}">Hoa Mai</strong></td>
+                            <td th:text="${s.address}">Quận 1</td>
+                            <td th:text="${s.contactPerson}">Cô Hương</td>
+                            <td th:text="${s.phone}">0901234567</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(schools)}">
+                            <td colspan="5" class="empty-table-cell">Chưa có dữ liệu trường mầm non.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- TABLE 2: LỚP HỌC -->
+            <div class="card-box">
+                <div class="box-header">
+                    <h2 class="box-title">Danh Sách Lớp Học Giảng Dạy</h2>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>MÃ</th>
+                            <th>TÊN LỚP HỌC</th>
+                            <th>THUỘC TRƯỜNG</th>
+                            <th>SĨ SỐ HỌC SINH</th>
+                            <th>SỐ TIẾT CHUẨN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="c : ${classes}">
+                            <td th:text="${'#' + c.id}">#1</td>
+                            <td><strong th:text="${c.name}">Aerobic Chồi 1</strong></td>
+                            <td th:text="${c.school.name}">Hoa Mai</td>
+                            <td th:text="${c.studentCount + ' cháu'}">25 cháu</td>
+                            <td><strong th:text="${c.standardPeriods}">2</strong> tiết</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(classes)}">
+                            <td colspan="5" class="empty-table-cell">Chưa có dữ liệu lớp học.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

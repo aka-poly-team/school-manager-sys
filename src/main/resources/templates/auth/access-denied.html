@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Truy cập bị từ chối - AKA School Manager</title>
     <link rel="stylesheet" th:href="@{/css/login.css}">
-    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .error-card {
             background: #ffffff;
@@ -64,7 +63,7 @@
 
     <div class="error-card">
         <div class="error-icon-box">
-            <i data-lucide="shield-alert" style="width: 38px; height: 38px; stroke-width: 2;"></i>
+            <i class="ri-error-warning-line" style="font-size: 38px;"></i>
         </div>
         <h1 class="error-title">Truy cập Bị Từ Chối (403)</h1>
         <p class="error-desc">
@@ -72,15 +71,10 @@
             Vui lòng quay lại bảng điều khiển của bạn.
         </p>
         <a th:href="@{/}" class="btn-back">
-            <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+            <i class="ri-arrow-left-line" style="font-size: 18px;"></i>
             <span>Quay lại Trang chủ của tôi</span>
         </a>
     </div>
 
-    <script>
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-    </script>
 </body>
 </html>
