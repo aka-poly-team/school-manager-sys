@@ -1,14 +1,13 @@
-# 1. Base Image Java 17 JRE Alpine siêu nhẹ
-FROM eclipse-temurin:17-jre-alpine
-
-# 2. Tạo thư mục làm việc trong container
+# Stage 1: Build file .jar với Maven
+FROM maven:3.9.6-eclipse-temurin-17-alpine AS builder
 WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-# 3. Copy file .jar đã đóng gói vào container
-COPY target/aka-system.jar app.jar
-
-# 4. Mở cổng 8081 cho ứng dụng Web Spring Boot
+# Stage 2: Khởi chạy ứng dụng Java 17
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+COPY --from=builder /app/target/aka-system.jar app.jar
 EXPOSE 8081
-
-# 5. Khởi chạy ứng dụng Java
 ENTRYPOINT ["java", "-jar", "app.jar"]
