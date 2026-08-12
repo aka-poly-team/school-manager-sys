@@ -42,11 +42,11 @@
                     </thead>
                     <tbody>
                         <tr th:each="att : ${attendances}">
-                            <td class="text-center" th:text="${#temporals.format(att.date, 'dd/MM/yyyy')}">29/07/2026</td>
+                            <td class="text-center" th:text="${att.date != null ? #temporals.format(att.date, 'dd/MM/yyyy') : 'N/A'}">29/07/2026</td>
                             <td class="text-center">
                                 <a th:if="${att.selfieImage != null and !#strings.isEmpty(att.selfieImage)}" 
-                                   th:href="${#strings.startsWith(att.selfieImage, 'http') ? att.selfieImage : @{${att.selfieImage}}}" target="_blank" title="Xem ảnh đầy đủ">
-                                    <img th:src="${#strings.startsWith(att.selfieImage, 'http') ? att.selfieImage : @{${att.selfieImage}}}" alt="Selfie" class="selfie-thumb" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80';">
+                                   th:href="${att.selfieImage}" target="_blank" title="Xem ảnh đầy đủ">
+                                    <img th:src="${att.selfieImage}" alt="Selfie" class="selfie-thumb" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80';">
                                 </a>
                                 <span th:unless="${att.selfieImage != null and !#strings.isEmpty(att.selfieImage)}" class="empty-table-cell">Không có</span>
                             </td>

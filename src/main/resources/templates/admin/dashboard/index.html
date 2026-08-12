@@ -30,7 +30,7 @@
                     <div class="top-user-profile">
                         <div class="top-avatar">
                             <img th:if="${(avatarUrl != null and !#strings.isEmpty(avatarUrl)) or (currentUser != null and currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl))}" 
-                                 th:src="@{${avatarUrl != null ? avatarUrl : currentUser.avatarUrl}}" alt="Avatar" class="avatar-img">
+                                 th:src="${avatarUrl != null ? avatarUrl : (currentUser != null ? currentUser.avatarUrl : '/images/logo.png')}" alt="Avatar" class="avatar-img">
                             <i th:unless="${(avatarUrl != null and !#strings.isEmpty(avatarUrl)) or (currentUser != null and currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl))}" 
                                class="ri-user-line avatar-default-icon"></i>
                         </div>
@@ -110,14 +110,14 @@
                     <tbody>
                         <tr th:each="att : ${recentAttendances}">
                             <td th:text="${'#' + att.id}">#1</td>
-                            <td th:text="${#temporals.format(att.date, 'dd/MM/yyyy')}">29/07/2026</td>
+                            <td th:text="${att.date != null ? #temporals.format(att.date, 'dd/MM/yyyy') : 'N/A'}">29/07/2026</td>
                             <td th:text="${att.teacher != null ? att.teacher.name : 'Giáo viên'}">GV Mai</td>
                             <td th:text="${(att.school != null ? att.school.name : '') + (att.school != null and att.schoolClass != null ? ' - ' : '') + (att.schoolClass != null ? att.schoolClass.name : '')}">Hoa Mai - Chồi 1</td>
                             <td th:text="${att.session}">Ca 1</td>
                             <td th:text="${att.periods}">2</td>
                             <td>
-                                <a th:if="${att.selfieImage != null}" th:href="${#strings.startsWith(att.selfieImage, 'http') ? att.selfieImage : @{${att.selfieImage}}}" target="_blank" title="Xem ảnh đầy đủ">
-                                    <img th:src="${#strings.startsWith(att.selfieImage, 'http') ? att.selfieImage : @{${att.selfieImage}}}" class="selfie-thumb" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80';">
+                                <a th:if="${att.selfieImage != null}" th:href="${att.selfieImage}" target="_blank" title="Xem ảnh đầy đủ">
+                                    <img th:src="${att.selfieImage}" class="selfie-thumb" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80';">
                                 </a>
                             </td>
                             <td>

@@ -29,8 +29,8 @@
                     <td th:text="${att.session}">Ca 1</td>
                     <td class="text-center"><strong th:text="${att.periods}">2</strong> tiết</td>
                     <td>
-                        <a th:if="${att.selfieImage != null}" th:href="${#strings.startsWith(att.selfieImage, 'http') ? att.selfieImage : @{${att.selfieImage}}}" target="_blank" title="Xem ảnh đầy đủ">
-                            <img th:src="${#strings.startsWith(att.selfieImage, 'http') ? att.selfieImage : @{${att.selfieImage}}}" alt="Selfie" class="selfie-thumb" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80';">
+                        <a th:if="${att.selfieImage != null}" th:href="${att.selfieImage}" target="_blank" title="Xem ảnh đầy đủ">
+                            <img th:src="${att.selfieImage}" alt="Selfie" class="selfie-thumb" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80';">
                         </a>
                         <span th:unless="${att.selfieImage != null}" class="empty-table-cell">Không có</span>
                     </td>

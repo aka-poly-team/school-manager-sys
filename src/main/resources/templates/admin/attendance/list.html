@@ -41,23 +41,23 @@
                         <tr th:each="att : ${attendances}">
                             <td th:text="${'#' + att.id}">#1</td>
                             <td>
-                                <strong th:text="${#temporals.format(att.date, 'dd/MM/yyyy')}">04/08/2026</strong>
+                                <strong th:text="${att.date != null ? #temporals.format(att.date, 'dd/MM/yyyy') : 'N/A'}">04/08/2026</strong>
                                 <br>
-                                <small style="color: #64748b;" th:text="${'Lúc ' + att.checkInTime}">Lúc 07:55</small>
+                                <small style="color: #64748b;" th:text="${att.checkInTime != null ? 'Lúc ' + att.checkInTime : ''}">Lúc 07:55</small>
                             </td>
                             <td>
-                                <strong th:text="${att.teacher.name}">GV Mai</strong>
+                                <strong th:text="${att.teacher != null ? att.teacher.name : 'Chưa phân công'}">GV Mai</strong>
                                 <br>
-                                <small style="color: #2563eb; font-weight: 600;" th:text="${'Mã GV: #' + att.teacher.id}">Mã GV: #1</small>
+                                <small style="color: #2563eb; font-weight: 600;" th:text="${att.teacher != null ? 'Mã GV: #' + att.teacher.id : ''}">Mã GV: #1</small>
                             </td>
                             <td>
-                                <a th:if="${att.selfieImage != null}" th:href="${#strings.startsWith(att.selfieImage, 'http') ? att.selfieImage : @{${att.selfieImage}}}" target="_blank" title="Xem ảnh đầy đủ">
-                                    <img th:src="${#strings.startsWith(att.selfieImage, 'http') ? att.selfieImage : @{${att.selfieImage}}}" alt="Selfie" class="selfie-thumb" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80';">
+                                <a th:if="${att.selfieImage != null}" th:href="${att.selfieImage}" target="_blank" title="Xem ảnh đầy đủ">
+                                    <img th:src="${att.selfieImage}" alt="Selfie" class="selfie-thumb" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80';">
                                 </a>
                                 <span th:unless="${att.selfieImage != null}" class="empty-table-cell">Không có</span>
                             </td>
-                            <td th:text="${att.school.name}">Trường Hoa Mai</td>
-                            <td th:text="${att.schoolClass.name}">Lớp 8A</td>
+                            <td th:text="${att.school != null ? att.school.name : 'N/A'}">Trường Hoa Mai</td>
+                            <td th:text="${att.schoolClass != null ? att.schoolClass.name : 'N/A'}">Lớp 8A</td>
                             <td th:text="${att.session}">Ca 1</td>
                             <td th:text="${att.periods}">2</td>
                             <td>

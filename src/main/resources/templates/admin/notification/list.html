@@ -35,7 +35,7 @@
                         <tr th:each="notif : ${notifications}">
                             <td>
                                 <a th:if="${notif.link != null and !#strings.isEmpty(notif.link)}" 
-                                   th:href="@{${notif.link}}" 
+                                   th:href="${notif.link}" 
                                    style="color: #2563eb; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 0.35rem;"
                                    title="Bấm vào để mở trực tiếp trang xử lý yêu cầu">
                                     <i class="ri-external-link-line" style="font-size: 16px; flex-shrink: 0;"></i>

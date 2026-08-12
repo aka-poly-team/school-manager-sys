@@ -31,7 +31,7 @@
                     <div class="top-user-profile">
                         <div class="top-avatar">
                             <img th:if="${(avatarUrl != null and !#strings.isEmpty(avatarUrl)) or (currentUser != null and currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl))}" 
-                                 th:src="@{${avatarUrl != null ? avatarUrl : currentUser.avatarUrl}}" alt="Avatar" class="avatar-img">
+                                 th:src="${avatarUrl != null ? avatarUrl : (currentUser != null ? currentUser.avatarUrl : '/images/logo.png')}" alt="Avatar" class="avatar-img">
                             <i th:unless="${(avatarUrl != null and !#strings.isEmpty(avatarUrl)) or (currentUser != null and currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl))}" 
                                class="ri-user-line avatar-default-icon"></i>
                         </div>

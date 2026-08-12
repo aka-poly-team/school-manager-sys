@@ -25,7 +25,7 @@
                     <h2 class="box-title" th:text="${editSchedule != null ? 'Chỉnh Sửa Thông Tin Lịch Dạy #' + editSchedule.id : 'Thông Tin Phân Công Lịch Dạy Mới'}">Thông Tin Phân Công Lịch Dạy</h2>
                 </div>
 
-                <form th:action="@{${editSchedule != null ? '/admin/schedules/edit/' + editSchedule.id : '/admin/schedules/new'}}" method="post" class="form-layout">
+                <form th:action="${editSchedule != null ? '/admin/schedules/edit/' + editSchedule.id : '/admin/schedules/new'}" method="post" class="form-layout">
                     
                     <!-- 1. CHỌN GIÁO VIÊN -->
                     <div class="form-group">
