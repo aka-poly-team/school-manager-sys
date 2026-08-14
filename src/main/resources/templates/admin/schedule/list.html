@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phân công lịch - Admin AKA</title>
+    <title>Phân Công Lịch Dạy - Admin AKA</title>
     <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
     <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/form-validate.css}">
 </head>
 <body>
     <div class="app-container">
@@ -13,61 +14,141 @@
         <div th:replace="~{admin/fragments/sidebar :: sidebar('schedules')}"></div>
 
         <main class="main-content">
+            <!-- TOP BAR HEADER -->
             <div class="top-bar">
                 <div>
-                    <h1 class="page-title">Phân Công Lịch Giảng Dạy</h1>
-                    <p class="page-subtitle">Quản lý phân công Giáo viên phụ trách dạy các Trường, Lớp và Ca dạy</p>
+                    <h1 class="page-title">Quản Lý Phân Công Lịch Dạy</h1>
+                    <p class="page-subtitle">Sắp xếp lịch giảng dạy Aerobic của Giáo Viên tại các Trường Mầm Non</p>
                 </div>
-                <a th:href="@{/admin/schedules/new}" class="btn-primary-action blue">
-                    <span>+ Phân Công Ca Dạy Mới</span>
-                </a>
+                <div class="form-actions form-actions-reset">
+                    <a th:href="@{/admin/schedules/new}" class="btn-primary-action blue">
+                        <span>+ Phân Công Lịch Mới</span>
+                    </a>
+                </div>
             </div>
 
             <!-- NOTIFICATION MESSAGES -->
             <div th:if="${error}" class="alert-box alert-error" th:text="${error}">Lỗi thông báo.</div>
             <div th:if="${success}" class="alert-box alert-success" th:text="${success}">Thành công.</div>
 
-            <!-- TABLE OF ALL SCHEDULE ASSIGNMENTS -->
-            <div class="card-box">
-                <h2 class="box-title">Danh Sách Lịch Đã Phân Công</h2>
+            <!-- TABLE CONTAINER WITH FIXED 640PX HEIGHT -->
+            <div class="card-box card-box-1table">
+                <div class="box-header" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                    <h2 class="box-title">Danh Sách Phân Công Lịch Dạy Hàng Tuần</h2>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" placeholder="Tìm kiếm phân công lịch dạy..." class="table-search-bar" data-aka-search="true">
+                    </div>
+                </div>
+                
                 <table class="data-table">
                     <thead>
                         <tr>
                             <th>MÃ</th>
-                            <th>GIÁO VIÊN</th>
-                            <th>TRƯỜNG</th>
-                            <th>LỚP HỌC</th>
-                            <th>THỨ</th>
+                            <th>GIÁO VIÊN NGHỆ THUẬT</th>
+                            <th>TRƯỜNG MẦM NON</th>
+                            <th>LỚP HỌC GIẢNG DẠY</th>
+                            <th>THỨ TRONG TUẦN</th>
                             <th>CA DẠY</th>
                             <th>SỐ TIẾT</th>
-                            <th>HÀNH ĐỘNG</th>
+                            <th class="text-center">THAO TÁC</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="sch : ${schedules}">
-                            <td th:text="${'#' + sch.id}">#1</td>
-                            <td th:text="${sch.teacher.name}">GV Mai</td>
-                            <td th:text="${sch.school.name}">Mầm Non Hoa Mai</td>
-                            <td th:text="${sch.schoolClass.name}">Lớp Aerobic Chồi 1</td>
-                            <td th:text="${T(aka.util.DateUtils).dayText(sch.dayOfWeek)}">Thứ 2</td>
-                            <td th:text="${sch.session}">Ca 1</td>
-                            <td th:text="${sch.periods}">2</td>
-                            <td>
-                                <div style="display: flex; gap: 0.35rem; align-items: center;">
-                                    <a th:href="@{/admin/schedules/edit/{id}(id=${sch.id})}" class="action-btn blue" style="text-decoration: none; padding: 0.35rem 0.75rem; font-size: 0.82rem;">Sửa</a>
-                                    <form th:action="@{/admin/schedules/delete/{id}(id=${sch.id})}" method="post" class="form-actions form-actions-reset" onsubmit="return confirm('Bạn có chắc chắn muốn xóa phân công lịch dạy này?');">
-                                        <button type="submit" class="action-btn gray" style="padding: 0.35rem 0.75rem; font-size: 0.82rem;">Xóa</button>
-                                    </form>
-                                </div>
-                            </td>
+                            <!-- HIỂN THỊ NGUYÊN BẢN (KHI KHÔNG CHỌN SỬA DÒNG NÀY) -->
+                            <th:block th:if="${editScheduleId == null or editScheduleId != sch.id}">
+                                <td th:text="${'#' + sch.id}">#1</td>
+                                <td th:text="${sch.teacher != null ? sch.teacher.name : 'Giáo viên'}">GV Mai</td>
+                                <td th:text="${sch.school != null ? sch.school.name : 'N/A'}">Mầm Non Hoa Mai</td>
+                                <td th:text="${sch.schoolClass != null ? sch.schoolClass.name : 'N/A'}">Lớp Aerobic Chồi 1</td>
+                                <td th:text="${T(aka.util.DateUtils).dayText(sch.dayOfWeek)}">Thứ 2</td>
+                                <td th:text="${sch.session}">Ca 1</td>
+                                <td th:text="${sch.periods}">2</td>
+                                <td class="text-center">
+                                    <div class="form-actions form-actions-reset justify-center">
+                                        <a th:href="@{/admin/schedules(page=${pageObj.number}, editScheduleId=${sch.id})}" class="action-btn orange no-underline">Sửa</a>
+                                        <form th:action="@{/admin/schedules/delete/{id}(id=${sch.id})}" method="post" class="inline-form" onsubmit="return confirm('Bạn có chắc chắn muốn xóa phân công lịch dạy này?');">
+                                            <button type="submit" class="action-btn gray">Xóa</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </th:block>
+
+                            <!-- SỬA TRỰC TIẾP TRÊN DÒNG BẢNG -->
+                            <th:block th:if="${editScheduleId != null and editScheduleId == sch.id}">
+                                <form th:id="'edit-schedule-form-' + ${sch.id}" th:action="@{/admin/schedules/edit-inline/{id}(id=${sch.id})}" method="post" class="inline-form"></form>
+                                <td th:text="${'#' + sch.id}" class="font-semibold">#1</td>
+                                <td>
+                                    <select th:form="'edit-schedule-form-' + ${sch.id}" name="teacherId" class="table-search-input-ios inline-edit-input" required>
+                                        <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.name}" th:selected="${sch.teacher != null and sch.teacher.id == t.id}">GV Mai</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select th:form="'edit-schedule-form-' + ${sch.id}" name="schoolId" class="table-search-input-ios inline-edit-input" required>
+                                        <option th:each="s : ${schools}" th:value="${s.id}" th:text="${s.name}" th:selected="${sch.school != null and sch.school.id == s.id}">Trường Hoa Mai</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select th:form="'edit-schedule-form-' + ${sch.id}" name="classId" class="table-search-input-ios inline-edit-input" required>
+                                        <option th:each="c : ${classes}" th:value="${c.id}" th:text="${c.name}" th:selected="${sch.schoolClass != null and sch.schoolClass.id == c.id}">Lớp Chồi 1</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select th:form="'edit-schedule-form-' + ${sch.id}" name="dayOfWeek" class="table-search-input-ios inline-edit-input" required>
+                                        <option value="2" th:selected="${sch.dayOfWeek == 2}">Thứ 2</option>
+                                        <option value="3" th:selected="${sch.dayOfWeek == 3}">Thứ 3</option>
+                                        <option value="4" th:selected="${sch.dayOfWeek == 4}">Thứ 4</option>
+                                        <option value="5" th:selected="${sch.dayOfWeek == 5}">Thứ 5</option>
+                                        <option value="6" th:selected="${sch.dayOfWeek == 6}">Thứ 6</option>
+                                        <option value="7" th:selected="${sch.dayOfWeek == 7}">Thứ 7</option>
+                                        <option value="8" th:selected="${sch.dayOfWeek == 8}">Chủ Nhật</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input th:form="'edit-schedule-form-' + ${sch.id}" type="text" name="session" th:value="${sch.session}" placeholder="Ca..." class="table-search-input-ios inline-edit-input">
+                                </td>
+                                <td>
+                                    <input th:form="'edit-schedule-form-' + ${sch.id}" type="number" name="periods" th:value="${sch.periods != null ? sch.periods : 2}" min="1" max="10" placeholder="Số tiết..." class="table-search-input-ios inline-edit-input" required>
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-actions form-actions-reset justify-center">
+                                        <button th:form="'edit-schedule-form-' + ${sch.id}" type="submit" class="action-btn green">Lưu</button>
+                                        <a th:href="@{/admin/schedules(page=${pageObj.number})}" class="action-btn gray no-underline">Hủy</a>
+                                    </div>
+                                </td>
+                            </th:block>
+                        </tr>
+                        <!-- BÙ DÒNG TRỐNG NẾU TRANG ÍT HƠN 10 DÒNG -->
+                        <tr th:if="${!#lists.isEmpty(schedules) and schedules.size() < 10}" 
+                            th:each="i : ${#numbers.sequence(1, 10 - schedules.size())}" class="spacer-row">
+                            <td colspan="8" style="height: 48px; border: none;">&nbsp;</td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(schedules)}">
-                            <td colspan="8" class="empty-table-cell">Chưa phân công lịch dạy nào trong CSDL.</td>
+                            <td colspan="8" class="empty-table-cell" style="height: 480px; vertical-align: middle;">Chưa phân công lịch dạy nào trong CSDL.</td>
                         </tr>
                     </tbody>
                 </table>
+
+                <!-- THANH PHÂN TRANG CỐ ĐỊNH Ở ĐÁY KHUNG CARD -->
+                <div class="pagination-bar" th:if="${pageObj != null and pageObj.totalElements > 0}">
+                    <span class="page-info" th:text="'Trang ' + (${pageObj.number + 1}) + ' / ' + ${pageObj.totalPages} + ' (Tổng số ' + ${pageObj.totalElements} + ' ca dạy)'"></span>
+                    <div class="pagination-controls">
+                        <!-- LUÔN HIỆN NÚT TRƯỚC VÀ SAU, VÔ HIỆU HÓA KHÔNG CHO CLICK KHI Ở TRANG ĐẦU/CUỐI -->
+                        <a th:href="${pageObj.first} ? 'javascript:void(0)' : @{/admin/schedules(page=${pageObj.number - 1})}" 
+                           class="page-btn" th:classappend="${pageObj.first} ? 'disabled' : ''" style="text-decoration: none;">❮ Trước</a>
+                        <th:block th:each="i : ${#numbers.sequence(0, pageObj.totalPages - 1)}">
+                            <a th:href="@{/admin/schedules(page=${i})}" 
+                               class="page-btn" th:classappend="${i == pageObj.number} ? 'active' : ''" 
+                               th:text="${i + 1}" style="text-decoration: none;">1</a>
+                        </th:block>
+                        <a th:href="${pageObj.last} ? 'javascript:void(0)' : @{/admin/schedules(page=${pageObj.number + 1})}" 
+                           class="page-btn" th:classappend="${pageObj.last} ? 'disabled' : ''" style="text-decoration: none;">Sau ❯</a>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
+    <script th:src="@{/js/smooth-pagination.js}"></script>
+    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

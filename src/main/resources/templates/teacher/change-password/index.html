@@ -6,6 +6,7 @@
     <title>Đổi mật khẩu - AKA School Manager</title>
     <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
     <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/form-validate.css}">
 </head>
 <body>
     <div class="app-container">
@@ -16,41 +17,263 @@
         <main class="main-content">
             <div class="top-bar margin-bottom-1">
                 <div>
-                    <h1 class="page-title">Đổi Mật Khẩu</h1>
-                    <p class="page-subtitle">Cập nhật mật khẩu bảo mật tài khoản của bạn</p>
+                    <h1 class="page-title">Đổi Mật Khẩu Bảo Mật</h1>
+                    <p class="page-subtitle">Xác thực mã OTP 6 chữ số gửi qua Email trước khi khởi tạo mật khẩu mới</p>
                 </div>
             </div>
 
-            <!-- CHANGE PASSWORD FORM BOX COMPACT -->
+            <!-- CHANGE PASSWORD FORM BOX -->
             <div class="card-box card-box-sm">
-                <!-- ALERTS -->
+                
+                <!-- TIẾN TRÌNH CÁC BƯỚC (STEP INDICATOR) -->
+                <div class="step-indicator-bar">
+                    <div class="step-item active" id="step1Indicator">
+                        <span class="step-number" id="step1Number">1</span>
+                        <span>Nhập Email & Mã OTP</span>
+                    </div>
+                    <i class="ri-arrow-right-s-line" style="color: #cbd5e1;"></i>
+                    <div class="step-item" id="step2Indicator">
+                        <span class="step-number" id="step2Number">2</span>
+                        <span>Đổi Mật Khẩu Mới</span>
+                    </div>
+                </div>
+
+                <!-- ALERTS NOTIFICATION FROM SERVER -->
                 <div th:if="${error}" class="alert-box alert-box-full alert-error" th:text="${error}">Thông báo lỗi</div>
                 <div th:if="${success}" class="alert-box alert-box-full alert-success" th:text="${success}">Thông báo thành công</div>
 
-                <form th:action="@{/teacher/change-password}" method="post" class="form-layout-compact">
-                    <div class="form-group">
-                        <label class="form-label">Mật khẩu hiện tại</label>
-                        <input type="password" name="currentPassword" placeholder="Nhập mật khẩu hiện tại..." class="form-control">
+                <form th:action="@{/teacher/change-password}" method="post"
+                      class="form-layout-compact" data-aka-validate id="changePasswordForm">
+                    
+                    <!-- ========================================== -->
+                    <!-- BƯỚC 1: NHẬP EMAIL & XÁC NHẬN MÃ OTP      -->
+                    <!-- ========================================== -->
+                    <div id="otpStepContainer">
+                        <!-- NHẬP EMAIL (TỰ NHẬP BẰNG TAY, KHÔNG TỰ ĐIỀN) -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                Email tài khoản của bạn * (@gmail.com)
+                            </label>
+                            <div class="input-with-button">
+                                <input type="email" id="emailInput" name="email" value=""
+                                       placeholder="Nhập email tài khoản của bạn..."
+                                       class="form-control" required data-aka-email="true">
+                                <button type="button" id="btnSendOtp" class="action-btn blue btn-send-otp">
+                                    <span id="btnSendOtpText">Gửi mã OTP</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- NHẬP MÃ OTP 6 CHỮ SỐ & NÚT XÁC NHẬN MÃ -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                Mã xác thực OTP (6 chữ số từ Email) *
+                            </label>
+                            <div class="input-with-button">
+                                <input type="text" id="otpCodeInput" name="otpCode" value=""
+                                       placeholder="Nhập mã OTP 6 chữ số..."
+                                       class="form-control otp-input-field" required minlength="6" maxlength="6">
+                                <button type="button" id="btnVerifyOtp" class="action-btn green btn-send-otp">
+                                    <span id="btnVerifyOtpText">Xác nhận OTP</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Mật khẩu mới</label>
-                        <input type="password" name="newPassword" placeholder="Nhập mật khẩu mới..." class="form-control">
-                    </div>
+                    <!-- ========================================== -->
+                    <!-- BƯỚC 2: FORM ĐỔI MẬT KHẨU (ẨN CHO ĐẾN KHI OTP ĐÚNG & KHI MỞ THÌ XÓA BƯỚC 1) -->
+                    <!-- ========================================== -->
+                    <div id="passwordFieldsContainer" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">
+                                Mật khẩu hiện tại *
+                            </label>
+                            <input type="password" id="currentPasswordInput" name="currentPassword"
+                                   placeholder="Nhập mật khẩu hiện tại..."
+                                   class="form-control" minlength="6">
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Xác nhận mật khẩu mới</label>
-                        <input type="password" name="confirmPassword" placeholder="Nhập lại mật khẩu mới..." class="form-control">
-                    </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                Mật khẩu mới * (tối thiểu 6 ký tự)
+                            </label>
+                            <input type="password" id="newPasswordInput" name="newPassword"
+                                   placeholder="Nhập mật khẩu mới..."
+                                   class="form-control" minlength="6">
+                        </div>
 
-                    <div class="form-actions">
-                        <button type="submit" class="action-btn orange btn-full-width">
-                            <i class="ri-key-line"></i> <span>Cập Nhật Mật Khẩu</span>
-                        </button>
+                        <div class="form-group">
+                            <label class="form-label">
+                                Xác nhận mật khẩu mới *
+                            </label>
+                            <input type="password" id="confirmPasswordInput" name="confirmPassword"
+                                   placeholder="Nhập lại mật khẩu mới..."
+                                   class="form-control" minlength="6">
+                        </div>
+
+                        <div class="form-actions" style="margin-top: 1.5rem;">
+                            <button type="submit" class="action-btn orange btn-full-width" style="height: 42px;">
+                                <span>Cập Nhật Mật Khẩu Mới</span>
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
         </main>
     </div>
+    
+    <script th:src="@{/js/form-validate.js}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnSendOtp = document.getElementById('btnSendOtp');
+            const emailInput = document.getElementById('emailInput');
+            const btnSendOtpText = document.getElementById('btnSendOtpText');
+
+            const btnVerifyOtp = document.getElementById('btnVerifyOtp');
+            const otpCodeInput = document.getElementById('otpCodeInput');
+            const btnVerifyOtpText = document.getElementById('btnVerifyOtpText');
+
+            const otpStepContainer = document.getElementById('otpStepContainer');
+            const passwordFieldsContainer = document.getElementById('passwordFieldsContainer');
+            const step1Indicator = document.getElementById('step1Indicator');
+            const step2Indicator = document.getElementById('step2Indicator');
+            const step1Number = document.getElementById('step1Number');
+
+            let countdownInterval = null;
+
+            // 1. XỬ LÝ NÚT GỬI MÃ OTP (CHỐNG SPAM 60s & BẮN TOAST GÓC PHẢI MÀN HÌNH NHƯ ADMIN)
+            if (btnSendOtp && emailInput) {
+                btnSendOtp.addEventListener('click', function() {
+                    const email = emailInput.value.trim();
+                    if (!email) {
+                        showNotice('Vui lòng nhập địa chỉ Email của bạn trước!', false);
+                        emailInput.focus();
+                        return;
+                    }
+
+                    if (!email.toLowerCase().endsWith('@gmail.com')) {
+                        showNotice('Email phải đúng định dạng và có đuôi @gmail.com!', false);
+                        emailInput.focus();
+                        return;
+                    }
+
+                    // Vô hiệu hóa nút bấm ngay lập tức chống SPAM
+                    btnSendOtp.disabled = true;
+                    btnSendOtpText.textContent = 'Đang gửi...';
+
+                    const formData = new FormData();
+                    formData.append('email', email);
+
+                    fetch('/teacher/send-otp', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showNotice(data.message, true);
+                            
+                            // Đếm ngược 60 giây chống spam
+                            let seconds = 60;
+                            btnSendOtpText.textContent = `Gửi lại (${seconds}s)`;
+
+                            countdownInterval = setInterval(() => {
+                                seconds--;
+                                if (seconds <= 0) {
+                                    clearInterval(countdownInterval);
+                                    btnSendOtp.disabled = false;
+                                    btnSendOtpText.textContent = 'Gửi lại OTP';
+                                } else {
+                                    btnSendOtpText.textContent = `Gửi lại (${seconds}s)`;
+                                }
+                            }, 1000);
+                        } else {
+                            btnSendOtp.disabled = false;
+                            btnSendOtpText.textContent = 'Gửi mã OTP';
+                            showNotice(data.message || 'Lỗi khi gửi mã OTP!', false);
+                        }
+                    })
+                    .catch(error => {
+                        btnSendOtp.disabled = false;
+                        btnSendOtpText.textContent = 'Gửi mã OTP';
+                        showNotice('Có lỗi xảy ra khi kết nối máy chủ gửi OTP!', false);
+                    });
+                });
+            }
+
+            // 2. XỬ LÝ NÚT XÁC NHẬN MÃ OTP (KHI XÁC THỰC THÀNH CÔNG -> XÓA BƯỚC 1, HIỆN BƯỚC 2)
+            if (btnVerifyOtp && otpCodeInput) {
+                btnVerifyOtp.addEventListener('click', function() {
+                    const email = emailInput.value.trim();
+                    const otpCode = otpCodeInput.value.trim();
+
+                    if (!email) {
+                        showNotice('Vui lòng nhập Email!', false);
+                        emailInput.focus();
+                        return;
+                    }
+
+                    if (!otpCode || otpCode.length !== 6) {
+                        showNotice('Vui lòng nhập đúng mã OTP 6 chữ số từ Email!', false);
+                        otpCodeInput.focus();
+                        return;
+                    }
+
+                    btnVerifyOtp.disabled = true;
+                    btnVerifyOtpText.textContent = 'Đang kiểm tra...';
+
+                    const formData = new FormData();
+                    formData.append('email', email);
+                    formData.append('otpCode', otpCode);
+
+                    fetch('/teacher/verify-otp', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Bắn Toast thông báo nổi góc phải màn hình chuẩn Admin
+                            showNotice(data.message || 'Xác thực mã OTP thành công! Mời bạn nhập mật khẩu mới.', true);
+
+                            // Cập nhật Step Indicator tiến trình
+                            if (step1Indicator && step2Indicator && step1Number) {
+                                step1Indicator.className = 'step-item completed';
+                                step1Number.innerHTML = '✓';
+                                step2Indicator.className = 'step-item active';
+                            }
+
+                            // 1. XÓA BƯỚC 1 (ẨN HOÀN TOÀN KHUNG EMAIL & OTP BƯỚC 1)
+                            if (otpStepContainer) {
+                                otpStepContainer.style.display = 'none';
+                            }
+
+                            // 2. HIỆN FORM ĐỔI MẬT KHẨU BƯỚC 2
+                            if (passwordFieldsContainer) {
+                                passwordFieldsContainer.style.display = 'block';
+                            }
+                        } else {
+                            btnVerifyOtp.disabled = false;
+                            btnVerifyOtpText.textContent = 'Xác nhận OTP';
+                            showNotice(data.message || 'Mã OTP không đúng!', false);
+                        }
+                    })
+                    .catch(error => {
+                        btnVerifyOtp.disabled = false;
+                        btnVerifyOtpText.textContent = 'Xác nhận OTP';
+                        showNotice('Có lỗi xảy ra khi xác thực mã OTP!', false);
+                    });
+                });
+            }
+
+            function showNotice(msg, isSuccess) {
+                if (typeof showToastNotification === 'function') {
+                    showToastNotification(msg, isSuccess ? 'success' : 'error');
+                } else {
+                    alert(msg);
+                }
+            }
+        });
+    </script>
 </body>
 </html>

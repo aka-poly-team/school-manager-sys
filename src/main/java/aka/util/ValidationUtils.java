@@ -12,10 +12,21 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 
 /**
- * File Validate chung cho toàn bộ ứng dụng.
- * Sử dụng thư viện Jakarta Bean Validation (từ pom.xml) & Spring BindingResult.
+ * File Validate chung và tập trung toàn bộ Constants / Quy tắc kiểm tra cho toàn bộ ứng dụng.
+ * Sử dụng thư viện Jakarta Bean Validation & Spring BindingResult.
  */
 public class ValidationUtils {
+
+    // 1. CHUỖI REGEX VÀ THÔNG BÁO LỖI DÙNG CHUNG CỦA CÁC TRƯỜNG DỮ LIỆU
+    public static final String REGEX_USERNAME = "^([a-zA-Z][a-zA-Z0-9._@\\-]{4,})?$";
+    public static final String REGEX_GMAIL = "^([a-zA-Z0-9._%+-]+@gmail\\.com)?$";
+    public static final String REGEX_PHONE = "^(0[35789][0-9]{8,9})?$";
+
+    public static final String MSG_USERNAME = "Tên đăng nhập phải có ít nhất 5 ký tự và bắt đầu bằng chữ cái!";
+    public static final String MSG_NAME = "Họ và tên không được để trống và không được chứa chữ số!";
+    public static final String MSG_GMAIL = "Email phải đúng định dạng và có đuôi @gmail.com!";
+    public static final String MSG_PHONE = "Số điện thoại phải từ 10-11 chữ số và bắt đầu bằng các đầu số 03, 05, 07, 08, 09!";
+    public static final String MSG_PASSWORD = "Mật khẩu là bắt buộc và phải từ 6 ký tự trở lên!";
 
     private static final Validator VALIDATOR;
 
@@ -26,6 +37,30 @@ public class ValidationUtils {
 
     private ValidationUtils() {
         // Utility class
+    }
+
+    /**
+     * Kiểm tra Họ và Tên hợp lệ (không rỗng, không chứa chữ số)
+     */
+    public static boolean isValidName(String name) {
+        return name != null && !name.isBlank() && !name.matches(".*\\d.*");
+    }
+
+    /**
+     * Kiểm tra Email hợp lệ (đuôi @gmail.com)
+     */
+    public static boolean isValidGmail(String email) {
+        if (email == null || email.isBlank()) return true;
+        return email.toLowerCase().endsWith("@gmail.com");
+    }
+
+    /**
+     * Kiểm tra Số điện thoại hợp lệ (03, 05, 07, 08, 09; 10-11 số)
+     */
+    public static boolean isValidPhone(String phone) {
+        if (phone == null || phone.isBlank()) return true;
+        String cleanPhone = phone.replaceAll("\\D", "");
+        return cleanPhone.matches("^(0[35789][0-9]{8,9})$");
     }
 
     /**

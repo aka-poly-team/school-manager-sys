@@ -102,4 +102,10 @@ public class AttendanceServiceImpl implements AttendanceService {
     public List<Object[]> queryTeacherPeriodStats(Integer month, Integer year, Integer teacherId, Integer schoolId, String status) {
         return attendanceRepository.queryTeacherPeriodStats(month, year, teacherId, schoolId, status);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Object[]> queryMonthlyStats(Integer year, Integer teacherId, Integer schoolId) {
+        return attendanceRepository.queryMonthlyStats(year, teacherId, schoolId);
+    }
 }

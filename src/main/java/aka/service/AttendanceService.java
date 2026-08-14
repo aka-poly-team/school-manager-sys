@@ -22,4 +22,5 @@ public interface AttendanceService {
 
     List<Attendance> filterAttendancesByQuery(Integer month, Integer year, Integer teacherId, Integer schoolId, String status);
     List<Object[]> queryTeacherPeriodStats(Integer month, Integer year, Integer teacherId, Integer schoolId, String status);
+    List<Object[]> queryMonthlyStats(Integer year, Integer teacherId, Integer schoolId);
 }

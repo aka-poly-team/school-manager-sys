@@ -1,11 +1,14 @@
 package aka.repository;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import aka.model.Schedule;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
     List<Schedule> findByTeacherIdOrderByDayOfWeekAsc(Integer teacherId);
+    Page<Schedule> findByTeacherId(Integer teacherId, Pageable pageable);
     List<Schedule> findAllByOrderByIdDesc();
 
     boolean existsByTeacherIdAndSchoolIdAndSchoolClassIdAndDayOfWeekAndSession(

@@ -2,20 +2,25 @@ package aka.controller;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import aka.dto.teacher.AttendanceForm;
 import aka.model.Attendance;
@@ -23,16 +28,17 @@ import aka.model.Schedule;
 import aka.model.School;
 import aka.model.SchoolClass;
 import aka.model.Teacher;
-import jakarta.validation.Valid;
+import aka.repository.AttendanceRepository;
 import aka.service.AttendanceService;
 import aka.service.CloudinaryService;
-import aka.service.SystemLogService;
 import aka.service.ScheduleService;
 import aka.service.SchoolClassService;
 import aka.service.SchoolService;
+import aka.service.SystemLogService;
 import aka.util.FileUploadUtils;
 import aka.util.SecurityUtils;
 import aka.util.ValidationUtils;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -44,6 +50,7 @@ import lombok.experimental.FieldDefaults;
 public class TeacherAttendanceController {
 
     AttendanceService attendanceService;
+    AttendanceRepository attendanceRepository;
     SchoolService schoolService;
     SchoolClassService schoolClassService;
     ScheduleService scheduleService;
@@ -51,15 +58,19 @@ public class TeacherAttendanceController {
     SystemLogService systemLogService;
 
     @GetMapping("/attendance")
-    public String index(Model model) {
+    public String index(@RequestParam(value = "page", defaultValue = "0") int page, Model model) {
         Teacher teacher = SecurityUtils.getTeacher();
         Integer teacherId = teacher != null ? teacher.getId() : null;
 
-        List<Attendance> attendances = teacherId != null 
-                ? attendanceService.findByTeacherIdOrderByIdDesc(teacherId) 
-                : Collections.emptyList();
+        if (teacherId != null) {
+            Pageable pageable = PageRequest.of(page, 10, Sort.by("id").descending());
+            Page<Attendance> pageResult = attendanceRepository.findByTeacherId(teacherId, pageable);
+            model.addAttribute("attendances", pageResult.getContent());
+            model.addAttribute("pageObj", pageResult);
+        } else {
+            model.addAttribute("attendances", Collections.emptyList());
+        }
 
-        model.addAttribute("attendances", attendances);
         return "teacher/attendance/list";
     }
 
@@ -72,7 +83,8 @@ public class TeacherAttendanceController {
     @PostMapping("/attendance/new")
     public String submit(@Valid @ModelAttribute("attendanceForm") AttendanceForm form,
                          BindingResult bindingResult,
-                         Model model) {
+                         Model model,
+                         RedirectAttributes redirectAttributes) {
         Teacher teacher = SecurityUtils.getTeacher();
 
         if (teacher == null) {
@@ -166,7 +178,7 @@ public class TeacherAttendanceController {
             if (now.isAfter(lateThreshold)) {
                 isLate = true;
                 status = "LATE";
-                String lateDetail = "[VÀO MUỘN: Giờ vào " + now.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss")) + " (Giờ chuẩn: " + expectedStartTime + ")]";
+                String lateDetail = "[VÀO MUỘN: Giờ vào " + now.format(DateTimeFormatter.ofPattern("HH:mm:ss")) + " (Giờ chuẩn: " + expectedStartTime + ")]";
                 notes = (notes != null && !notes.isBlank()) ? notes + " | " + lateDetail : lateDetail;
             }
         }
@@ -193,7 +205,9 @@ public class TeacherAttendanceController {
                 "Giáo viên thực hiện điểm danh cho " + session + " tại " + schoolName + " (" + className + ")" + (isLate ? " [VÀO MUỘN]" : ""));
 
         if (isLate) {
-            model.addAttribute("warning", "Hệ thống ghi nhận bạn ĐIỂM DANH MUỘN cho " + session + "! Thông tin đã được tự động gắn nhãn 'Vào muộn'.");
+            redirectAttributes.addFlashAttribute("warning", "Hệ thống ghi nhận bạn ĐIỂM DANH MUỘN cho " + session + "! Thông tin đã được tự động gắn nhãn 'Vào muộn'.");
+        } else {
+            redirectAttributes.addFlashAttribute("success", "Điểm danh ca dạy " + session + " thành công!");
         }
 
         return "redirect:/teacher/attendance";

@@ -6,6 +6,7 @@
     <title>Khiếu nại - AKA School Manager</title>
     <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
     <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/form-validate.css}">
 </head>
 <body>
     <div class="app-container">
@@ -29,27 +30,33 @@
             <div th:if="${error}" class="alert-box alert-error" th:text="${error}"></div>
             <div th:if="${success}" class="alert-box alert-success" th:text="${success}"></div>
 
-            <!-- COMPLAINTS TABLE BOX -->
-            <div class="card-box">
-                <table class="attendance-table">
+            <!-- COMPLAINTS TABLE BOX (10 ROWS / PAGE) -->
+            <div class="card-box card-box-1table">
+                <div class="box-header box-header-flex">
+                    <h2 class="box-title">Đơn Khiếu Nại Tiết Dạy Của Tôi</h2>
+                    <div class="flex-gap-sm">
+                        <input type="text" placeholder="Tìm kiếm khiếu nại..." class="table-search-bar w-260" data-aka-search="true">
+                    </div>
+                </div>
+                <table class="data-table">
                     <thead>
                         <tr>
-                            <th style="width: 100px; text-align: center;">MÃ KHIẾU NẠI</th>
-                            <th style="width: 110px;">NGÀY DẠY</th>
-                            <th style="width: 170px;">TRƯỜNG</th>
-                            <th style="width: 80px; text-align: center;">CA DẠY</th>
+                            <th class="w-100 text-center">MÃ KHIẾU NẠI</th>
+                            <th class="w-110">NGÀY DẠY</th>
+                            <th class="w-170">TRƯỜNG</th>
+                            <th class="w-80 text-center">CA DẠY</th>
                             <th>NỘI DUNG KHIẾU NẠI</th>
-                            <th style="width: 120px; text-align: center;">SỐ TIẾT YÊU CẦU</th>
-                            <th style="width: 110px; text-align: center;">TRẠNG THÁI</th>
+                            <th class="w-120 text-center">SỐ TIẾT YÊU CẦU</th>
+                            <th class="w-110 text-center">TRẠNG THÁI</th>
                             <th>PHẢN HỒI ADMIN</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="cmp : ${complaints}">
                             <td class="text-center" th:text="${'#' + cmp.id}">#1</td>
-                            <td th:text="${#temporals.format(cmp.attendance.date, 'dd/MM/yyyy')}">04/08/2026</td>
-                            <td th:text="${cmp.attendance.school.name}">Trường Hoa Mai</td>
-                            <td class="text-center" th:text="${cmp.attendance.session}">Ca 1</td>
+                            <td th:text="${cmp.attendance != null and cmp.attendance.date != null ? #temporals.format(cmp.attendance.date, 'dd/MM/yyyy') : 'N/A'}">04/08/2026</td>
+                            <td th:text="${cmp.attendance != null and cmp.attendance.school != null ? cmp.attendance.school.name : 'N/A'}">Trường Hoa Mai</td>
+                            <td class="text-center" th:text="${cmp.attendance != null ? cmp.attendance.session : 'N/A'}">Ca 1</td>
                             <td th:text="${cmp.content}">Nội dung khiếu nại</td>
                             <td class="text-center"><strong th:text="${cmp.expectedPeriods}">3</strong> tiết</td>
                             <td class="text-center">
@@ -60,15 +67,38 @@
                             <td th:text="${cmp.adminNotes != null and !#strings.isEmpty(cmp.adminNotes) ? cmp.adminNotes : 'Chưa có'}">Chưa có</td>
                         </tr>
 
+                        <!-- BÙ DÒNG TRỐNG NẾU TRANG ÍT HƠN 10 DÒNG -->
+                        <tr th:if="${!#lists.isEmpty(complaints) and complaints.size() < 10}" 
+                            th:each="i : ${#numbers.sequence(1, 10 - complaints.size())}" class="spacer-row">
+                            <td colspan="8" class="empty-cell-spacer">&nbsp;</td>
+                        </tr>
                         <tr th:if="${#lists.isEmpty(complaints)}">
-                            <td colspan="8" class="empty-state-text">
+                            <td colspan="8" class="empty-table-cell empty-cell-tall">
                                 Chưa có khiếu nại nào được tạo trong CSDL.
                             </td>
                         </tr>
                     </tbody>
                 </table>
+
+                <!-- THANH PHÂN TRANG CỐ ĐỊNH Ở ĐÁY KHUNG CARD -->
+                <div class="pagination-bar" th:if="${pageObj != null and pageObj.totalElements > 0}">
+                    <span class="page-info" th:text="'Trang ' + (${pageObj.number + 1}) + ' / ' + ${pageObj.totalPages} + ' (Tổng số ' + ${pageObj.totalElements} + ' khiếu nại)'"></span>
+                    <div class="pagination-controls">
+                        <a th:href="${pageObj.first} ? 'javascript:void(0)' : @{/teacher/complaints(page=${pageObj.number - 1})}" 
+                           class="page-btn no-underline" th:classappend="${pageObj.first} ? 'disabled' : ''">❮ Trước</a>
+                        <th:block th:each="i : ${#numbers.sequence(0, pageObj.totalPages - 1)}">
+                            <a th:href="@{/teacher/complaints(page=${i})}" 
+                               class="page-btn no-underline" th:classappend="${i == pageObj.number} ? 'active' : ''" 
+                               th:text="${i + 1}">1</a>
+                        </th:block>
+                        <a th:href="${pageObj.last} ? 'javascript:void(0)' : @{/teacher/complaints(page=${pageObj.number + 1})}" 
+                           class="page-btn no-underline" th:classappend="${pageObj.last} ? 'disabled' : ''">Sau ❯</a>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
+    <script th:src="@{/js/smooth-pagination.js}"></script>
+    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

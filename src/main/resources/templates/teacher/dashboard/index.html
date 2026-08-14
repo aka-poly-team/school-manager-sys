@@ -6,6 +6,7 @@
     <title>Báo cáo & Lịch sử cá nhân - AKA School Manager</title>
     <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
     <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/form-validate.css}">
 </head>
 <body>
     <div class="app-container">
@@ -18,7 +19,7 @@
             <div class="top-bar">
                 <div>
                     <h1 class="page-title">Báo Cáo & Lịch Sử Cá Nhân</h1>
-                    <p class="page-subtitle" th:text="${'Xin chào, ' + (teacherName != null ? teacherName : 'Giáo viên') + '! Theo dõi hoạt động giảng dạy hôm nay (' + todayFormatted + ')'}"></p>
+                    <p class="page-subtitle" th:text="${'Xin chào, ' + (teacherName != null and !#strings.contains(teacherName, '@') ? teacherName : 'Giáo viên') + '! Theo dõi hoạt động giảng dạy hôm nay (' + todayFormatted + ')'}"></p>
                 </div>
                 <div class="top-bar-actions">
                     <!-- Nút Chuông Thông Báo -->
@@ -36,12 +37,16 @@
                                class="ri-user-line avatar-default-icon"></i>
                         </div>
                         <div class="top-user-info">
-                            <span class="top-user-name" th:text="${teacherName != null ? teacherName : 'Giáo viên'}">Giáo viên</span>
+                            <span class="top-user-name" th:text="${teacherName != null and !#strings.contains(teacherName, '@') ? teacherName : 'Giáo viên'}">Giáo viên</span>
                             <span class="top-user-role" th:text="${userRole != null and userRole == 'ROLE_ADMIN' ? 'Quản trị viên' : 'Giáo viên'}">Giáo viên</span>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- ALERT NOTIFICATIONS -->
+            <div th:if="${success}" class="alert-box alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert-box alert-error" th:text="${error}"></div>
 
             <!-- STATS GRID -->
             <div class="stats-grid">
@@ -175,5 +180,7 @@
             </div>
         </main>
     </div>
+    <script th:src="@{/js/smooth-pagination.js}"></script>
+    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

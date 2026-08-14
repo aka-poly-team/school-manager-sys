@@ -2,6 +2,8 @@ package aka.repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,6 +11,7 @@ import aka.model.Attendance;
 
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     List<Attendance> findByTeacherIdOrderByIdDesc(Integer teacherId);
+    Page<Attendance> findByTeacherId(Integer teacherId, Pageable pageable);
     List<Attendance> findTop5ByTeacherIdOrderByIdDesc(Integer teacherId);
     List<Attendance> findByTeacherIdAndDate(Integer teacherId, LocalDate date);
     List<Attendance> findAllByOrderByIdDesc();
@@ -17,6 +20,14 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     boolean existsByTeacherIdAndSchoolIdAndSchoolClassIdAndSessionAndDate(
             Integer teacherId, Integer schoolId, Integer classId, String session, LocalDate date);
+
+    @Query("SELECT a FROM Attendance a WHERE (:kw IS NULL OR :kw = '' " +
+           "OR LOWER(a.teacher.name) LIKE LOWER(CONCAT('%', :kw, '%')) " +
+           "OR LOWER(a.school.name) LIKE LOWER(CONCAT('%', :kw, '%')) " +
+           "OR LOWER(a.schoolClass.name) LIKE LOWER(CONCAT('%', :kw, '%')) " +
+           "OR LOWER(a.session) LIKE LOWER(CONCAT('%', :kw, '%')) " +
+           "OR LOWER(a.status) LIKE LOWER(CONCAT('%', :kw, '%')))")
+    Page<Attendance> searchAttendances(@Param("kw") String keyword, Pageable pageable);
 
     // 1. JPQL Query lọc danh sách Điểm danh thuần túy từ CSDL theo tháng, năm, giáo viên, trường, trạng thái
     @Query("SELECT a FROM Attendance a WHERE (:month IS NULL OR MONTH(a.date) = :month) " +
@@ -50,4 +61,17 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
             @Param("teacherId") Integer teacherId,
             @Param("schoolId") Integer schoolId,
             @Param("status") String status);
+    // 3. JPQL Query thống kê tổng số tiết và số ca theo từng tháng trong năm (Real-Time Chart Data)
+    @Query("SELECT MONTH(a.date), COUNT(a), " +
+           "SUM(CASE WHEN UPPER(a.status) = 'APPROVED' THEN a.periods ELSE 0 END), " +
+           "SUM(CASE WHEN UPPER(a.status) = 'PENDING' THEN a.periods ELSE 0 END), " +
+           "SUM(CASE WHEN UPPER(a.status) = 'REJECTED' THEN a.periods ELSE 0 END) " +
+           "FROM Attendance a WHERE (:year IS NULL OR YEAR(a.date) = :year) " +
+           "AND (:teacherId IS NULL OR (a.teacher IS NOT NULL AND a.teacher.id = :teacherId)) " +
+           "AND (:schoolId IS NULL OR (a.school IS NOT NULL AND a.school.id = :schoolId)) " +
+           "GROUP BY MONTH(a.date) ORDER BY MONTH(a.date) ASC")
+    List<Object[]> queryMonthlyStats(
+            @Param("year") Integer year,
+            @Param("teacherId") Integer teacherId,
+            @Param("schoolId") Integer schoolId);
 }

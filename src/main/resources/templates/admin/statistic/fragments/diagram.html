@@ -1,188 +1,272 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-    <!-- KHU VỰC SƠ ĐỒ BIỂU ĐỒ CHUẨN (EXACT MATCH REFERENCE DASHBOARD) -->
-    <div th:fragment="diagram" style="display: flex; flex-direction: column; gap: 1.25rem; width: 100%; max-width: 100%; box-sizing: border-box; overflow: hidden;">
-        
-        <!-- HÀNG 1: SƠ ĐỒ ĐỒNG HỒ ĐO NỬA ĐƯỜNG TRÒN (SEMI-CIRCLE GAUGE METERS) & BIỂU ĐỒ ĐƯỜNG CỘT TỔNG HỢP -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; width: 100%; max-width: 100%; box-sizing: border-box;">
-            
-            <!-- GAUGE METER 1: TỶ LỆ HOÀN THÀNH PHÊ DUYỆT -->
-            <div class="diagram-card-main" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.25rem; text-align: center; max-width: 100%; box-sizing: border-box; overflow: hidden;">
-                <div class="diagram-title" style="width: 100%; text-align: center; margin-bottom: 0.4rem;">
-                    <span><i class="ri-dashboard-2-line" style="color: #8b5cf6;"></i> TỶ LỆ PHÊ DUYỆT TIẾT DẠY</span>
-                </div>
-                
-                <!-- GAUGE SVG DIAL WITH NEEDLE POINTER -->
-                <div style="position: relative; width: 200px; max-width: 100%; height: 110px; margin: 0.5rem auto 0.25rem auto;">
-                    <svg viewBox="0 0 200 110" style="width: 100%; height: 100%; overflow: hidden; display: block;">
-                        <!-- Gauge Background Arc -->
-                        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e2e8f0" stroke-width="22" stroke-linecap="round"/>
-                        
-                        <!-- Gauge Value Arc (Gradient Green to Purple) -->
-                        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#gaugeGradient)" stroke-width="22" stroke-linecap="round"
-                              th:attr="stroke-dasharray=${(filteredCount > 0 ? (filteredApprovedPeriods * 251 / (filteredApprovedPeriods + filteredPendingPeriods > 0 ? filteredApprovedPeriods + filteredPendingPeriods : 1)) : 0) + ' 251'}"/>
-                        
-                        <defs>
-                            <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stop-color="#8b5cf6" />
-                                <stop offset="100%" stop-color="#10b981" />
-                            </linearGradient>
-                        </defs>
+<!-- ═══════════════════════════════════════════════════════════
+     DIAGRAM FRAGMENT — Real-time Chart.js v4 Data
+     Dữ liệu 100% từ CSDL, an toàn không lỗi
+═══════════════════════════════════════════════════════════ -->
+<div th:fragment="diagram" style="display:flex;flex-direction:column;gap:1.25rem;width:100%;box-sizing:border-box;">
 
-                        <!-- Needle Pivot Circle -->
-                        <circle cx="100" cy="100" r="9" fill="#1e293b" />
-                        
-                        <!-- Needle Pointer Line rotated based on percentage -->
-                        <line x1="100" y1="100" x2="40" y2="100" stroke="#1e293b" stroke-width="4.5" stroke-linecap="round"
-                              th:style="${'transform-origin: 100px 100px; transform: rotate(' + (filteredApprovedPeriods + filteredPendingPeriods > 0 ? (filteredApprovedPeriods * 180 / (filteredApprovedPeriods + filteredPendingPeriods)) : 0) + 'deg); transition: transform 1s ease;'}" />
-                    </svg>
-                </div>
-                
-                <div style="margin-top: 0.15rem;">
-                    <span style="font-size: 1.6rem; font-weight: 800; color: #1e293b;" 
-                          th:text="${(filteredApprovedPeriods + filteredPendingPeriods > 0 ? (filteredApprovedPeriods * 100 / (filteredApprovedPeriods + filteredPendingPeriods)) : 0) + '%'}">100%</span>
-                    <p style="font-size: 0.8rem; color: #64748b; margin-top: 0.1rem;">Tiết đã được Admin phê duyệt hợp lệ</p>
-                </div>
-            </div>
+    <!-- ── HÀNG 1: KPI CARDS ── -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0.9rem;">
 
-            <!-- GAUGE METER 2: TỶ LỆ CA DẠY HỢP LỆ KHÔNG TỪ CHỐI -->
-            <div class="diagram-card-main" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.25rem; text-align: center; max-width: 100%; box-sizing: border-box; overflow: hidden;">
-                <div class="diagram-title" style="width: 100%; text-align: center; margin-bottom: 0.4rem;">
-                    <span><i class="ri-speed-up-line" style="color: #10b981;"></i> SỐ NGÀY TỒN / HÀNH ĐỘNG DUYỆT</span>
-                </div>
-                
-                <!-- GAUGE SVG DIAL WITH GREEN NEEDLE -->
-                <div style="position: relative; width: 200px; max-width: 100%; height: 110px; margin: 0.5rem auto 0.25rem auto;">
-                    <svg viewBox="0 0 200 110" style="width: 100%; height: 100%; overflow: hidden; display: block;">
-                        <!-- Gauge Background Arc -->
-                        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e2e8f0" stroke-width="22" stroke-linecap="round"/>
-                        
-                        <!-- Gauge Value Arc (Green) -->
-                        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#10b981" stroke-width="22" stroke-linecap="round"
-                              th:attr="stroke-dasharray=${(filteredCount > 0 ? ((filteredCount - rejectedCount) * 251 / filteredCount) : 251) + ' 251'}"/>
-
-                        <!-- Needle Pivot Circle -->
-                        <circle cx="100" cy="100" r="9" fill="#059669" />
-                        
-                        <!-- Needle Pointer Line rotated based on percentage -->
-                        <line x1="100" y1="100" x2="40" y2="100" stroke="#059669" stroke-width="4.5" stroke-linecap="round"
-                              th:style="${'transform-origin: 100px 100px; transform: rotate(' + (filteredCount > 0 ? ((filteredCount - rejectedCount) * 180 / filteredCount) : 180) + 'deg); transition: transform 1s ease;'}" />
-                    </svg>
-                </div>
-                
-                <div style="margin-top: 0.15rem;">
-                    <span style="font-size: 1.6rem; font-weight: 800; color: #059669;" 
-                          th:text="${filteredCount - rejectedCount}">52</span>
-                    <p style="font-size: 0.8rem; color: #64748b; margin-top: 0.1rem;">Tổng số ca điểm danh hợp lệ trong CSDL</p>
-                </div>
-            </div>
-
-            <!-- CARD 3: CỘT TỔNG DÒNG TIỀN / SỐ TIẾT CHỜ DUYỆT -->
-            <div class="diagram-card-main" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.25rem; max-width: 100%; box-sizing: border-box; overflow: hidden;">
-                <div class="diagram-title">
-                    <span><i class="ri-bar-chart-2-fill" style="color: #2563eb;"></i> DÒNG TIẾT CỦA THÁNG</span>
-                </div>
-                
-                <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem;">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
-                        <span style="color: #64748b; font-weight: 600;">ĐÃ DUYỆT:</span>
-                        <strong style="color: #10b981;" th:text="${filteredApprovedPeriods + ' tiết'}">8 tiết</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
-                        <span style="color: #64748b; font-weight: 600;">CHỜ DUYỆT:</span>
-                        <strong style="color: #8b5cf6;" th:text="${filteredPendingPeriods + ' tiết'}">4 tiết</strong>
-                    </div>
-                </div>
-
-                <!-- MINI BAR CHART COLUMNS -->
-                <div style="display: flex; align-items: flex-end; gap: 0.4rem; height: 65px; padding-top: 0.5rem; border-top: 1px dashed #e2e8f0;">
-                    <div style="flex: 1; background: #60a5fa; height: 40%; border-radius: 4px 4px 0 0;" title="Tháng 1"></div>
-                    <div style="flex: 1; background: #3b82f6; height: 65%; border-radius: 4px 4px 0 0;" title="Tháng 2"></div>
-                    <div style="flex: 1; background: #2563eb; height: 85%; border-radius: 4px 4px 0 0;" title="Tháng 3"></div>
-                    <div style="flex: 1; background: #1d4ed8; height: 100%; border-radius: 4px 4px 0 0;" title="Tháng 4"></div>
-                    <div style="flex: 1; background: #3b82f6; height: 70%; border-radius: 4px 4px 0 0;" title="Tháng 5"></div>
-                    <div style="flex: 1; background: #2563eb; height: 90%; border-radius: 4px 4px 0 0;" title="Tháng 6"></div>
-                    <div style="flex: 1; background: #10b981; height: 95%; border-radius: 4px 4px 0 0;" title="Tháng 7"></div>
-                </div>
-            </div>
+        <!-- KPI: Tổng ca điểm danh -->
+        <div style="background:#fff;border-radius:14px;padding:1.1rem 1.25rem;border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,0.04);display:flex;flex-direction:column;gap:0.3rem;">
+            <div style="font-size:0.78rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">TỔNG CA ĐIỂM DANH</div>
+            <div style="font-size:2rem;font-weight:800;color:#1e293b;" th:text="${filteredCount}">0</div>
+            <div style="font-size:0.78rem;color:#94a3b8;">ca dạy trong bộ lọc hiện tại</div>
         </div>
 
-        <!-- HÀNG 2: SƠ ĐỒ CHẤM NGANG LÊN XUỐNG (HORIZONTAL DOT TREND CHART / SCATTER PLOT) -->
-        <div class="diagram-card-main" style="width: 100%; max-width: 100%; padding: 1.1rem 1.25rem 0.85rem 1.25rem; box-sizing: border-box; overflow: hidden;">
-            <div class="diagram-title" style="margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
-                <span><i class="ri-git-commit-line" style="color: #2563eb;"></i> SƠ ĐỒ CHẤM NGANG LÊN XUỐNG CÁC THÁNG (DOT TREND SCATTER)</span>
-                <div class="diagram-legend">
-                    <span><span class="legend-dot" style="background-color: #2563eb;"></span>Điểm dữ liệu ca dạy</span>
-                </div>
-            </div>
-
-            <!-- SVG HORIZONTAL DOT TREND SCATTER CHART -->
-            <div style="position: relative; width: 100%; max-width: 100%; margin-top: 0.5rem; overflow: hidden;">
-                <svg viewBox="0 0 800 110" style="width: 100%; height: 110px; overflow: hidden; display: block;">
-                    <!-- Horizontal Dashed Guide Lines -->
-                    <line x1="0" y1="20" x2="800" y2="20" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
-                    <line x1="0" y1="55" x2="800" y2="55" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
-                    <line x1="0" y1="90" x2="800" y2="90" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
-
-                    <!-- Dotted Connecting Segments between Nodes -->
-                    <line x1="50" y1="80" x2="170" y2="35" stroke="#93c5fd" stroke-width="2" stroke-dasharray="3 3"/>
-                    <line x1="170" y1="35" x2="290" y2="85" stroke="#93c5fd" stroke-width="2" stroke-dasharray="3 3"/>
-                    <line x1="290" y1="85" x2="410" y2="25" stroke="#93c5fd" stroke-width="2" stroke-dasharray="3 3"/>
-                    <line x1="410" y1="25" x2="530" y2="70" stroke="#93c5fd" stroke-width="2" stroke-dasharray="3 3"/>
-                    <line x1="530" y1="70" x2="650" y2="20" stroke="#93c5fd" stroke-width="2" stroke-dasharray="3 3"/>
-                    <line x1="650" y1="20" x2="750" y2="50" stroke="#93c5fd" stroke-width="2" stroke-dasharray="3 3"/>
-
-                    <!-- Up/Down Dots with Outer Glow Rings -->
-                    <!-- Dot 1: Month 1 (Low) -->
-                    <circle cx="50" cy="80" r="10" fill="rgba(37, 99, 235, 0.15)"/>
-                    <circle cx="50" cy="80" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
-                    <text x="50" y="65" text-anchor="middle" font-size="10" font-weight="700" fill="#2563eb">4 ca</text>
-
-                    <!-- Dot 2: Month 3 (High) -->
-                    <circle cx="170" cy="35" r="10" fill="rgba(16, 185, 129, 0.15)"/>
-                    <circle cx="170" cy="35" r="5" fill="#10b981" stroke="#ffffff" stroke-width="2"/>
-                    <text x="170" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="#059669">10 ca</text>
-
-                    <!-- Dot 3: Month 5 (Low) -->
-                    <circle cx="290" cy="85" r="10" fill="rgba(37, 99, 235, 0.15)"/>
-                    <circle cx="290" cy="85" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
-                    <text x="290" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#2563eb">3 ca</text>
-
-                    <!-- Dot 4: Month 7 (High) -->
-                    <circle cx="410" cy="25" r="10" fill="rgba(16, 185, 129, 0.15)"/>
-                    <circle cx="410" cy="25" r="5" fill="#10b981" stroke="#ffffff" stroke-width="2"/>
-                    <text x="410" y="12" text-anchor="middle" font-size="10" font-weight="700" fill="#059669">12 ca</text>
-
-                    <!-- Dot 5: Month 9 (Mid) -->
-                    <circle cx="530" cy="70" r="10" fill="rgba(139, 92, 246, 0.15)"/>
-                    <circle cx="530" cy="70" r="5" fill="#8b5cf6" stroke="#ffffff" stroke-width="2"/>
-                    <text x="530" y="55" text-anchor="middle" font-size="10" font-weight="700" fill="#7c3aed">6 ca</text>
-
-                    <!-- Dot 6: Month 11 (High) -->
-                    <circle cx="650" cy="20" r="10" fill="rgba(16, 185, 129, 0.15)"/>
-                    <circle cx="650" cy="20" r="5" fill="#10b981" stroke="#ffffff" stroke-width="2"/>
-                    <text x="650" y="9" text-anchor="middle" font-size="10" font-weight="700" fill="#059669">14 ca</text>
-
-                    <!-- Dot 7: Month 12 (Mid) -->
-                    <circle cx="750" cy="50" r="10" fill="rgba(37, 99, 235, 0.15)"/>
-                    <circle cx="750" cy="50" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
-                    <text x="750" y="35" text-anchor="middle" font-size="10" font-weight="700" fill="#2563eb">8 ca</text>
-                </svg>
-                
-                <!-- Month X-Axis Labels positioned under each dot -->
-                <div style="display: flex; justify-content: space-between; padding: 0 1.5rem; margin-top: 0.25rem; font-size: 0.78rem; color: #64748b; font-weight: 600;">
-                    <span>Tháng 1</span>
-                    <span>Tháng 3</span>
-                    <span>Tháng 5</span>
-                    <span>Tháng 7</span>
-                    <span>Tháng 9</span>
-                    <span>Tháng 11</span>
-                    <span>Tháng 12</span>
-                </div>
-            </div>
+        <!-- KPI: Số tiết đã duyệt -->
+        <div style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:14px;padding:1.1rem 1.25rem;border:1px solid #a7f3d0;box-shadow:0 2px 8px rgba(16,185,129,0.08);display:flex;flex-direction:column;gap:0.3rem;">
+            <div style="font-size:0.78rem;color:#059669;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">TIẾT ĐÃ DUYỆT</div>
+            <div style="font-size:2rem;font-weight:800;color:#059669;" th:text="${filteredApprovedPeriods}">0</div>
+            <div style="font-size:0.78rem;color:#10b981;">tiết được Admin phê duyệt</div>
         </div>
 
+        <!-- KPI: Số tiết chờ duyệt -->
+        <div style="background:linear-gradient(135deg,#faf5ff,#ede9fe);border-radius:14px;padding:1.1rem 1.25rem;border:1px solid #c4b5fd;box-shadow:0 2px 8px rgba(139,92,246,0.08);display:flex;flex-direction:column;gap:0.3rem;">
+            <div style="font-size:0.78rem;color:#7c3aed;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">TIẾT CHỜ DUYỆT</div>
+            <div style="font-size:2rem;font-weight:800;color:#7c3aed;" th:text="${filteredPendingPeriods}">0</div>
+            <div style="font-size:0.78rem;color:#8b5cf6;">tiết đang chờ Admin xét duyệt</div>
+        </div>
+
+        <!-- KPI: Tỷ lệ duyệt -->
+        <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:14px;padding:1.1rem 1.25rem;border:1px solid #93c5fd;box-shadow:0 2px 8px rgba(37,99,235,0.08);display:flex;flex-direction:column;gap:0.3rem;">
+            <div style="font-size:0.78rem;color:#1d4ed8;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">TỶ LỆ DUYỆT</div>
+            <div style="font-size:2rem;font-weight:800;color:#2563eb;" th:text="${approvalRate}">0%</div>
+            <div style="font-size:0.78rem;color:#3b82f6;">tiết được phê duyệt / tổng tiết</div>
+        </div>
+
+        <!-- KPI: Từ chối -->
+        <div style="background:linear-gradient(135deg,#fff5f5,#fee2e2);border-radius:14px;padding:1.1rem 1.25rem;border:1px solid #fca5a5;box-shadow:0 2px 8px rgba(239,68,68,0.08);display:flex;flex-direction:column;gap:0.3rem;">
+            <div style="font-size:0.78rem;color:#dc2626;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">CA TỪ CHỐI</div>
+            <div style="font-size:2rem;font-weight:800;color:#ef4444;" th:text="${rejectedCount}">0</div>
+            <div style="font-size:0.78rem;color:#f87171;">ca bị Admin từ chối</div>
+        </div>
     </div>
+
+    <!-- ── HÀNG 2: BIỂU ĐỒ CỘT THEO THÁNG (Chart.js Real-time) + PIE CHART ── -->
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:1rem;width:100%;box-sizing:border-box;">
+
+        <!-- BIỂU ĐỒ CỘT: Số tiết theo từng tháng -->
+        <div style="background:#fff;border-radius:14px;padding:1.25rem;border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,0.04);min-width:0;box-sizing:border-box;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+                <div>
+                    <div style="font-weight:700;font-size:1rem;color:#1e293b;">
+                        <i class="ri-bar-chart-grouped-fill" style="color:#2563eb;"></i>
+                        Biểu Đồ Số Tiết Theo Tháng — Năm <span th:text="${chartYear}">2026</span>
+                    </div>
+                    <div style="font-size:0.78rem;color:#94a3b8;margin-top:2px;">Dữ liệu trực tiếp từ CSDL, theo bộ lọc giáo viên / trường</div>
+                </div>
+                <div style="display:flex;gap:0.75rem;font-size:0.78rem;flex-wrap:wrap;">
+                    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#10b981;margin-right:4px;"></span>Đã duyệt</span>
+                    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#8b5cf6;margin-right:4px;"></span>Chờ duyệt</span>
+                    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#ef4444;margin-right:4px;"></span>Từ chối</span>
+                </div>
+            </div>
+            <div style="position:relative;height:260px;width:100%;">
+                <canvas id="monthlyBarChart"></canvas>
+            </div>
+        </div>
+
+        <!-- PIE CHART: Phân bổ trạng thái -->
+        <div style="background:#fff;border-radius:14px;padding:1.25rem;border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,0.04);min-width:0;box-sizing:border-box;display:flex;flex-direction:column;">
+            <div style="font-weight:700;font-size:1rem;color:#1e293b;margin-bottom:0.75rem;">
+                <i class="ri-pie-chart-2-fill" style="color:#8b5cf6;"></i>
+                Phân Bổ Trạng Thái Ca Dạy
+            </div>
+            <div style="position:relative;flex:1;min-height:180px;display:flex;align-items:center;justify-content:center;">
+                <canvas id="statusPieChart"></canvas>
+            </div>
+            <!-- Legend -->
+            <div style="display:flex;flex-direction:column;gap:0.4rem;margin-top:0.85rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.83rem;">
+                    <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#10b981;margin-right:6px;"></span>Đã duyệt</span>
+                    <strong style="color:#10b981;" th:text="${approvedCount + ' ca'}">0 ca</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.83rem;">
+                    <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#f59e0b;margin-right:6px;"></span>Chờ duyệt</span>
+                    <strong style="color:#f59e0b;" th:text="${pendingCount + ' ca'}">0 ca</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.83rem;">
+                    <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ef4444;margin-right:6px;"></span>Từ chối</span>
+                    <strong style="color:#ef4444;" th:text="${rejectedCount + ' ca'}">0 ca</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── HÀNG 3: BẢNG THỐNG KÊ TIẾT THEO GIÁO VIÊN ── -->
+    <div style="background:#fff;border-radius:14px;padding:1.25rem;border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,0.04);width:100%;box-sizing:border-box;">
+        <div style="font-weight:700;font-size:1rem;color:#1e293b;margin-bottom:1rem;">
+            <i class="ri-user-star-fill" style="color:#f97316;"></i>
+            Thống Kê Số Tiết Dạy Theo Giáo Viên
+        </div>
+
+        <div th:if="${#lists.isEmpty(teacherStats)}" style="text-align:center;padding:2rem;color:#94a3b8;font-size:0.9rem;">
+            Không có dữ liệu điểm danh phù hợp với bộ lọc hiện tại.
+        </div>
+
+        <div th:each="ts : ${teacherStats}" style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px dashed #f1f5f9;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;flex-wrap:wrap;gap:0.4rem;">
+                <div>
+                    <span style="font-weight:700;font-size:0.9rem;color:#1e293b;" th:text="${ts.teacherName}">GV Nguyễn</span>
+                    <span style="font-size:0.78rem;color:#94a3b8;margin-left:0.5rem;" th:text="${ts.email}">email@example.com</span>
+                </div>
+                <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+                    <span style="font-size:0.8rem;background:#ecfdf5;color:#059669;padding:0.15rem 0.6rem;border-radius:10px;font-weight:700;" th:text="${ts.approvedPeriods + ' tiết duyệt'}">0 tiết duyệt</span>
+                    <span style="font-size:0.8rem;background:#faf5ff;color:#7c3aed;padding:0.15rem 0.6rem;border-radius:10px;font-weight:700;" th:text="${ts.pendingPeriods + ' tiết chờ'}">0 tiết chờ</span>
+                    <span style="font-size:0.8rem;background:#f1f5f9;color:#475569;padding:0.15rem 0.6rem;border-radius:10px;font-weight:700;" th:text="${ts.totalAttendances + ' ca'}">0 ca</span>
+                </div>
+            </div>
+            <!-- Progress bar -->
+            <div style="width:100%;height:10px;background:#f1f5f9;border-radius:5px;overflow:hidden;display:flex;">
+                <div style="height:100%;background:linear-gradient(90deg,#10b981,#059669);border-radius:5px 0 0 5px;transition:width .6s ease;"
+                     th:style="'width:' + ${ts.approvedPercent} + '%;'"></div>
+                <div style="height:100%;background:linear-gradient(90deg,#a78bfa,#8b5cf6);transition:width .6s ease;"
+                     th:style="'width:' + ${ts.pendingPercent} + '%;'"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CHART.JS: Inline data từ Thymeleaf ── -->
+    <script th:inline="javascript">
+    /*<![CDATA[*/
+    (function() {
+        const monthlyApproved = /*[[${monthlyApproved}]]*/ [0,0,0,0,0,0,0,0,0,0,0,0];
+        const monthlyPending  = /*[[${monthlyPending}]]*/  [0,0,0,0,0,0,0,0,0,0,0,0];
+        const monthlyRejected = /*[[${monthlyRejected}]]*/ [0,0,0,0,0,0,0,0,0,0,0,0];
+        const approvedCount   = /*[[${approvedCount}]]*/ 0;
+        const pendingCount    = /*[[${pendingCount}]]*/ 0;
+        const rejectedCount   = /*[[${rejectedCount}]]*/ 0;
+
+        const labels = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'];
+
+        function initCharts() {
+            if (typeof Chart === 'undefined') {
+                setTimeout(initCharts, 50);
+                return;
+            }
+            Chart.defaults.font.family = "'Inter', 'Segoe UI', sans-serif";
+            Chart.defaults.font.size = 12;
+
+            // ── BAR CHART ──
+            const barCanvas = document.getElementById('monthlyBarChart');
+            if (barCanvas) {
+                new Chart(barCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Tiết đã duyệt',
+                                data: monthlyApproved,
+                                backgroundColor: 'rgba(16,185,129,0.85)',
+                                borderRadius: 6,
+                                borderSkipped: false
+                            },
+                            {
+                                label: 'Tiết chờ duyệt',
+                                data: monthlyPending,
+                                backgroundColor: 'rgba(139,92,246,0.85)',
+                                borderRadius: 6,
+                                borderSkipped: false
+                            },
+                            {
+                                label: 'Tiết từ chối',
+                                data: monthlyRejected,
+                                backgroundColor: 'rgba(239,68,68,0.75)',
+                                borderRadius: 6,
+                                borderSkipped: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#1e293b',
+                                titleColor: '#e2e8f0',
+                                bodyColor: '#cbd5e1',
+                                padding: 10,
+                                borderRadius: 8,
+                                callbacks: {
+                                    label: function(ctx) { return ' ' + ctx.dataset.label + ': ' + ctx.raw + ' tiết'; }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                border: { display: false },
+                                ticks: { color: '#64748b', font: { weight: 600 } }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: '#f1f5f9', lineWidth: 1 },
+                                border: { display: false, dash: [4,4] },
+                                ticks: {
+                                    color: '#94a3b8',
+                                    precision: 0,
+                                    callback: function(v) { return v + ' tiết'; }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // ── PIE CHART ──
+            const pieCanvas = document.getElementById('statusPieChart');
+            if (pieCanvas) {
+                const total = approvedCount + pendingCount + rejectedCount;
+                new Chart(pieCanvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Đã duyệt', 'Chờ duyệt', 'Từ chối'],
+                        datasets: [{
+                            data: total > 0 ? [approvedCount, pendingCount, rejectedCount] : [1, 0, 0],
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                            borderColor: ['#fff','#fff','#fff'],
+                            borderWidth: 3,
+                            hoverOffset: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '68%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#1e293b',
+                                titleColor: '#e2e8f0',
+                                bodyColor: '#cbd5e1',
+                                padding: 10,
+                                borderRadius: 8,
+                                callbacks: {
+                                    label: function(ctx) {
+                                        var val = (total > 0 ? ctx.raw : 0);
+                                        var pct = (total > 0 ? Math.round(ctx.raw * 100 / total) : 0);
+                                        return ' ' + ctx.label + ': ' + val + ' ca (' + pct + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        initCharts();
+    })();
+    /*]]>*/
+    </script>
+
+</div>
 </body>
 </html>

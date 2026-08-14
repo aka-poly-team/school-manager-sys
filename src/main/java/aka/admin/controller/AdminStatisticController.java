@@ -70,8 +70,8 @@ public class AdminStatisticController {
             Map<String, Object> item = new HashMap<>();
             item.put("teacherId", tId);
             item.put("teacherName", name);
-            item.put("email", email);
-            item.put("phone", phone);
+            item.put("email", email != null ? email : "");
+            item.put("phone", phone != null ? phone : "");
             item.put("totalAttendances", totalAtts);
             item.put("approvedPeriods", approved);
             item.put("pendingPeriods", pending);
@@ -80,7 +80,17 @@ public class AdminStatisticController {
             teacherStats.add(item);
         }
 
-        // 3. Phân tích số lượng theo trạng thái điểm danh cho Biểu đồ Tròn/Sơ đồ
+        // Tính % hiển thị cho từng giáo viên để template không cần tính toán
+        for (Map<String, Object> item : teacherStats) {
+            long app = ((Number) item.get("approvedPeriods")).longValue();
+            long pend = ((Number) item.get("pendingPeriods")).longValue();
+            double appPct = (maxTeacherPeriods > 0) ? (app * 100.0 / maxTeacherPeriods) : 0;
+            double pendPct = (maxTeacherPeriods > 0) ? (pend * 100.0 / maxTeacherPeriods) : 0;
+            item.put("approvedPercent", Math.round(appPct));
+            item.put("pendingPercent", Math.round(pendPct));
+        }
+
+        // 3. Phân tích số lượng theo trạng thái điểm danh
         long approvedCount = 0;
         long pendingCount = 0;
         long rejectedCount = 0;
@@ -93,6 +103,52 @@ public class AdminStatisticController {
             } else {
                 pendingCount++;
             }
+        }
+
+        // Tỷ lệ phê duyệt định dạng an toàn
+        long totalAllPeriods = filteredApprovedPeriods + filteredPendingPeriods;
+        String approvalRate = (totalAllPeriods > 0) 
+                ? String.format("%.1f%%", (filteredApprovedPeriods * 100.0) / totalAllPeriods) 
+                : "0%";
+
+        // 4. REAL-TIME: Thống kê số tiết & số ca 12 tháng từ CSDL cho Chart.js
+        int chartYear = (year != null) ? year : java.time.LocalDate.now().getYear();
+        List<Attendance> yearAttendances = attendanceService.filterAttendancesByQuery(null, chartYear, teacherId, schoolId, null);
+
+        long[] monthlyApproved = new long[12];
+        long[] monthlyPending  = new long[12];
+        long[] monthlyRejected = new long[12];
+        long[] monthlySessions = new long[12];
+
+        if (yearAttendances != null) {
+            for (Attendance att : yearAttendances) {
+                if (att != null && att.getDate() != null) {
+                    int m = att.getDate().getMonthValue() - 1; // 0 to 11
+                    if (m >= 0 && m < 12) {
+                        monthlySessions[m]++;
+                        int p = (att.getPeriods() != null) ? att.getPeriods() : 2;
+                        if ("APPROVED".equalsIgnoreCase(att.getStatus())) {
+                            monthlyApproved[m] += p;
+                        } else if ("REJECTED".equalsIgnoreCase(att.getStatus())) {
+                            monthlyRejected[m] += p;
+                        } else {
+                            monthlyPending[m] += p;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Chuyển sang List để Thymeleaf inline JS render chính xác
+        List<Long> monthlyApprovedList  = new ArrayList<>();
+        List<Long> monthlyPendingList   = new ArrayList<>();
+        List<Long> monthlyRejectedList  = new ArrayList<>();
+        List<Long> monthlySessionsList  = new ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            monthlyApprovedList.add(monthlyApproved[i]);
+            monthlyPendingList.add(monthlyPending[i]);
+            monthlyRejectedList.add(monthlyRejected[i]);
+            monthlySessionsList.add(monthlySessions[i]);
         }
 
         model.addAttribute("attendances", filteredAttendances);
@@ -111,11 +167,19 @@ public class AdminStatisticController {
         model.addAttribute("filteredCount", filteredAttendances.size());
         model.addAttribute("filteredApprovedPeriods", filteredApprovedPeriods);
         model.addAttribute("filteredPendingPeriods", filteredPendingPeriods);
+        model.addAttribute("approvalRate", approvalRate);
 
         model.addAttribute("approvedCount", approvedCount);
         model.addAttribute("pendingCount", pendingCount);
         model.addAttribute("rejectedCount", rejectedCount);
         model.addAttribute("maxTeacherPeriods", maxTeacherPeriods);
+
+        // Real-time chart data
+        model.addAttribute("chartYear", chartYear);
+        model.addAttribute("monthlyApproved", monthlyApprovedList);
+        model.addAttribute("monthlyPending", monthlyPendingList);
+        model.addAttribute("monthlyRejected", monthlyRejectedList);
+        model.addAttribute("monthlySessions", monthlySessionsList);
 
         return "admin/statistic/index";
     }

@@ -21,8 +21,8 @@
                 </div>
             </div>
 
-            <!-- SCHEDULES TABLE BOX -->
-            <div class="card-box">
+            <!-- SCHEDULES TABLE BOX (10 ROWS / PAGE) -->
+            <div class="card-box card-box-1table">
                 <table class="attendance-table">
                     <thead>
                         <tr>
@@ -38,21 +38,44 @@
                         <tr th:each="sch : ${schedules}">
                             <td class="text-center"><strong th:text="${sch.dayOfWeek == 8 ? 'Chủ nhật' : 'Thứ ' + sch.dayOfWeek}">Thứ 2</strong></td>
                             <td class="text-center" th:text="${sch.session}">Ca 1</td>
-                            <td th:text="${sch.school.name}">Trường Mầm Nông</td>
-                            <td><strong th:text="${sch.schoolClass.name}">Lớp 12A3</strong></td>
-                            <td class="text-center" th:text="${sch.startTime + ' - ' + sch.endTime}">08:00 - 09:30</td>
+                            <td th:text="${sch.school != null ? sch.school.name : 'N/A'}">Trường Mầm Nông</td>
+                            <td><strong th:text="${sch.schoolClass != null ? sch.schoolClass.name : 'N/A'}">Lớp 12A3</strong></td>
+                            <td class="text-center" th:text="${sch.startTime != null && sch.endTime != null ? sch.startTime + ' - ' + sch.endTime : 'N/A'}">08:00 - 09:30</td>
                             <td class="text-center"><span class="status-badge approved" th:text="${sch.periods + ' tiết'}">2 tiết</span></td>
                         </tr>
 
+                        <!-- BÙ DÒNG TRỐNG NẾU TRANG ÍT HƠN 10 DÒNG -->
+                        <tr th:if="${!#lists.isEmpty(schedules) and schedules.size() < 10}" 
+                            th:each="i : ${#numbers.sequence(1, 10 - schedules.size())}" class="spacer-row">
+                            <td colspan="6" style="height: 48px; border: none;">&nbsp;</td>
+                        </tr>
                         <tr th:if="${#lists.isEmpty(schedules)}">
-                            <td colspan="6" style="text-align:center;color:#94a3b8;padding:2rem 0;">
+                            <td colspan="6" class="empty-state-text" style="height: 480px; vertical-align: middle;">
                                 Chưa có lịch giảng dạy nào được phân công trong CSDL.
                             </td>
                         </tr>
                     </tbody>
                 </table>
+
+                <!-- THANH PHÂN TRANG CỐ ĐỊNH Ở ĐÁY KHUNG CARD -->
+                <div class="pagination-bar" th:if="${pageObj != null and pageObj.totalElements > 0}">
+                    <span class="page-info" th:text="'Trang ' + (${pageObj.number + 1}) + ' / ' + ${pageObj.totalPages} + ' (Tổng số ' + ${pageObj.totalElements} + ' ca dạy)'"></span>
+                    <div class="pagination-controls">
+                        <!-- LUÔN HIỆN NÚT TRƯỚC VÀ SAU, VÔ HIỆU HÓA KHÔNG CHO CLICK KHI Ở TRANG ĐẦU/CUỐI -->
+                        <a th:href="${pageObj.first} ? 'javascript:void(0)' : @{/teacher/schedules(page=${pageObj.number - 1})}" 
+                           class="page-btn" th:classappend="${pageObj.first} ? 'disabled' : ''" style="text-decoration: none;">❮ Trước</a>
+                        <th:block th:each="i : ${#numbers.sequence(0, pageObj.totalPages - 1)}">
+                            <a th:href="@{/teacher/schedules(page=${i})}" 
+                               class="page-btn" th:classappend="${i == pageObj.number} ? 'active' : ''" 
+                               th:text="${i + 1}" style="text-decoration: none;">1</a>
+                        </th:block>
+                        <a th:href="${pageObj.last} ? 'javascript:void(0)' : @{/teacher/schedules(page=${pageObj.number + 1})}" 
+                           class="page-btn" th:classappend="${pageObj.last} ? 'disabled' : ''" style="text-decoration: none;">Sau ❯</a>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
+    <script th:src="@{/js/smooth-pagination.js}"></script>
 </body>
 </html>

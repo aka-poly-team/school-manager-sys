@@ -86,7 +86,7 @@
                        class="ri-user-line avatar-default-icon"></i>
                 </div>
                 <div class="profile-info">
-                    <span class="profile-name" th:text="${teacherName != null ? teacherName : 'Quản trị viên'}">Quản trị viên</span>
+                    <span class="profile-name" th:text="${teacherName != null and !#strings.contains(teacherName, '@') ? teacherName : (userRole == 'ROLE_ADMIN' ? 'Quản trị viên' : 'Giáo viên')}">Quản trị viên</span>
                     <span class="profile-role" th:text="${userRole != null ? userRole : 'ROLE_ADMIN'}">ROLE_ADMIN</span>
                 </div>
             </div>

@@ -3,10 +3,13 @@ package aka.service.impl;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import aka.model.RoleName;
 import aka.model.User;
 import aka.repository.UserRepository;
 import aka.service.UserService;
@@ -85,5 +88,14 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public Optional<User> findFirstByUsernameOrTeacherEmail(String username, String email) {
         return userRepository.findFirstByUsernameOrTeacherEmail(username, email);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<User> findByRole(RoleName role, String keyword, Pageable pageable) {
+        if (keyword != null && !keyword.isBlank()) {
+            return userRepository.findByRoleAndUsernameContainingIgnoreCase(role, keyword.trim(), pageable);
+        }
+        return userRepository.findByRole(role, pageable);
     }
 }

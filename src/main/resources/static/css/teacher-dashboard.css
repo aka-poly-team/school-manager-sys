@@ -11,9 +11,9 @@
 html, body {
     background-color: #f1f5f9;
     color: #1e293b;
-    min-height: 100vh;
+    height: 100vh;
     width: 100%;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 img {
@@ -23,11 +23,12 @@ img {
 
 .app-container {
     display: flex;
-    min-height: 100vh;
+    height: 100vh;
+    max-height: 100vh;
     width: 100%;
     max-width: 100vw;
-    align-items: flex-start;
-    overflow-x: hidden;
+    align-items: stretch;
+    overflow: hidden;
 }
 
 /* STRICT SELFIE THUMBNAIL CONSTRAINTS */
@@ -493,7 +494,8 @@ img {
     overflow-x: hidden;
     max-width: 100%;
     min-width: 0;
-    min-height: 100vh;
+    height: 100vh;
+    max-height: 100vh;
 }
 
 .top-bar {
@@ -1127,6 +1129,49 @@ img {
     white-space: nowrap;
 }
 
+/* TỐI ƯU HÓA THU GỌN KÍCH THƯỚC CÁC CỘT DỮ LIỆU NGẮN VÀ KÉO GIÃN TRẢI ĐỀU 100% BẢNG */
+.col-id {
+    width: 55px !important;
+    max-width: 60px !important;
+    text-align: center;
+}
+
+/* THU GỌN CỘT SỐ TIẾT TỐI ĐA (55px) */
+.col-periods {
+    width: 55px !important;
+    max-width: 60px !important;
+    text-align: center;
+}
+
+.col-session {
+    width: 65px !important;
+    text-align: center;
+}
+
+.col-count {
+    width: 85px !important;
+    text-align: center;
+}
+
+.col-date {
+    width: 95px !important;
+    text-align: center;
+}
+
+.col-status {
+    width: 100px !important;
+    text-align: center;
+}
+
+.col-phone {
+    width: 110px !important;
+}
+
+.col-action {
+    width: 130px !important;
+    text-align: center;
+}
+
 .attendance-table td, .data-table td {
     padding: 0.6rem 0.5rem;
     border-bottom: 1px solid #f1f5f9;
@@ -1205,4 +1250,157 @@ img {
     .stats-grid {
         grid-template-columns: 1fr;
     }
+}
+
+/* TABLE SEARCH & PAGINATION SYSTEM */
+.table-header-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* IPHONE MONOCHROME MODERN SEARCH INPUT */
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon-svg {
+    position: absolute;
+    left: 10px;
+    width: 15px;
+    height: 15px;
+    pointer-events: none;
+    stroke: #64748b;
+    transition: stroke 0.2s ease;
+}
+
+.table-search-input-ios {
+    padding: 0.45rem 0.85rem 0.45rem 2.1rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    outline: none;
+    color: #0f172a;
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+    min-width: 220px;
+}
+
+.table-search-input-ios:focus {
+    background-color: #ffffff;
+    border-color: #0f172a;
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+}
+
+.search-input-wrapper:focus-within .search-icon-svg {
+    stroke: #0f172a;
+}
+
+/* GIỮ CỐ ĐỊNH CẤU TRÚC CARD BOX & THANH PHÂN TRANG TUYỆT ĐỐI */
+.card-box {
+    display: flex;
+    flex-direction: column;
+    min-height: auto;
+}
+
+.card-box-sm, .card-box-md, .card-box-filter {
+    min-height: auto !important;
+    height: auto !important;
+}
+
+.card-box-2table {
+    min-height: 420px !important;
+    height: 420px !important;
+}
+
+.card-box-1table {
+    min-height: 640px !important;
+    height: 640px !important;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto !important;
+}
+
+.data-table th, .data-table td {
+    padding: 0.65rem 0.85rem !important;
+    vertical-align: middle !important;
+    white-space: nowrap !important;
+    font-size: 0.85rem;
+}
+
+.data-table tbody tr {
+    min-height: 48px;
+    height: auto;
+}
+
+.spacer-row {
+    height: 48px;
+}
+
+.spacer-row td {
+    background: transparent !important;
+    border-bottom: 1px solid transparent !important;
+    height: 48px !important;
+    padding: 0 !important;
+}
+
+.pagination-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.75rem;
+    margin-top: auto; /* Giữ cố định thanh phân trang ở đáy khung card */
+    border-top: 1px solid #f1f5f9;
+    font-size: 0.85rem;
+    color: #64748b;
+    min-height: 48px;
+    height: 48px;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.page-btn {
+    padding: 0.3rem 0.65rem;
+    border: 1px solid #cbd5e1;
+    background-color: #ffffff;
+    color: #334155;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.page-btn:hover:not(:disabled) {
+    background-color: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.page-btn.active {
+    background-color: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+}
+
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.spacer-row td {
+    background: transparent !important;
+    border-bottom: 1px solid transparent !important;
 }

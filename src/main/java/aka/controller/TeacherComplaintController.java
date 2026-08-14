@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import aka.dto.teacher.ComplaintForm;
@@ -34,20 +35,26 @@ import lombok.experimental.FieldDefaults;
 public class TeacherComplaintController {
 
     ComplaintService complaintService;
+    aka.repository.ComplaintRepository complaintRepository;
     AttendanceService attendanceService;
     NotificationService notificationService;
     SystemLogService systemLogService;
 
     @GetMapping("/complaints")
-    public String index(Model model) {
+    public String index(@RequestParam(value = "page", defaultValue = "0") int page, Model model) {
         Teacher teacher = SecurityUtils.getTeacher();
         Integer teacherId = teacher != null ? teacher.getId() : null;
 
-        List<Complaint> complaints = teacherId != null 
-                ? complaintService.findByAttendanceTeacherIdOrderByIdDesc(teacherId) 
-                : Collections.emptyList();
+        if (teacherId != null) {
+            org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, 10, org.springframework.data.domain.Sort.by("id").descending());
+            org.springframework.data.domain.Page<Complaint> pageResult = complaintRepository.findByAttendanceTeacherId(teacherId, pageable);
+            model.addAttribute("complaints", pageResult.getContent());
+            model.addAttribute("pageObj", pageResult);
+        } else {
+            model.addAttribute("complaints", Collections.emptyList());
+            model.addAttribute("pageObj", null);
+        }
 
-        model.addAttribute("complaints", complaints);
         return "teacher/complaint/list";
     }
 

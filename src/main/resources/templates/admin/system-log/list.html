@@ -6,20 +6,7 @@
     <title>Nhật ký hệ thống - Admin AKA</title>
     <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
     <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
-    <style>
-        .log-action-badge {
-            font-size: 0.78rem;
-            font-weight: 700;
-            padding: 0.25rem 0.65rem;
-            border-radius: 6px;
-            display: inline-block;
-        }
-        .action-create { background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
-        .action-update { background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-        .action-delete { background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-        .action-login { background-color: #faf5ff; color: #6b21a8; border: 1px solid #e9d5ff; }
-        .action-default { background-color: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/form-validate.css}">
 </head>
 <body>
     <div class="app-container">
@@ -34,12 +21,15 @@
                 </div>
             </div>
 
-            <!-- SYSTEM LOGS TABLE BOX -->
-            <div class="card-box">
-                <div class="box-header margin-bottom-1">
-                    <h2 class="box-title" style="display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="ri-history-line" style="color: #2563eb;"></i> Danh Sách Nhật Ký Thao Tác Hệ Thống
+            <!-- SYSTEM LOGS TABLE BOX (10 ROWS / PAGE) -->
+            <div class="card-box card-box-1table">
+                <div class="box-header margin-bottom-1 box-header-flex">
+                    <h2 class="box-title flex-gap-sm">
+                        <i class="ri-history-line text-blue"></i> Danh Sách Nhật Ký Thao Tác Hệ Thống
                     </h2>
+                    <div class="flex-gap-sm">
+                        <input type="text" placeholder="Tìm kiếm nhật ký hệ thống..." class="table-search-bar w-260" data-aka-search="true">
+                    </div>
                 </div>
 
                 <div class="table-container">
@@ -47,7 +37,7 @@
                         <thead>
                             <tr>
                                 <th>MÃ LOG</th>
-                                <th>THỜI GIAN GHI nhận</th>
+                                <th>THỜI GIAN GHI NHẬN</th>
                                 <th>TÀI KHOẢN THỰC HIỆN</th>
                                 <th class="text-center">VAI TRÒ</th>
                                 <th>HÀNH ĐỘNG</th>
@@ -72,16 +62,39 @@
                                 <td th:text="${log.details}">Chi tiết thao tác</td>
                             </tr>
 
+                            <!-- BÙ DÒNG TRỐNG NẾU TRANG ÍT HƠN 10 DÒNG -->
+                            <tr th:if="${!#lists.isEmpty(logs) and logs.size() < 10}" 
+                                th:each="i : ${#numbers.sequence(1, 10 - logs.size())}" class="spacer-row">
+                                <td colspan="6" class="empty-cell-spacer">&nbsp;</td>
+                            </tr>
                             <tr th:if="${#lists.isEmpty(logs)}">
-                                <td colspan="6" class="empty-table-cell">
+                                <td colspan="6" class="empty-table-cell empty-cell-tall">
                                     Chưa có nhật ký thao tác nào được ghi lại trong CSDL.
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+
+                <!-- THANH PHÂN TRANG CỐ ĐỊNH Ở ĐÁY KHUNG CARD -->
+                <div class="pagination-bar" th:if="${pageObj != null and pageObj.totalElements > 0}">
+                    <span class="page-info" th:text="'Trang ' + (${pageObj.number + 1}) + ' / ' + ${pageObj.totalPages} + ' (Tổng số ' + ${pageObj.totalElements} + ' nhật ký)'"></span>
+                    <div class="pagination-controls">
+                        <a th:href="${pageObj.first} ? 'javascript:void(0)' : @{/admin/system-logs(page=${pageObj.number - 1})}" 
+                           class="page-btn no-underline" th:classappend="${pageObj.first} ? 'disabled' : ''">❮ Trước</a>
+                        <th:block th:each="i : ${#numbers.sequence(0, pageObj.totalPages - 1)}">
+                            <a th:href="@{/admin/system-logs(page=${i})}" 
+                               class="page-btn no-underline" th:classappend="${i == pageObj.number} ? 'active' : ''" 
+                               th:text="${i + 1}">1</a>
+                        </th:block>
+                        <a th:href="${pageObj.last} ? 'javascript:void(0)' : @{/admin/system-logs(page=${pageObj.number + 1})}" 
+                           class="page-btn no-underline" th:classappend="${pageObj.last} ? 'disabled' : ''">Sau ❯</a>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
+    <script th:src="@{/js/smooth-pagination.js}"></script>
+    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

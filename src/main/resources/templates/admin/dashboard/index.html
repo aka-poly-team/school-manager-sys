@@ -6,6 +6,7 @@
     <title>Admin Dashboard - AKA School Manager</title>
     <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
     <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/form-validate.css}">
 </head>
 <body>
     <div class="app-container">
@@ -35,12 +36,16 @@
                                class="ri-user-line avatar-default-icon"></i>
                         </div>
                         <div class="top-user-info">
-                            <span class="top-user-name" th:text="${teacherName != null ? teacherName : 'Quản trị viên'}">Quản trị viên</span>
+                            <span class="top-user-name" th:text="${teacherName != null and !#strings.contains(teacherName, '@') ? teacherName : (userRole == 'ROLE_ADMIN' ? 'Quản trị viên' : 'Giáo viên')}">Quản trị viên</span>
                             <span class="top-user-role" th:text="${userRole != null and userRole == 'ROLE_ADMIN' ? 'Quản trị viên' : 'Giáo viên'}">Quản trị viên</span>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- ALERT NOTIFICATIONS (BẮT TOAST KHỞI TẠO VÀ SAU KHI DUYỆT/TỪ CHỐI/XÓA) -->
+            <div th:if="${success}" class="alert-box alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert-box alert-error" th:text="${error}"></div>
 
             <!-- STATISTICS CARDS GRID -->
             <div class="stats-grid">
@@ -89,22 +94,26 @@
                 </div>
             </div>
 
-            <!-- RECENT ATTENDANCE DATA TABLE -->
-            <div class="card-box margin-top-1">
-                <div class="box-header">
-                    <h2 class="box-title">Lịch Sử Điểm Danh Mới Nhất</h2>
+            <!-- RECENT ATTENDANCE DATA TABLE (MAX 5 ROWS + SEARCH + PAGINATION) -->
+            <div class="card-box card-box-2table card-box-dashboard margin-top-1">
+                <div class="box-header box-header-flex">
+                    <h2 class="box-title text-blue">Lịch Sử Điểm Danh Mới Nhất</h2>
+                    <div class="flex-gap-sm">
+                        <input type="text" name="keyword" th:value="${keyword}" placeholder="Tìm kiếm điểm danh..." class="table-search-bar w-260" data-aka-search="true">
+                    </div>
                 </div>
                 <table class="data-table">
                     <thead>
                         <tr>
                             <th>MÃ</th>
-                            <th>NGÀY</th>
+                            <th>NGÀY HỌC</th>
                             <th>GIÁO VIÊN</th>
-                            <th>TRƯỜNG & LỚP</th>
+                            <th>TRƯỜNG & LỚP HỌC</th>
                             <th>CA DẠY</th>
-                            <th>SỐ TIẾT</th>
-                            <th>ẢNH XÁC MINH</th>
+                            <th>TIẾT</th>
+                            <th>ẢNH CHẤM CÔNG</th>
                             <th>TRẠNG THÁI</th>
+                            <th class="text-center">THAO TÁC</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -121,17 +130,50 @@
                                 </a>
                             </td>
                             <td>
-                                <span class="status-badge" th:classappend="${att.status == 'APPROVED' ? 'approved' : 'pending'}" 
-                                      th:text="${att.status == 'APPROVED' ? 'Đã duyệt' : 'Chờ duyệt'}">Chờ duyệt</span>
+                                <span class="status-badge" th:classappend="${att.status == 'APPROVED' ? 'approved' : (att.status == 'REJECTED' or att.status == 'LATE' ? 'rejected' : 'pending')}" 
+                                      th:text="${att.status == 'APPROVED' ? 'Đã duyệt' : (att.status == 'REJECTED' ? 'Từ chối' : (att.status == 'LATE' ? 'Vào muộn' : 'Chờ duyệt'))}">Chờ duyệt</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="form-actions form-actions-reset justify-center">
+                                    <form th:action="@{/admin/attendances/approve/{id}(id=${att.id})}" method="post" class="inline-form">
+                                        <button type="submit" class="action-btn green">Duyệt</button>
+                                    </form>
+                                    <form th:action="@{/admin/attendances/reject/{id}(id=${att.id})}" method="post" class="inline-form">
+                                        <button type="submit" class="action-btn orange">Từ chối</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
+                        <!-- BÙ DÒNG TRỐNG NẾU TRANG HIỆN TẠI ÍT HƠN 5 BẢN GHI ĐỂ GIỮ CỐ ĐỊNH CHIỀU CAO BẢNG & THANH PHÂN TRANG -->
+                        <tr th:if="${!#lists.isEmpty(recentAttendances) and recentAttendances.size() < 5}" 
+                            th:each="i : ${#numbers.sequence(1, 5 - recentAttendances.size())}" class="spacer-row">
+                            <td colspan="9" class="empty-cell-spacer">&nbsp;</td>
+                        </tr>
                         <tr th:if="${#lists.isEmpty(recentAttendances)}">
-                            <td colspan="8" class="empty-table-cell">Chưa có dữ liệu điểm danh nào trong CSDL.</td>
+                            <td colspan="9" class="empty-table-cell empty-cell-medium">Chưa có dữ liệu điểm danh nào trong CSDL.</td>
                         </tr>
                     </tbody>
                 </table>
+
+                <!-- THANH PHÂN TRANG CỐ ĐỊNH Ở ĐÁY KHUNG CARD -->
+                <div class="pagination-bar" th:if="${pageObj != null and pageObj.totalElements > 0}">
+                    <span class="page-info" th:text="'Trang ' + (${pageObj.number + 1}) + ' / ' + ${pageObj.totalPages} + ' (Tổng số ' + ${pageObj.totalElements} + ' lượt điểm danh)'"></span>
+                    <div class="pagination-controls">
+                        <a th:href="${pageObj.first} ? 'javascript:void(0)' : @{/admin/dashboard(page=${pageObj.number - 1}, keyword=${keyword})}" 
+                           class="page-btn no-underline" th:classappend="${pageObj.first} ? 'disabled' : ''">❮ Trước</a>
+                        <th:block th:each="i : ${#numbers.sequence(0, pageObj.totalPages - 1)}">
+                            <a th:href="@{/admin/dashboard(page=${i}, keyword=${keyword})}" 
+                               class="page-btn no-underline" th:classappend="${i == pageObj.number} ? 'active' : ''" 
+                               th:text="${i + 1}">1</a>
+                        </th:block>
+                        <a th:href="${pageObj.last} ? 'javascript:void(0)' : @{/admin/dashboard(page=${pageObj.number + 1}, keyword=${keyword})}" 
+                           class="page-btn no-underline" th:classappend="${pageObj.last} ? 'disabled' : ''">Sau ❯</a>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
+    <script th:src="@{/js/smooth-pagination.js}"></script>
+    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

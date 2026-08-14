@@ -6,92 +6,241 @@
     <title>Trường & Lớp Mầm Non - Admin AKA</title>
     <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
     <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/form-validate.css}">
 </head>
 <body>
     <div class="app-container">
-        <!-- ADMIN SIDEBAR FRAGMENT -->
+        <!-- SIDEBAR NAVIGATION FRAGMENT -->
         <div th:replace="~{admin/fragments/sidebar :: sidebar('schools')}"></div>
 
+        <!-- MAIN CONTENT AREA -->
         <main class="main-content">
+            <!-- TOP BAR HEADER -->
             <div class="top-bar">
                 <div>
                     <h1 class="page-title">Quản Lý Trường & Lớp Mầm Non</h1>
-                    <p class="page-subtitle">Danh mục các Trường Mầm Non đối tác và danh sách Lớp học giảng dạy</p>
-                </div>
-                <div class="form-actions form-actions-reset">
-                    <a th:href="@{/admin/schools/new}" class="btn-primary-action blue">
-                        <span>+ Thêm Trường Mầm Non</span>
-                    </a>
-                    <a th:href="@{/admin/classes/new}" class="btn-primary-action blue">
-                        <span>+ Thêm Lớp Học Mới</span>
-                    </a>
+                    <p class="page-subtitle">Danh sách các trường mầm non đối tác và hệ thống lớp học Aerobic</p>
                 </div>
             </div>
 
-            <!-- NOTIFICATION MESSAGES -->
+            <!-- ALERTS -->
             <div th:if="${error}" class="alert-box alert-error" th:text="${error}">Lỗi thông báo.</div>
             <div th:if="${success}" class="alert-box alert-success" th:text="${success}">Thành công.</div>
 
             <!-- TABLE 1: TRƯỜNG MẦM NON -->
-            <div class="card-box margin-bottom-1">
-                <div class="box-header">
-                    <h2 class="box-title">Danh Sách Trường Mầm Non</h2>
+            <div class="card-box card-box-2table margin-bottom-1">
+                <div class="box-header" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                    <h2 class="box-title" style="color: #2563eb;">1. Danh Sách Trường Mầm Non Đối Tác</h2>
+                    
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <!-- THANH TÌM KIẾM REAL-TIME PURE VANILLA JS (KHÔNG ICON, KHÔNG NÚT TÌM) -->
+                        <div style="display: flex; gap: 0.5rem;">
+                            <div class="search-input-wrapper">
+                                <input type="text" name="schoolKeyword" th:value="${schoolKeyword}" placeholder="Tìm kiếm trường..." class="table-search-bar w-220" data-aka-search="true">
+                            </div>
+                        </div>
+
+                        <a th:href="@{/admin/schools/new}" class="btn-primary-action blue">
+                            <span>+ Thêm Trường Mới</span>
+                        </a>
+                    </div>
                 </div>
+
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>MÃ</th>
+                            <th class="w-60">MÃ</th>
                             <th>TÊN TRƯỜNG</th>
                             <th>ĐỊA CHỈ CƠ SỞ</th>
                             <th>NGƯỜI LIÊN HỆ</th>
                             <th>SỐ ĐIỆN THOẠI</th>
+                            <th class="text-center">THAO TÁC</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="s : ${schools}">
-                            <td th:text="${'#' + s.id}">#1</td>
-                            <td><strong th:text="${s.name}">Hoa Mai</strong></td>
-                            <td th:text="${s.address}">Quận 1</td>
-                            <td th:text="${s.contactPerson}">Cô Hương</td>
-                            <td th:text="${s.phone}">0901234567</td>
+                            <!-- HIỂN THỊ NGUYÊN BẢN (KHI KHÔNG CHỌN SỬA DÒNG NÀY) -->
+                            <th:block th:if="${editSchoolId == null or editSchoolId != s.id}">
+                                <td th:text="${'#' + s.id}">#1</td>
+                                <td><strong th:text="${s.name}">Hoa Mai</strong></td>
+                                <td th:text="${s.address}">Quận 1</td>
+                                <td th:text="${s.contactPerson}">Cô Hương</td>
+                                <td th:text="${s.phone}">0901234567</td>
+                                <td class="text-center">
+                                    <div class="form-actions form-actions-reset justify-center">
+                                        <a th:href="@{/admin/schools(schoolPage=${schoolPageObj.number}, schoolKeyword=${schoolKeyword}, editSchoolId=${s.id})}" class="action-btn orange no-underline">Sửa</a>
+                                        <form th:action="@{/admin/schools/delete/{id}(id=${s.id})}" method="post" class="inline-form" onsubmit="return confirm('Bạn có chắc chắn muốn xóa trường mầm non này?');">
+                                            <button type="submit" class="action-btn gray">Xóa</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </th:block>
+
+                            <!-- SỬA TRỰC TIẾP TRÊN DÒNG BẢNG - CỘT NÀO RA CỘT NẤY 100% -->
+                            <th:block th:if="${editSchoolId != null and editSchoolId == s.id}">
+                                <form th:id="${'editSchoolForm_' + s.id}" th:action="@{/admin/schools/edit/{id}(id=${s.id})}" method="post" style="display:none;"></form>
+
+                                <td th:text="${'#' + s.id}">#1</td>
+                                <td>
+                                    <input type="text" name="name" th:value="${s.name}" th:form="${'editSchoolForm_' + s.id}" required placeholder="Tên trường..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
+                                </td>
+                                <td>
+                                    <input type="text" name="address" th:value="${s.address}" th:form="${'editSchoolForm_' + s.id}" placeholder="Địa chỉ..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
+                                </td>
+                                <td>
+                                    <input type="text" name="contactPerson" th:value="${s.contactPerson}" th:form="${'editSchoolForm_' + s.id}" placeholder="Người liên hệ..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
+                                </td>
+                                <td>
+                                    <input type="tel" name="phone" th:value="${s.phone}" th:form="${'editSchoolForm_' + s.id}" data-aka-type="phone" maxlength="11" pattern="0[0-9]{9,10}" inputmode="numeric" placeholder="Số ĐT..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-actions form-actions-reset justify-center">
+                                        <button type="submit" th:form="${'editSchoolForm_' + s.id}" class="action-btn green">Lưu</button>
+                                        <a th:href="@{/admin/schools(schoolPage=${schoolPageObj.number}, schoolKeyword=${schoolKeyword})}" class="action-btn gray no-underline">Hủy</a>
+                                    </div>
+                                </td>
+                            </th:block>
+                        </tr>
+
+                        <!-- BÙ DÒNG TRỐNG NẾU TRANG HIỆN TẠI ÍT HƠN 5 BẢN GHI ĐỂ GIỮ CỐ ĐỊNH CHIỀU CAO BẢNG & THANH PHÂN TRANG -->
+                        <tr th:if="${!#lists.isEmpty(schools) and schools.size() < 5}" 
+                            th:each="i : ${#numbers.sequence(1, 5 - schools.size())}" class="spacer-row">
+                            <td colspan="6" style="height: 48px; border: none;">&nbsp;</td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(schools)}">
-                            <td colspan="5" class="empty-table-cell">Chưa có dữ liệu trường mầm non.</td>
+                            <td colspan="6" class="empty-table-cell" style="height: 210px; vertical-align: middle;">Chưa có dữ liệu trường mầm non.</td>
                         </tr>
                     </tbody>
                 </table>
+
+                <!-- THANH PHÂN TRANG CỐ ĐỊNH Ở ĐÁY KHUNG CARD -->
+                <div class="pagination-bar" th:if="${schoolPageObj != null and schoolPageObj.totalElements > 0}">
+                    <span class="page-info" th:text="'Trang ' + (${schoolPageObj.number + 1}) + ' / ' + ${schoolPageObj.totalPages} + ' (Tổng số ' + ${schoolPageObj.totalElements} + ' trường)'"></span>
+                    <div class="pagination-controls">
+                        <!-- LUÔN HIỆN NÚT TRƯỚC VÀ SAU, KHI KHÔNG CÓ TRANG THÌ DISABLE KHÔNG CHO CLICK -->
+                        <a th:href="${schoolPageObj.first} ? 'javascript:void(0)' : @{/admin/schools(schoolPage=${schoolPageObj.number - 1}, schoolKeyword=${schoolKeyword})}" 
+                           class="page-btn" th:classappend="${schoolPageObj.first} ? 'disabled' : ''" style="text-decoration: none;">❮ Trước</a>
+                        <th:block th:each="i : ${#numbers.sequence(0, schoolPageObj.totalPages - 1)}">
+                            <a th:href="@{/admin/schools(schoolPage=${i}, schoolKeyword=${schoolKeyword})}" 
+                               class="page-btn" th:classappend="${i == schoolPageObj.number} ? 'active' : ''" 
+                               th:text="${i + 1}" style="text-decoration: none;">1</a>
+                        </th:block>
+                        <a th:href="${schoolPageObj.last} ? 'javascript:void(0)' : @{/admin/schools(schoolPage=${schoolPageObj.number + 1}, schoolKeyword=${schoolKeyword})}" 
+                           class="page-btn" th:classappend="${schoolPageObj.last} ? 'disabled' : ''" style="text-decoration: none;">Sau ❯</a>
+                    </div>
+                </div>
             </div>
 
             <!-- TABLE 2: LỚP HỌC -->
-            <div class="card-box">
-                <div class="box-header">
-                    <h2 class="box-title">Danh Sách Lớp Học Giảng Dạy</h2>
+            <div class="card-box card-box-2table">
+                <div class="box-header" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                    <h2 class="box-title" style="color: #10b981;">2. Danh Sách Lớp Học Giảng Dạy</h2>
+                    
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <!-- THANH TÌM KIẾM REAL-TIME PURE VANILLA JS (KHÔNG ICON, KHÔNG NÚT TÌM) -->
+                        <div style="display: flex; gap: 0.5rem;">
+                            <div class="search-input-wrapper">
+                                <input type="text" name="classKeyword" th:value="${classKeyword}" placeholder="Tìm kiếm lớp học..." class="table-search-bar w-220" data-aka-search="true">
+                            </div>
+                        </div>
+
+                        <a th:href="@{/admin/classes/new}" class="btn-primary-action green" style="background: #10b981;">
+                            <span>+ Thêm Lớp Học Mới</span>
+                        </a>
+                    </div>
                 </div>
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>MÃ</th>
+                            <th class="w-60">MÃ</th>
                             <th>TÊN LỚP HỌC</th>
                             <th>THUỘC TRƯỜNG</th>
                             <th>SĨ SỐ HỌC SINH</th>
                             <th>SỐ TIẾT CHUẨN</th>
+                            <th class="text-center">THAO TÁC</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="c : ${classes}">
-                            <td th:text="${'#' + c.id}">#1</td>
-                            <td><strong th:text="${c.name}">Aerobic Chồi 1</strong></td>
-                            <td th:text="${c.school.name}">Hoa Mai</td>
-                            <td th:text="${c.studentCount + ' cháu'}">25 cháu</td>
-                            <td><strong th:text="${c.standardPeriods}">2</strong> tiết</td>
+                            <!-- HIỂN THỊ NGUYÊN BẢN (KHI KHÔNG CHỌN SỬA DÒNG NÀY) -->
+                            <th:block th:if="${editClassId == null or editClassId != c.id}">
+                                <td th:text="${'#' + c.id}">#1</td>
+                                <td><strong th:text="${c.name}">Aerobic Chồi 1</strong></td>
+                                <td th:text="${c.school != null ? c.school.name : 'N/A'}">Hoa Mai</td>
+                                <td th:text="${c.studentCount + ' cháu'}">25 cháu</td>
+                                <td><strong th:text="${c.standardPeriods}">2</strong> tiết</td>
+                                <td class="text-center">
+                                    <div class="form-actions form-actions-reset justify-center">
+                                        <a th:href="@{/admin/schools(classPage=${classPageObj.number}, classKeyword=${classKeyword}, editClassId=${c.id})}" class="action-btn orange no-underline">Sửa</a>
+                                        <form th:action="@{/admin/classes/delete/{id}(id=${c.id})}" method="post" class="inline-form" onsubmit="return confirm('Bạn có chắc chắn muốn xóa lớp học này?');">
+                                            <button type="submit" class="action-btn gray">Xóa</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </th:block>
+
+                            <!-- SỬA TRỰC TIẾP TRÊN DÒNG BẢNG - CỘT NÀO RA CỘT NẤY 100% -->
+                            <th:block th:if="${editClassId != null and editClassId == c.id}">
+                                <form th:id="${'editClassForm_' + c.id}" th:action="@{/admin/classes/edit/{id}(id=${c.id})}" method="post" style="display:none;"></form>
+
+                                <td th:text="${'#' + c.id}">#1</td>
+                                <td>
+                                    <input type="text" name="name" th:value="${c.name}" th:form="${'editClassForm_' + c.id}" required placeholder="Tên lớp..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
+                                </td>
+                                <td>
+                                    <select name="schoolId" th:form="${'editClassForm_' + c.id}" class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;" required>
+                                        <option th:each="schOpt : ${allSchools}" 
+                                                th:value="${schOpt.id}" 
+                                                th:text="${schOpt.name}"
+                                                th:selected="${c.school != null and c.school.id == schOpt.id}">Hoa Mai</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" name="studentCount" th:value="${c.studentCount}" th:form="${'editClassForm_' + c.id}" min="1" placeholder="Sĩ số..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
+                                </td>
+                                <td>
+                                    <input type="number" name="standardPeriods" th:value="${c.standardPeriods}" th:form="${'editClassForm_' + c.id}" min="1" placeholder="Số tiết..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-actions form-actions-reset justify-center">
+                                        <button type="submit" th:form="${'editClassForm_' + c.id}" class="action-btn green">Lưu</button>
+                                        <a th:href="@{/admin/schools(classPage=${classPageObj.number}, classKeyword=${classKeyword})}" class="action-btn gray no-underline">Hủy</a>
+                                    </div>
+                                </td>
+                            </th:block>
+                        </tr>
+
+                        <!-- BÙ DÒNG TRỐNG NẾU TRANG HIỆN TẠI ÍT HƠN 5 BẢN GHI ĐỂ GIỮ CỐ ĐỊNH CHIỀU CAO BẢNG & THANH PHÂN TRANG -->
+                        <tr th:if="${!#lists.isEmpty(classes) and classes.size() < 5}" 
+                            th:each="i : ${#numbers.sequence(1, 5 - classes.size())}" class="spacer-row">
+                            <td colspan="6" style="height: 48px; border: none;">&nbsp;</td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(classes)}">
-                            <td colspan="5" class="empty-table-cell">Chưa có dữ liệu lớp học.</td>
+                            <td colspan="6" class="empty-table-cell" style="height: 210px; vertical-align: middle;">Chưa có dữ liệu lớp học.</td>
                         </tr>
                     </tbody>
                 </table>
+
+                <!-- THANH PHÂN TRANG CỐ ĐỊNH Ở ĐÁY KHUNG CARD -->
+                <div class="pagination-bar" th:if="${classPageObj != null and classPageObj.totalElements > 0}">
+                    <span class="page-info" th:text="'Trang ' + (${classPageObj.number + 1}) + ' / ' + ${classPageObj.totalPages} + ' (Tổng số ' + ${classPageObj.totalElements} + ' lớp)'"></span>
+                    <div class="pagination-controls">
+                        <!-- LUÔN HIỆN NÚT TRƯỚC VÀ SAU, KHI KHÔNG CÓ TRANG THÌ DISABLE KHÔNG CHO CLICK -->
+                        <a th:href="${classPageObj.first} ? 'javascript:void(0)' : @{/admin/schools(classPage=${classPageObj.number - 1}, classKeyword=${classKeyword})}" 
+                           class="page-btn" th:classappend="${classPageObj.first} ? 'disabled' : ''" style="text-decoration: none;">❮ Trước</a>
+                        <th:block th:each="i : ${#numbers.sequence(0, classPageObj.totalPages - 1)}">
+                            <a th:href="@{/admin/schools(classPage=${i}, classKeyword=${classKeyword})}" 
+                               class="page-btn" th:classappend="${i == classPageObj.number} ? 'active' : ''" 
+                               th:text="${i + 1}" style="text-decoration: none;">1</a>
+                        </th:block>
+                        <a th:href="${classPageObj.last} ? 'javascript:void(0)' : @{/admin/schools(classPage=${classPageObj.number + 1}, classKeyword=${classKeyword})}" 
+                           class="page-btn" th:classappend="${classPageObj.last} ? 'disabled' : ''" style="text-decoration: none;">Sau ❯</a>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
+    <script th:src="@{/js/smooth-pagination.js}"></script>
+    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

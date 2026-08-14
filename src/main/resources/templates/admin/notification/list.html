@@ -6,6 +6,7 @@
     <title>Thông báo - Admin AKA</title>
     <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
     <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/form-validate.css}">
 </head>
 <body>
     <div class="app-container">
@@ -17,8 +18,9 @@
                 <div>
                     <h1 class="page-title">Thông Báo Quản Trị Hệ Thống</h1>
                     <p class="page-subtitle">Bấm trực tiếp vào từng thông báo để di chuyển tới trang yêu cầu cần xử lý</p>
-                </div>
-            </div>
+            <!-- ALERT NOTIFICATIONS -->
+            <div th:if="${success}" class="alert-box alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert-box alert-error" th:text="${error}"></div>
 
             <!-- NOTIFICATIONS TABLE BOX -->
             <div class="card-box">
@@ -65,6 +67,8 @@
                     </tbody>
                 </table>
             </div>
+            <script th:src="@{/js/smooth-pagination.js}"></script>
+            <script th:src="@{/js/form-validate.js}"></script>
         </main>
     </div>
 </body>

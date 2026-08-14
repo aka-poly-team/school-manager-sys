@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tạo yêu cầu - AKA School Manager</title>
     <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/form-validate.css}">
 </head>
 <body>
     <div class="app-container">
@@ -27,10 +28,11 @@
                 <div th:if="${error}" class="alert-box alert-error" th:text="${error}">Đã xảy ra lỗi.</div>
                 <div th:if="${success}" class="alert-box alert-success" th:text="${success}">Thành công.</div>
 
-                <form th:action="@{/teacher/change-requests/new}" method="post" class="form-layout">
+                <form th:action="@{/teacher/change-requests/new}" method="post"
+                      class="form-layout" data-aka-validate>
                     <div class="form-group">
                         <label class="form-label">Loại Yêu Cầu *</label>
-                        <select name="requestType" class="form-control">
+                        <select name="requestType" class="form-control" required>
                             <option value="LEAVE">Xin nghỉ phép</option>
                             <option value="SUBSTITUTE">Đăng ký dạy thay / Đổi ca</option>
                         </select>
@@ -38,7 +40,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Trường Mầm Non *</label>
-                        <select name="schoolId" class="form-control">
+                        <select name="schoolId" class="form-control" required data-aka-required="true">
                             <option value="" disabled selected>-- Chọn Trường Mầm Non --</option>
                             <option th:each="sch : ${schools}" th:value="${sch.id}" th:text="${sch.name}"></option>
                         </select>
@@ -46,12 +48,12 @@
 
                     <div class="form-group">
                         <label class="form-label">Ngày Xin Nghỉ / Đổi Ca *</label>
-                        <input type="date" name="date" class="form-control">
+                        <input type="date" name="date" class="form-control" required data-aka-future="true">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Ca Dạy *</label>
-                        <select name="session" class="form-control">
+                        <select name="session" class="form-control" required>
                             <option value="Ca 1">Ca 1 (Sáng)</option>
                             <option value="Ca 2">Ca 2 (Sáng)</option>
                             <option value="Ca 3">Ca 3 (Chiều)</option>
@@ -61,7 +63,9 @@
 
                     <div class="form-group">
                         <label class="form-label">Lý Do Chi Tiết *</label>
-                        <textarea name="reason" rows="4" placeholder="Nhập lý do chi tiết xin nghỉ phép hoặc lý do dạy thay..." class="form-control"></textarea>
+                        <textarea name="reason" rows="4"
+                                  placeholder="Nhập lý do chi tiết xin nghỉ phép hoặc lý do dạy thay..."
+                                  class="form-control" required data-aka-required="true"></textarea>
                     </div>
 
                     <div class="form-actions">
@@ -74,5 +78,6 @@
             </div>
         </main>
     </div>
+    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

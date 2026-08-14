@@ -6,6 +6,7 @@
     <title>Nghỉ phép / Đổi ca - AKA School Manager</title>
     <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
     <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/form-validate.css}">
 </head>
 <body>
     <div class="app-container">
@@ -29,18 +30,24 @@
             <div th:if="${error}" class="alert-box alert-error" th:text="${error}"></div>
             <div th:if="${success}" class="alert-box alert-success" th:text="${success}"></div>
 
-            <!-- CHANGE REQUESTS TABLE BOX -->
-            <div class="card-box">
-                <table class="attendance-table">
+            <!-- CHANGE REQUESTS TABLE BOX (10 ROWS / PAGE) -->
+            <div class="card-box card-box-1table">
+                <div class="box-header box-header-flex">
+                    <h2 class="box-title">Đơn Xin Nghỉ & Đổi Ca Của Tôi</h2>
+                    <div class="flex-gap-sm">
+                        <input type="text" placeholder="Tìm kiếm đơn xin nghỉ phép..." class="table-search-bar w-260" data-aka-search="true">
+                    </div>
+                </div>
+                <table class="data-table">
                     <thead>
                         <tr>
-                            <th style="width: 140px;">LOẠI YÊU CẦU</th>
-                            <th style="width: 170px;">TRƯỜNG</th>
-                            <th style="width: 110px; text-align: center;">NGÀY NGHỈ</th>
-                            <th style="width: 80px; text-align: center;">CA DẠY</th>
+                            <th class="w-140">LOẠI YÊU CẦU</th>
+                            <th class="w-170">TRƯỜNG</th>
+                            <th class="w-110 text-center">NGÀY NGHỈ</th>
+                            <th class="w-80 text-center">CA DẠY</th>
                             <th>LÝ DO</th>
-                            <th style="width: 110px; text-align: center;">NGÀY TẠO</th>
-                            <th style="width: 110px; text-align: center;">TRẠNG THÁI</th>
+                            <th class="w-110 text-center">NGÀY TẠO</th>
+                            <th class="w-110 text-center">TRẠNG THÁI</th>
                             <th>GHI CHÚ ADMIN</th>
                         </tr>
                     </thead>
@@ -50,7 +57,7 @@
                                 <strong th:text="${req.requestType == 'LEAVE' ? 'Xin nghỉ phép' : 'Dạy thay / Đổi ca'}">Xin nghỉ phép</strong>
                             </td>
                             <td th:text="${req.schedule != null and req.schedule.school != null ? req.schedule.school.name : 'N/A'}">Trường Hoa Mai</td>
-                            <td class="text-center" th:text="${#temporals.format(req.date, 'dd/MM/yyyy')}">13/07/2026</td>
+                            <td class="text-center" th:text="${req.date != null ? #temporals.format(req.date, 'dd/MM/yyyy') : 'N/A'}">13/07/2026</td>
                             <td class="text-center" th:text="${req.session}">Ca 1</td>
                             <td th:text="${req.reason}">Lý do nghỉ</td>
                             <td class="text-center" th:text="${req.createdAt != null ? #temporals.format(req.createdAt, 'dd/MM/yyyy') : 'N/A'}">10/07/2026</td>
@@ -62,15 +69,38 @@
                             <td th:text="${req.adminNotes != null and !#strings.isEmpty(req.adminNotes) ? req.adminNotes : 'Chưa có'}">Chưa có</td>
                         </tr>
 
+                        <!-- BÙ DÒNG TRỐNG NẾU TRANG ÍT HƠN 10 DÒNG -->
+                        <tr th:if="${!#lists.isEmpty(changeRequests) and changeRequests.size() < 10}" 
+                            th:each="i : ${#numbers.sequence(1, 10 - changeRequests.size())}" class="spacer-row">
+                            <td colspan="8" class="empty-cell-spacer">&nbsp;</td>
+                        </tr>
                         <tr th:if="${#lists.isEmpty(changeRequests)}">
-                            <td colspan="8" class="empty-state-text">
+                            <td colspan="8" class="empty-table-cell empty-cell-tall">
                                 Chưa có yêu cầu nghỉ phép hay dạy thay nào trong CSDL.
                             </td>
                         </tr>
                     </tbody>
                 </table>
+
+                <!-- THANH PHÂN TRANG CỐ ĐỊNH Ở ĐÁY KHUNG CARD -->
+                <div class="pagination-bar" th:if="${pageObj != null and pageObj.totalElements > 0}">
+                    <span class="page-info" th:text="'Trang ' + (${pageObj.number + 1}) + ' / ' + ${pageObj.totalPages} + ' (Tổng số ' + ${pageObj.totalElements} + ' yêu cầu)'"></span>
+                    <div class="pagination-controls">
+                        <a th:href="${pageObj.first} ? 'javascript:void(0)' : @{/teacher/change-requests(page=${pageObj.number - 1})}" 
+                           class="page-btn no-underline" th:classappend="${pageObj.first} ? 'disabled' : ''">❮ Trước</a>
+                        <th:block th:each="i : ${#numbers.sequence(0, pageObj.totalPages - 1)}">
+                            <a th:href="@{/teacher/change-requests(page=${i})}" 
+                               class="page-btn no-underline" th:classappend="${i == pageObj.number} ? 'active' : ''" 
+                               th:text="${i + 1}">1</a>
+                        </th:block>
+                        <a th:href="${pageObj.last} ? 'javascript:void(0)' : @{/teacher/change-requests(page=${pageObj.number + 1})}" 
+                           class="page-btn no-underline" th:classappend="${pageObj.last} ? 'disabled' : ''">Sau ❯</a>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
+    <script th:src="@{/js/smooth-pagination.js}"></script>
+    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tài khoản & Phân quyền - Admin AKA</title>
+    <title>Quản Lý Tài Khoản & Phân Quyền - Admin AKA</title>
     <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
     <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/form-validate.css}">
 </head>
 <body>
     <div class="app-container">
-        <!-- SIDEBAR MENU ADMIN -->
+        <!-- ADMIN SIDEBAR FRAGMENT -->
         <div th:replace="~{admin/fragments/sidebar :: sidebar('teachers')}"></div>
 
         <main class="main-content">
@@ -17,74 +18,242 @@
             <div class="top-bar">
                 <div>
                     <h1 class="page-title">Quản Lý Tài Khoản & Phân Quyền</h1>
-                    <p class="page-subtitle">Danh mục danh sách tài khoản đăng nhập và hồ sơ giáo viên trong hệ thống</p>
+                    <p class="page-subtitle">Danh sách Ban Giám Đốc (Quản Trị Viên) và Giáo Viên môn Aerobic</p>
                 </div>
-                <a th:href="@{/admin/teachers/new}" class="btn-primary-action blue">
-                    <span>+ Thêm Tài Khoản / Giáo Viên Mới</span>
-                </a>
             </div>
 
-            <!-- THÔNG BÁO ALERT (1 DÒNG DUY NHẤT) -->
-            <div th:if="${error}" class="alert-box alert-error" th:text="${error}"></div>
-            <div th:if="${success}" class="alert-box alert-success" th:text="${success}"></div>
+            <!-- NOTIFICATION MESSAGES -->
+            <div th:if="${error}" class="alert-box alert-error" th:text="${error}">Lỗi thông báo.</div>
+            <div th:if="${success}" class="alert-box alert-success" th:text="${success}">Thành công.</div>
 
-            <!-- BẢNG DUY NHẤT TRÊN TRANG: TÀI KHOẢN & PHÂN QUYỀN HỆ THỐNG -->
-            <div class="card-box">
-                <div class="box-header">
-                    <h2 class="box-title">Danh Sách Tài Khoản & Phân Quyền Hệ Thống</h2>
+            <!-- BẢNG 1: QUẢN LÝ QUẢN TRỊ VIÊN (ROLE_ADMIN) -->
+            <div class="card-box card-box-2table margin-bottom-1">
+                <div class="box-header" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                    <h2 class="box-title" style="color: #2563eb;">1. Danh Sách Quản Trị Viên (Ban Giám Đốc)</h2>
+                    
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <!-- THANH TÌM KIẾM REAL-TIME PURE VANILLA JS (KHÔNG ICON, KHÔNG NÚT TÌM) -->
+                        <div style="display: flex; gap: 0.5rem;">
+                            <div class="search-input-wrapper">
+                                <input type="text" name="adminKeyword" th:value="${adminKeyword}" placeholder="Tìm kiếm Admin..." class="table-search-bar w-220" data-aka-search="true">
+                            </div>
+                        </div>
+
+                        <a th:href="@{/admin/teachers/new?targetRole=ROLE_ADMIN}" class="btn-primary-action blue">
+                            <span>+ Thêm QTV Mới</span>
+                        </a>
+                    </div>
                 </div>
+
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>MÃ</th>
-                            <th>HỌ VÀ TÊN GIÁO VIÊN</th>
-                            <th>EMAIL LIÊN HỆ</th>
+                            <th class="w-60">MÃ AD</th>
+                            <th class="w-60 text-center">ẢNH</th>
+                            <th>TÊN ĐĂNG NHẬP / EMAIL</th>
+                            <th>HỌ VÀ TÊN BAN GIÁM ĐỐC</th>
                             <th>SỐ ĐIỆN THOẠI</th>
-                            <th>TÊN ĐĂNG NHẬP</th>
-                            <th>VAI TRÒ / QUYỀN</th>
+                            <th>VAI TRÒ</th>
                             <th>TRẠNG THÁI</th>
                             <th class="text-center">THAO TÁC</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="u : ${users}">
-                            <td th:text="${u.teacher != null ? '#' + u.teacher.id : '#' + u.id}">#1</td>
-                            <td>
-                                <strong th:text="${u.teacher != null ? u.teacher.name : u.username}">Nguyễn Văn A</strong>
-                            </td>
-                            <td th:text="${u.teacher != null and u.teacher.email != null ? u.teacher.email : 'N/A'}">email@gmail.com</td>
-                            <td th:text="${u.teacher != null and u.teacher.phone != null ? u.teacher.phone : 'N/A'}">0901234567</td>
-                            <td th:text="${u.username}">username</td>
-                            <td>
-                                <span class="status-badge approved" 
-                                      th:text="${u.role != null and u.role.name() == 'ROLE_ADMIN' ? 'Quản trị viên' : 'Giáo viên'}">Giáo viên</span>
-                            </td>
-                            <td>
-                                <span class="status-badge approved">Hoạt động</span>
-                            </td>
-                            <td class="text-center">
-                                <div class="form-actions form-actions-reset">
-                                    <!-- Nút Sửa: Mở Trang Form Sửa -->
-                                    <a th:href="@{/admin/teachers/edit/{id}(id=${u.id})}" class="action-btn orange">
-                                        <span>Sửa</span>
-                                    </a>
+                        <tr th:each="u : ${adminUsers}">
+                            <!-- HIỂN THỊ NGUYÊN BẢN (KHI KHÔNG CHỌN SỬA DÒNG NÀY) -->
+                            <th:block th:if="${editAdminId == null or editAdminId != u.id}">
+                                <td th:text="${'#AD' + u.id}">#AD1</td>
+                                <td class="text-center">
+                                    <img th:if="${u.avatarUrl != null and !#strings.isEmpty(u.avatarUrl)}" th:src="${u.avatarUrl}" alt="Avatar" class="avatar-thumb-sm">
+                                    <i th:unless="${u.avatarUrl != null and !#strings.isEmpty(u.avatarUrl)}" class="ri-user-3-line text-subtext"></i>
+                                </td>
+                                <td><strong th:text="${u.username}">admin@gmail.com</strong></td>
+                                <td th:text="${u.teacher != null ? u.teacher.name : u.username}">Quản trị viên</td>
+                                <td th:text="${u.teacher != null and u.teacher.phone != null ? u.teacher.phone : 'N/A'}">0901234567</td>
+                                <td><span class="status-badge approved">Quản trị viên</span></td>
+                                <td><span class="status-badge approved">Hoạt động</span></td>
+                                <td class="text-center">
+                                    <div class="form-actions form-actions-reset justify-center">
+                                        <a th:href="@{/admin/teachers(adminPage=${adminPageObj.number}, adminKeyword=${adminKeyword}, editAdminId=${u.id})}" class="action-btn orange no-underline">Sửa</a>
+                                        <form th:action="@{/admin/teachers/delete/{id}(id=${u.id})}" method="post" class="inline-form" onsubmit="return confirm('Bạn có chắc chắn muốn xóa tài khoản Admin này?');">
+                                            <button type="submit" class="action-btn gray">Xóa</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </th:block>
 
-                                    <!-- Form Xóa -->
-                                    <form th:action="@{/admin/teachers/delete/{id}(id=${u.id})}" method="post" style="display:inline;">
-                                        <button type="submit" class="action-btn gray">
-                                            <span>Xóa</span>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
+                            <!-- SỬA TRỰC TIẾP TRÊN DÒNG BẢNG - CHUẨN ĐÚNG CỘT NÀO RA CỘT NẤY 100% -->
+                            <th:block th:if="${editAdminId != null and editAdminId == u.id}">
+                                <form th:id="${'editAdminForm_' + u.id}" th:action="@{/admin/teachers/edit-inline/{id}(id=${u.id})}" method="post" style="display:none;"></form>
+                                
+                                <td th:text="${'#AD' + u.id}">#AD1</td>
+                                <td class="text-center">
+                                    <img th:if="${u.avatarUrl != null and !#strings.isEmpty(u.avatarUrl)}" th:src="${u.avatarUrl}" alt="Avatar" class="avatar-thumb-sm">
+                                    <i th:unless="${u.avatarUrl != null and !#strings.isEmpty(u.avatarUrl)}" class="ri-user-3-line text-subtext"></i>
+                                </td>
+                                <td th:text="${u.username}">admin@gmail.com</td>
+                                <td>
+                                    <input type="text" name="name" th:value="${u.teacher != null ? u.teacher.name : u.username}" th:form="${'editAdminForm_' + u.id}" required placeholder="Họ tên Quản trị viên..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
+                                </td>
+                                <td>
+                                    <input type="tel" name="phone" th:value="${u.teacher != null ? u.teacher.phone : ''}" th:form="${'editAdminForm_' + u.id}" data-aka-type="phone" maxlength="11" pattern="0[0-9]{9,10}" inputmode="numeric" placeholder="Số ĐT..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
+                                </td>
+                                <td><span class="status-badge approved">Quản trị viên</span></td>
+                                <td><span class="status-badge approved">Hoạt động</span></td>
+                                <td class="text-center">
+                                    <div class="form-actions form-actions-reset justify-center">
+                                        <button type="submit" th:form="${'editAdminForm_' + u.id}" class="action-btn green">Lưu</button>
+                                        <a th:href="@{/admin/teachers(adminPage=${adminPageObj.number}, adminKeyword=${adminKeyword})}" class="action-btn gray no-underline">Hủy</a>
+                                    </div>
+                                </td>
+                            </th:block>
                         </tr>
-                        <tr th:if="${#lists.isEmpty(users)}">
-                            <td colspan="8" class="empty-table-cell">Không có tài khoản nào trong hệ thống.</td>
+                        <!-- BÙ DÒNG TRỐNG NẾU TRANG HIỆN TẠI ÍT HƠN 5 BẢN GHI ĐỂ GIỮ CỐ ĐỊNH CHIỀU CAO BẢNG & THANH PHÂN TRANG -->
+                        <tr th:if="${!#lists.isEmpty(adminUsers) and adminUsers.size() < 5}" 
+                            th:each="i : ${#numbers.sequence(1, 5 - adminUsers.size())}" class="spacer-row">
+                            <td colspan="8" style="height: 42px; border: none;">&nbsp;</td>
                         </tr>
                     </tbody>
                 </table>
+
+                <!-- THANH PHÂN TRANG CỐ ĐỊNH Ở ĐÁY KHUNG CARD -->
+                <div class="pagination-bar" th:if="${adminPageObj != null and adminPageObj.totalElements > 0}">
+                    <span class="page-info" th:text="'Trang ' + (${adminPageObj.number + 1}) + ' / ' + ${adminPageObj.totalPages} + ' (Tổng số ' + ${adminPageObj.totalElements} + ' bản ghi)'"></span>
+                    <div class="pagination-controls">
+                        <!-- LUÔN HIỆN NÚT TRƯỚC VÀ SAU, KHI KHÔNG CÓ TRANG THÌ DISABLE KHÔNG CHO CLICK -->
+                        <a th:href="${adminPageObj.first} ? 'javascript:void(0)' : @{/admin/teachers(adminPage=${adminPageObj.number - 1}, adminKeyword=${adminKeyword})}" 
+                           class="page-btn" th:classappend="${adminPageObj.first} ? 'disabled' : ''" style="text-decoration: none;">❮ Trước</a>
+                        <th:block th:each="i : ${#numbers.sequence(0, adminPageObj.totalPages - 1)}">
+                            <a th:href="@{/admin/teachers(adminPage=${i}, adminKeyword=${adminKeyword})}" 
+                               class="page-btn" th:classappend="${i == adminPageObj.number} ? 'active' : ''" 
+                               th:text="${i + 1}" style="text-decoration: none;">1</a>
+                        </th:block>
+                        <a th:href="${adminPageObj.last} ? 'javascript:void(0)' : @{/admin/teachers(adminPage=${adminPageObj.number + 1}, adminKeyword=${adminKeyword})}" 
+                           class="page-btn" th:classappend="${adminPageObj.last} ? 'disabled' : ''" style="text-decoration: none;">Sau ❯</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BẢNG 2: QUẢN LÝ TÀI KHOẢN & HỒ SƠ GIÁO VIÊN (ROLE_TEACHER) -->
+            <div class="card-box card-box-2table">
+                <div class="box-header" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                    <h2 class="box-title" style="color: #10b981;">2. Danh Sách Tài Khoản & Hồ Sơ Giáo Viên</h2>
+                    
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <!-- THANH TÌM KIẾM REAL-TIME PURE VANILLA JS (KHÔNG ICON, KHÔNG NÚT TÌM) -->
+                        <div style="display: flex; gap: 0.5rem;">
+                            <div class="search-input-wrapper">
+                                <input type="text" name="teacherKeyword" th:value="${teacherKeyword}" placeholder="Tìm kiếm Giáo viên..." class="table-search-bar w-240" data-aka-search="true">
+                            </div>
+                        </div>
+
+                        <a th:href="@{/admin/teachers/new?targetRole=ROLE_TEACHER}" class="btn-primary-action green" style="background: #10b981;">
+                            <span>+ Thêm Giáo Viên Mới</span>
+                        </a>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th class="w-60">MÃ GV</th>
+                            <th class="w-60 text-center">ẢNH</th>
+                            <th>HỌ VÀ TÊN GIÁO VIÊN</th>
+                            <th>EMAIL LIÊN HỆ</th>
+                            <th>SỐ ĐIỆN THOẠI</th>
+                            <th>TÊN ĐĂNG NHẬP</th>
+                            <th>VAI TRÒ</th>
+                            <th>TRẠNG THÁI</th>
+                            <th class="text-center">THAO TÁC</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${teacherUsers}">
+                            <!-- HIỂN THỊ NGUYÊN BẢN (KHI KHÔNG CHỌN SỬA DÒNG NÀY) -->
+                            <th:block th:if="${editTeacherId == null or editTeacherId != u.id}">
+                                <td th:text="${u.teacher != null ? '#' + u.teacher.id : '#' + u.id}">#1</td>
+                                <td class="text-center">
+                                    <img th:if="${u.avatarUrl != null and !#strings.isEmpty(u.avatarUrl)}" th:src="${u.avatarUrl}" alt="Avatar" class="avatar-thumb-sm">
+                                    <i th:unless="${u.avatarUrl != null and !#strings.isEmpty(u.avatarUrl)}" class="ri-user-3-line text-subtext"></i>
+                                </td>
+                                <td>
+                                    <strong th:text="${u.teacher != null ? u.teacher.name : u.username}">Nguyễn Văn A</strong>
+                                </td>
+                                <td th:text="${u.teacher != null and u.teacher.email != null ? u.teacher.email : 'N/A'}">email@gmail.com</td>
+                                <td th:text="${u.teacher != null and u.teacher.phone != null ? u.teacher.phone : 'N/A'}">0901234567</td>
+                                <td th:text="${u.username}">username</td>
+                                <td><span class="status-badge pending" style="background: #e0f2fe; color: #0369a1;">Giáo viên</span></td>
+                                <td><span class="status-badge approved">Hoạt động</span></td>
+                                <td class="text-center">
+                                    <div class="form-actions form-actions-reset justify-center">
+                                        <a th:href="@{/admin/teachers(teacherPage=${teacherPageObj.number}, teacherKeyword=${teacherKeyword}, editTeacherId=${u.id})}" class="action-btn orange no-underline">Sửa</a>
+                                        <form th:action="@{/admin/teachers/delete/{id}(id=${u.id})}" method="post" class="inline-form" onsubmit="return confirm('Bạn có chắc chắn muốn xóa tài khoản này?');">
+                                            <button type="submit" class="action-btn gray">Xóa</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </th:block>
+
+                            <!-- SỬA TRỰC TIẾP TRÊN DÒNG BẢNG - CHUẨN ĐÚNG CỘT NÀO RA CỘT NẤY 100% -->
+                            <th:block th:if="${editTeacherId != null and editTeacherId == u.id}">
+                                <form th:id="${'editTeacherForm_' + u.id}" th:action="@{/admin/teachers/edit-inline/{id}(id=${u.id})}" method="post" style="display:none;"></form>
+
+                                <td th:text="${u.teacher != null ? '#' + u.teacher.id : '#' + u.id}">#1</td>
+                                <td class="text-center">
+                                    <img th:if="${u.avatarUrl != null and !#strings.isEmpty(u.avatarUrl)}" th:src="${u.avatarUrl}" alt="Avatar" class="avatar-thumb-sm">
+                                    <i th:unless="${u.avatarUrl != null and !#strings.isEmpty(u.avatarUrl)}" class="ri-user-3-line text-subtext"></i>
+                                </td>
+                                <td>
+                                    <input type="text" name="name" th:value="${u.teacher != null ? u.teacher.name : u.username}" th:form="${'editTeacherForm_' + u.id}" required placeholder="Họ và tên..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
+                                </td>
+                                <td>
+                                    <input type="email" name="email" th:value="${u.teacher != null and u.teacher.email != null ? u.teacher.email : ''}" th:form="${'editTeacherForm_' + u.id}" placeholder="Email..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
+                                </td>
+                                <td>
+                                    <input type="tel" name="phone" th:value="${u.teacher != null ? u.teacher.phone : ''}" th:form="${'editTeacherForm_' + u.id}" data-aka-type="phone" maxlength="11" pattern="0[0-9]{9,10}" inputmode="numeric" placeholder="Số ĐT..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
+                                </td>
+                                <td th:text="${u.username}">username</td>
+                                <td><span class="status-badge pending" style="background: #e0f2fe; color: #0369a1;">Giáo viên</span></td>
+                                <td><span class="status-badge approved">Hoạt động</span></td>
+                                <td class="text-center">
+                                    <div class="form-actions form-actions-reset justify-center">
+                                        <button type="submit" th:form="${'editTeacherForm_' + u.id}" class="action-btn green">Lưu</button>
+                                        <a th:href="@{/admin/teachers(teacherPage=${teacherPageObj.number}, teacherKeyword=${teacherKeyword})}" class="action-btn gray no-underline">Hủy</a>
+                                    </div>
+                                </td>
+                            </th:block>
+                        </tr>
+                        <!-- BÙ DÒNG TRỐNG NẾU TRANG HIỆN TẠI ÍT HƠN 5 BẢN GHI ĐỂ GIỮ CỐ ĐỊNH CHIỀU CAO BẢNG & THANH PHÂN TRANG -->
+                        <tr th:if="${!#lists.isEmpty(teacherUsers) and teacherUsers.size() < 5}" 
+                            th:each="i : ${#numbers.sequence(1, 5 - teacherUsers.size())}" class="spacer-row">
+                            <td colspan="9" style="height: 42px; border: none;">&nbsp;</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(teacherUsers)}">
+                            <td colspan="9" class="empty-table-cell" style="height: 210px; vertical-align: middle;">Không có tài khoản Giáo viên nào.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- THANH PHÂN TRANG CỐ ĐỊNH Ở ĐÁY KHUNG CARD -->
+                <div class="pagination-bar" th:if="${teacherPageObj != null and teacherPageObj.totalElements > 0}">
+                    <span class="page-info" th:text="'Trang ' + (${teacherPageObj.number + 1}) + ' / ' + ${teacherPageObj.totalPages} + ' (Tổng số ' + ${teacherPageObj.totalElements} + ' bản ghi)'"></span>
+                    <div class="pagination-controls">
+                        <!-- LUÔN HIỆN NÚT TRƯỚC VÀ SAU, KHI KHÔNG CÓ TRANG THÌ DISABLE KHÔNG CHO CLICK -->
+                        <a th:href="${teacherPageObj.first} ? 'javascript:void(0)' : @{/admin/teachers(teacherPage=${teacherPageObj.number - 1}, teacherKeyword=${teacherKeyword})}" 
+                           class="page-btn" th:classappend="${teacherPageObj.first} ? 'disabled' : ''" style="text-decoration: none;">❮ Trước</a>
+                        <th:block th:each="i : ${#numbers.sequence(0, teacherPageObj.totalPages - 1)}">
+                            <a th:href="@{/admin/teachers(teacherPage=${i}, teacherKeyword=${teacherKeyword})}" 
+                               class="page-btn" th:classappend="${i == teacherPageObj.number} ? 'active' : ''" 
+                               th:text="${i + 1}" style="text-decoration: none;">1</a>
+                        </th:block>
+                        <a th:href="${teacherPageObj.last} ? 'javascript:void(0)' : @{/admin/teachers(teacherPage=${teacherPageObj.number + 1}, teacherKeyword=${teacherKeyword})}" 
+                           class="page-btn" th:classappend="${teacherPageObj.last} ? 'disabled' : ''" style="text-decoration: none;">Sau ❯</a>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
+    <script th:src="@{/js/smooth-pagination.js}"></script>
+    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

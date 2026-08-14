@@ -6,6 +6,7 @@
     <title>Hồ sơ cá nhân - AKA School Manager</title>
     <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
     <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/form-validate.css}">
 </head>
 <body>
     <div class="app-container">
@@ -17,7 +18,7 @@
             <div class="top-bar">
                 <div>
                     <h1 class="page-title">Hồ Sơ Cá Nhân</h1>
-                    <p class="page-subtitle">Xem thông tin tài khoản và thông tin giảng dạy của bạn (Chế độ chỉ đọc)</p>
+                    <p class="page-subtitle">Xem thông tin tài khoản và cập nhật ảnh đại diện của bạn</p>
                 </div>
             </div>
 
@@ -25,21 +26,36 @@
             <div class="card-box card-box-sm">
                 <!-- ALERTS -->
                 <div th:if="${error}" class="alert-box alert-error" th:text="${error}"></div>
+                <div th:if="${success}" class="alert-box alert-success" th:text="${success}"></div>
 
-                <div class="user-profile-summary profile-summary-header">
-                    <div class="top-avatar avatar-lg">
-                        <img th:if="${currentUser != null and currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl)}" 
-                             th:src="${currentUser.avatarUrl}" alt="Avatar" class="avatar-img">
-                        <i th:unless="${currentUser != null and currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl)}" 
-                           class="ri-user-line avatar-icon-lg"></i>
+                <!-- FORM ĐỔI ẢNH ĐẠI DIỆN -->
+                <form th:action="@{/teacher/profile/avatar}" method="post" enctype="multipart/form-data" id="avatarForm">
+                    <div class="user-profile-summary profile-summary-header">
+                        <div class="avatar-upload-wrapper" title="Bấm vào để đổi ảnh đại diện" onclick="document.getElementById('avatarFileInput').click();">
+                            <div class="top-avatar avatar-lg">
+                                <img th:if="${currentUser != null and currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl)}" 
+                                     th:src="${currentUser.avatarUrl}" alt="Avatar" class="avatar-img">
+                                <i th:unless="${currentUser != null and currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl)}" 
+                                   class="ri-user-line avatar-icon-lg"></i>
+                            </div>
+                            <div class="avatar-upload-overlay">
+                                <i class="ri-camera-line"></i>
+                            </div>
+                            <input type="file" name="avatarFile" id="avatarFileInput" accept="image/*" style="display: none;" onchange="document.getElementById('avatarForm').submit();">
+                        </div>
+                        <div>
+                            <h2 class="profile-title-text" th:text="${teacherName != null and !#strings.contains(teacherName, '@') ? teacherName : 'Giáo viên'}">Họ tên Giáo viên</h2>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                                <span class="status-badge approved" th:text="${currentUser != null ? currentUser.role : 'ROLE_TEACHER'}">ROLE_TEACHER</span>
+                                <button type="button" class="action-btn outline btn-sm" onclick="document.getElementById('avatarFileInput').click();" style="font-size: 0.75rem; padding: 0.2rem 0.6rem;">
+                                    <i class="ri-image-edit-line"></i> Đổi ảnh đại diện
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <h2 class="profile-title-text" th:text="${teacherName}">Họ tên Giáo viên</h2>
-                        <span class="status-badge approved" th:text="${currentUser != null ? currentUser.role : 'ROLE_TEACHER'}">ROLE_TEACHER</span>
-                    </div>
-                </div>
+                </form>
 
-                <div class="form-layout" style="margin-top: 1.5rem;">
+                <div class="form-layout margin-top-15">
                     <div class="form-group">
                         <label class="form-label">Tài khoản / Email đăng nhập</label>
                         <input type="text" th:value="${currentUser != null ? currentUser.username : ''}" disabled class="form-control form-control-disabled">
@@ -78,5 +94,6 @@
             </div>
         </main>
     </div>
+    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Điểm danh ca dạy - AKA School Manager</title>
     <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/form-validate.css}">
 </head>
 <body>
     <div class="app-container">
@@ -27,24 +28,27 @@
                 <div th:if="${error}" class="alert-box alert-error" th:text="${error}">Đã xảy ra lỗi.</div>
                 <div th:if="${warning}" class="alert-box alert-warning" th:text="${warning}">Cảnh báo.</div>
 
-                <form th:action="@{/teacher/attendance/new}" method="post" enctype="multipart/form-data" class="form-layout">
+                <form th:action="@{/teacher/attendance/new}" method="post"
+                      enctype="multipart/form-data" class="form-layout" data-aka-validate>
                     <div class="form-group">
-                        <label class="form-label">Trường mầm non</label>
-                        <select name="schoolId" class="form-control">
+                        <label class="form-label">Trường mầm non *</label>
+                        <select name="schoolId" class="form-control" required data-aka-required="true">
+                            <option value="" disabled selected>-- Chọn Trường Mầm Non --</option>
                             <option th:each="sch : ${schools}" th:value="${sch.id}" th:text="${sch.name}">Trường Mầm Non Hoa Mai</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Lớp học</label>
-                        <select name="classId" class="form-control">
+                        <label class="form-label">Lớp học *</label>
+                        <select name="classId" class="form-control" required data-aka-required="true">
+                            <option value="" disabled selected>-- Chọn Lớp Học --</option>
                             <option th:each="cls : ${classes}" th:value="${cls.id}" th:text="${cls.name}">Lớp Aerobic Chồi 1</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Ca dạy</label>
-                        <select name="session" class="form-control">
+                        <label class="form-label">Ca dạy *</label>
+                        <select name="session" class="form-control" required>
                             <option value="Ca 1">Ca 1</option>
                             <option value="Ca 2">Ca 2</option>
                             <option value="Ca 3">Ca 3</option>
@@ -53,15 +57,16 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Số tiết đã dạy</label>
-                        <input type="number" name="periods" value="2" min="1" max="10" class="form-control">
+                        <label class="form-label">Số tiết đã dạy *</label>
+                        <input type="number" name="periods" value="2" min="1" max="10" class="form-control" required>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">
-                            <i class="ri-camera-line"></i> Ảnh xác minh điểm danh (Bắt buộc chọn file)
+                            <i class="ri-camera-line"></i> Ảnh xác minh điểm danh (Bắt buộc chọn file) *
                         </label>
-                        <input type="file" name="selfieFile" accept="image/*" class="form-control-file">
+                        <input type="file" name="selfieFile" accept="image/*"
+                               class="form-control-file" data-aka-required="true">
                     </div>
 
                     <div class="form-group">
@@ -79,5 +84,6 @@
             </div>
         </main>
     </div>
+    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

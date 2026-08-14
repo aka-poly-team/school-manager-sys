@@ -4,22 +4,26 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ModelAttribute;
 
 import aka.dto.teacher.ChangeRequestForm;
 import aka.model.ChangeRequest;
 import aka.model.Schedule;
 import aka.model.School;
 import aka.model.Teacher;
+import aka.repository.ChangeRequestRepository;
 import aka.service.ChangeRequestService;
 import aka.service.NotificationService;
 import aka.service.ScheduleService;
@@ -43,20 +47,26 @@ public class TeacherChangeRequestController {
     ChangeRequestService changeRequestService;
     SchoolService schoolService;
     TeacherService teacherService;
+    ChangeRequestRepository changeRequestRepository;
     ScheduleService scheduleService;
     NotificationService notificationService;
     SystemLogService systemLogService;
 
     @GetMapping("/change-requests")
-    public String index(Model model) {
+    public String index(@RequestParam(value = "page", defaultValue = "0") int page, Model model) {
         Teacher teacher = SecurityUtils.getTeacher();
         Integer teacherId = teacher != null ? teacher.getId() : null;
 
-        List<ChangeRequest> changeRequests = teacherId != null 
-                ? changeRequestService.findByTeacherIdOrderByIdDesc(teacherId) 
-                : Collections.emptyList();
+        if (teacherId != null) {
+            Pageable pageable = PageRequest.of(page, 10, Sort.by("id").descending());
+            Page<ChangeRequest> pageResult = changeRequestRepository.findByTeacherId(teacherId, pageable);
+            model.addAttribute("changeRequests", pageResult.getContent());
+            model.addAttribute("pageObj", pageResult);
+        } else {
+            model.addAttribute("changeRequests", Collections.emptyList());
+            model.addAttribute("pageObj", null);
+        }
 
-        model.addAttribute("changeRequests", changeRequests);
         return "teacher/change-request/list";
     }
 
@@ -116,31 +126,31 @@ public class TeacherChangeRequestController {
             return "teacher/change-request/form";
         }
 
-            List<Schedule> teacherSchedules = scheduleService.findByTeacherIdOrderByDayOfWeekAsc(teacher.getId());
-            Schedule matchedSchedule = teacherSchedules.stream().filter(s -> 
-                s.getDayOfWeek() == dayOfWeek && s.getSession() != null && s.getSession().equalsIgnoreCase(session)
-            ).findFirst().orElse(null);
+        List<Schedule> teacherSchedules = scheduleService.findByTeacherIdOrderByDayOfWeekAsc(teacher.getId());
+        Schedule matchedSchedule = teacherSchedules.stream().filter(s -> 
+            s.getDayOfWeek() == dayOfWeek && s.getSession() != null && s.getSession().equalsIgnoreCase(session)
+        ).findFirst().orElse(null);
 
-            ChangeRequest cr = ChangeRequest.builder()
-                    .teacher(teacher)
-                    .requestType(requestType)
-                    .date(reqDate)
-                    .session(session)
-                    .schedule(matchedSchedule)
-                    .reason(reason)
-                    .status("pending")
-                    .build();
+        ChangeRequest cr = ChangeRequest.builder()
+                .teacher(teacher)
+                .requestType(requestType)
+                .date(reqDate)
+                .session(session)
+                .schedule(matchedSchedule)
+                .reason(reason)
+                .status("pending")
+                .build();
 
-            changeRequestService.save(cr);
+        changeRequestService.save(cr);
 
         systemLogService.log(SecurityUtils.getUser(), "TẠO ĐƠN XIN NGHỈ", 
                 "Nộp đơn xin nghỉ phép / đổi ca cho ngày " + reqDate + " (" + session + ")");
 
-            // BẮN THÔNG BÁO CHO ADMIN
-            String teacherDisplayName = (teacher != null && teacher.getName() != null) ? teacher.getName() : "Giáo viên";
-            notificationService.notifyAdmin("Giáo viên " + teacherDisplayName + " vừa nộp đơn xin nghỉ / đổi ca mới cho ngày " + reqDate + ".", "/admin/change-requests");
+        // BẮN THÔNG BÁO CHO ADMIN
+        String teacherDisplayName = (teacher != null && teacher.getName() != null) ? teacher.getName() : "Giáo viên";
+        notificationService.notifyAdmin("Giáo viên " + teacherDisplayName + " vừa nộp đơn xin nghỉ / đổi ca mới cho ngày " + reqDate + ".", "/admin/change-requests");
 
-            redirectAttributes.addFlashAttribute("success", "Gửi đơn xin nghỉ / đổi ca thành công! Vui lòng chờ Admin phê duyệt.");
+        redirectAttributes.addFlashAttribute("success", "Gửi đơn xin nghỉ / đổi ca thành công! Vui lòng chờ Admin phê duyệt.");
         return "redirect:/teacher/change-requests";
     }
 }

@@ -15,74 +15,135 @@
         <main class="main-content">
             <div class="top-bar">
                 <div>
-                    <h1 class="page-title" th:text="${editUser != null ? 'Chỉnh Sửa Tài Khoản & Phân Quyền' : 'Thêm Mới Tài Khoản & Giáo Viên'}">Tài Khoản</h1>
+                    <h1 class="page-title" th:text="${editUser != null ? 'Chỉnh Sửa Tài Khoản &amp; Phân Quyền' : (targetRole == 'ROLE_ADMIN' ? 'Thêm Mới Tài Khoản Quản Trị Viên' : 'Thêm Mới Hồ Sơ &amp; Tài Khoản Giáo Viên')}">Tài Khoản</h1>
                     <p class="page-subtitle">Cập nhật thông tin tài khoản và vai trò người dùng trong hệ thống</p>
                 </div>
             </div>
 
             <!-- FORM CHỈNH SỬA / THÊM MỚI TÀI KHOẢN -->
-            <div class="card-box card-box-md margin-center">
-                <div class="box-header">
-                    <h2 class="box-title" style="color: #f97316;" th:if="${editUser != null}">
+            <div class="card-box margin-center" style="max-width: 840px; padding: 1.25rem 1.5rem;">
+                <div class="box-header" style="margin-bottom: 1.25rem;">
+                    <h2 class="box-title" style="color: #f97316; font-size: 1.15rem;" th:if="${editUser != null}">
                         Chỉnh Sửa Tài Khoản: <span th:text="${editUser.username}"></span>
                     </h2>
-                    <h2 class="box-title" style="color: #2563eb;" th:unless="${editUser != null}">
-                        Khai Báo Tài Khoản & Hồ Sơ Giáo Viên Mới
+                    <h2 class="box-title" style="color: #2563eb; font-size: 1.15rem;" th:if="${editUser == null and targetRole == 'ROLE_ADMIN'}">
+                        Khai Báo Tài Khoản Quản Trị Viên Mới (ADMIN)
+                    </h2>
+                    <h2 class="box-title" style="color: #10b981; font-size: 1.15rem;" th:if="${editUser == null and targetRole != 'ROLE_ADMIN'}">
+                        Khai Báo Hồ Sơ &amp; Tài Khoản Giáo Viên Mới (TEACHER)
                     </h2>
                 </div>
 
-                <form th:action="${editUser != null ? '/admin/teachers/edit/' + editUser.id : '/admin/teachers/new'}" method="post" class="form-layout">
-                    <div class="form-group" th:if="${editUser != null}">
-                        <label class="form-label">Tên đăng nhập (Username)</label>
-                        <input type="text" th:value="${editUser.username}" readonly disabled class="form-control" style="background-color: #f1f5f9; cursor: not-allowed; color: #64748b;">
+                <form th:action="${editUser != null ? '/admin/teachers/edit/' + editUser.id : '/admin/teachers/new'}"
+                      method="post" class="form-layout" data-aka-validate>
+
+                    <!-- DẠNG GRID 2 CỘT SONG SONG GIÚP GỌN FORM -->
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.85rem 1.25rem;">
+
+                        <!-- TÊN ĐĂNG NHẬP -->
+                        <div class="form-group" th:if="${editUser != null}">
+                            <label class="form-label" style="font-weight: 600; margin-bottom: 0.25rem;">Tên đăng nhập (Username)</label>
+                            <input type="text" th:value="${editUser.username}" readonly disabled class="form-control"
+                                   style="background-color: #f1f5f9; cursor: not-allowed; color: #64748b;">
+                        </div>
+
+                        <div class="form-group" th:unless="${editUser != null}">
+                            <label class="form-label" style="font-weight: 600; margin-bottom: 0.25rem;">Tên đăng nhập (Username / Email) *</label>
+                            <input type="text" name="username"
+                                   placeholder="Nhập tên đăng nhập hoặc email..."
+                                   class="form-control" required minlength="3">
+                        </div>
+
+                        <!-- HỌ VÀ TÊN -->
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; margin-bottom: 0.25rem;"
+                                   th:text="${(editUser != null and editUser.role != null and editUser.role.name() == 'ROLE_ADMIN') or (editUser == null and targetRole == 'ROLE_ADMIN') ? 'Họ và Tên Quản Trị Viên *' : 'Họ và Tên Giáo Viên *'}">Họ và Tên *</label>
+                            <input type="text" name="name"
+                                   th:value="${editUser != null and editUser.teacher != null ? editUser.teacher.name : (editUser != null ? editUser.username : '')}"
+                                   placeholder="Nhập họ và tên..." class="form-control" required minlength="2">
+                        </div>
+
+                        <!-- CÁC TRƯỜNG DÀNH RIÊNG CHO HỒ SƠ GIÁO VIÊN -->
+                        <th:block th:if="${(editUser != null and editUser.role != null and editUser.role.name() == 'ROLE_TEACHER') or (editUser == null and targetRole != 'ROLE_ADMIN')}">
+                            <div class="form-group">
+                                <label class="form-label" style="font-weight: 600; margin-bottom: 0.25rem;">Ngày sinh *</label>
+                                <input type="date" name="dob"
+                                       th:value="${editUser != null and editUser.teacher != null and editUser.teacher.dob != null ? editUser.teacher.dob : ''}"
+                                       required data-aka-required="true" data-aka-type="dob"
+                                       class="form-control">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" style="font-weight: 600; margin-bottom: 0.25rem;">Địa chỉ cư trú (Teacher.address)</label>
+                                <input type="text" name="address"
+                                       th:value="${editUser != null and editUser.teacher != null ? editUser.teacher.address : ''}"
+                                       placeholder="Nhập địa chỉ cư trú..." class="form-control">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" style="font-weight: 600; margin-bottom: 0.25rem;">Trạng thái Hồ sơ (Teacher.status)</label>
+                                <select name="status" class="form-control">
+                                    <option value="active" th:selected="${editUser != null and editUser.teacher != null and editUser.teacher.status == 'active'}">Đang hoạt động (active)</option>
+                                    <option value="inactive" th:selected="${editUser != null and editUser.teacher != null and editUser.teacher.status == 'inactive'}">Tạm ngưng (inactive)</option>
+                                </select>
+                            </div>
+                        </th:block>
+
+                        <!-- EMAIL & SĐT LIÊN HỆ -->
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; margin-bottom: 0.25rem;">Email liên hệ</label>
+                            <input type="email" name="email"
+                                   th:value="${editUser != null and editUser.teacher != null ? editUser.teacher.email : ''}"
+                                   placeholder="Nhập địa chỉ email..." class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; margin-bottom: 0.25rem;">Số điện thoại (Tối đa 11 số)</label>
+                            <input type="tel" name="phone"
+                                   th:value="${editUser != null and editUser.teacher != null ? editUser.teacher.phone : ''}"
+                                   data-aka-type="phone"
+                                   maxlength="11"
+                                   pattern="0[0-9]{9,10}"
+                                   inputmode="numeric"
+                                   placeholder="Nhập số điện thoại (tối đa 11 số)..." class="form-control">
+                        </div>
+
+                        <!-- MẬT KHẨU -->
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; margin-bottom: 0.25rem;"
+                                   th:text="${editUser != null ? 'Mật khẩu mới (Giữ nguyên nếu không đổi)' : 'Mật khẩu đăng nhập * (Từ 6 ký tự trở lên)'}">Mật khẩu đăng nhập *</label>
+                            <input type="password" name="password"
+                                   placeholder="Nhập mật khẩu (từ 6 ký tự trở lên)..." class="form-control"
+                                   th:attr="required=${editUser == null ? 'required' : null}, minlength='6'">
+                        </div>
+
+                        <!-- VAI TRÒ & KÍCH HOẠT -->
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; margin-bottom: 0.25rem;">Phân quyền Hệ thống (User.role) *</label>
+                            <select name="role" class="form-control">
+                                <option value="ROLE_TEACHER" th:selected="${(editUser != null and editUser.role != null and editUser.role.name() == 'ROLE_TEACHER') or (editUser == null and targetRole == 'ROLE_TEACHER')}">Giáo viên (ROLE_TEACHER)</option>
+                                <option value="ROLE_ADMIN" th:selected="${(editUser != null and editUser.role != null and editUser.role.name() == 'ROLE_ADMIN') or (editUser == null and targetRole == 'ROLE_ADMIN')}">Quản trị hệ thống (ROLE_ADMIN)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; margin-bottom: 0.25rem;">Trạng thái Đăng nhập (User.enabled)</label>
+                            <select name="enabled" class="form-control">
+                                <option value="true" th:selected="${editUser == null or editUser.enabled == true}">Cho phép đăng nhập (Enabled)</option>
+                                <option value="false" th:selected="${editUser != null and editUser.enabled == false}">Khóa đăng nhập (Disabled)</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="form-group" th:unless="${editUser != null}">
-                        <label class="form-label">Tên đăng nhập (Username / Email) *</label>
-                        <input type="text" name="username" placeholder="Nhập tên đăng nhập hoặc email..." class="form-control">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Họ và Tên Giáo viên *</label>
-                        <input type="text" name="name" 
-                               th:value="${editUser != null and editUser.teacher != null ? editUser.teacher.name : (editUser != null ? editUser.username : '')}" 
-                               placeholder="Nhập họ và tên giáo viên..." class="form-control">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Email liên hệ</label>
-                        <input type="email" name="email" 
-                               th:value="${editUser != null and editUser.teacher != null ? editUser.teacher.email : ''}" 
-                               placeholder="Nhập địa chỉ email..." class="form-control">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Số điện thoại</label>
-                        <input type="text" name="phone" 
-                               th:value="${editUser != null and editUser.teacher != null ? editUser.teacher.phone : ''}" 
-                               placeholder="Nhập số điện thoại..." class="form-control">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" th:text="${editUser != null ? 'Mật khẩu mới (Bỏ trống nếu giữ nguyên)' : 'Mật khẩu đăng nhập (Mặc định: 123456)'}">Mật khẩu</label>
-                        <input type="password" name="password" placeholder="Nhập mật khẩu..." class="form-control">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Phân quyền Hệ thống</label>
-                        <select name="role" class="form-control">
-                            <option value="ROLE_TEACHER" th:selected="${editUser != null and editUser.role != null and editUser.role.name() == 'ROLE_TEACHER'}">Giáo viên (ROLE_TEACHER)</option>
-                            <option value="ROLE_ADMIN" th:selected="${editUser != null and editUser.role != null and editUser.role.name() == 'ROLE_ADMIN'}">Quản trị hệ thống (ROLE_ADMIN)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-actions modal-actions">
-                        <a th:href="@{/admin/teachers}" class="action-btn gray">Hủy bỏ</a>
-                        <button type="submit" class="action-btn blue" th:text="${editUser != null ? 'Cập Nhật Thông Tin' : 'Lưu Tài Khoản Mới'}">Lưu Tài Khoản</button>
+                    <div class="form-actions modal-actions" style="margin-top: 1.25rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                        <a th:href="@{/admin/teachers}" class="action-btn gray" style="padding: 0.5rem 1.25rem;">Hủy bỏ</a>
+                        <button type="submit" class="action-btn blue" style="padding: 0.5rem 1.5rem;"
+                                th:text="${editUser != null ? 'Cập Nhật Thông Tin' : 'Lưu Tài Khoản Mới'}">Lưu Tài Khoản</button>
                     </div>
                 </form>
             </div>
         </main>
     </div>
+    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

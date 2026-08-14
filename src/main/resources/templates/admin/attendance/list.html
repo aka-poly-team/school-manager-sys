@@ -6,6 +6,7 @@
     <title>Duyệt Chấm Công - Admin AKA</title>
     <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
     <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/form-validate.css}">
 </head>
 <body>
     <div class="app-container">
@@ -17,11 +18,18 @@
                 <div>
                     <h1 class="page-title">Duyệt Chấm Công & Điểm Danh</h1>
                     <p class="page-subtitle">Xác minh ảnh Selfie và duyệt số tiết thực tế của giáo viên</p>
-                </div>
-            </div>
+            <!-- ALERT NOTIFICATIONS -->
+            <div th:if="${success}" class="alert-box alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert-box alert-error" th:text="${error}"></div>
 
             <!-- TABLE OF ATTENDANCES -->
             <div class="card-box">
+                <div class="box-header box-header-flex">
+                    <h2 class="box-title">Lịch Sử Điểm Danh & Chấm Công</h2>
+                    <div class="flex-gap-sm">
+                        <input type="text" placeholder="Tìm kiếm điểm danh & chấm công..." class="table-search-bar w-260" data-aka-search="true">
+                    </div>
+                </div>
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -43,12 +51,12 @@
                             <td>
                                 <strong th:text="${att.date != null ? #temporals.format(att.date, 'dd/MM/yyyy') : 'N/A'}">04/08/2026</strong>
                                 <br>
-                                <small style="color: #64748b;" th:text="${att.checkInTime != null ? 'Lúc ' + att.checkInTime : ''}">Lúc 07:55</small>
+                                <small class="text-subtext" th:text="${att.checkInTime != null ? 'Lúc ' + att.checkInTime : ''}">Lúc 07:55</small>
                             </td>
                             <td>
                                 <strong th:text="${att.teacher != null ? att.teacher.name : 'Chưa phân công'}">GV Mai</strong>
                                 <br>
-                                <small style="color: #2563eb; font-weight: 600;" th:text="${att.teacher != null ? 'Mã GV: #' + att.teacher.id : ''}">Mã GV: #1</small>
+                                <small class="text-blue font-semibold" th:text="${att.teacher != null ? 'Mã GV: #' + att.teacher.id : ''}">Mã GV: #1</small>
                             </td>
                             <td>
                                 <a th:if="${att.selfieImage != null}" th:href="${att.selfieImage}" target="_blank" title="Xem ảnh đầy đủ">
@@ -67,11 +75,14 @@
                             </td>
                             <td class="text-center">
                                 <div class="form-actions form-actions-reset">
-                                    <form th:action="@{/admin/attendances/approve/{id}(id=${att.id})}" method="post">
+                                    <form th:action="@{/admin/attendances/approve/{id}(id=${att.id})}" method="post" class="inline-form">
                                         <button type="submit" class="action-btn green">Duyệt</button>
                                     </form>
-                                    <form th:action="@{/admin/attendances/reject/{id}(id=${att.id})}" method="post">
-                                        <button type="submit" class="action-btn gray">Từ chối</button>
+                                    <form th:action="@{/admin/attendances/reject/{id}(id=${att.id})}" method="post" class="inline-form">
+                                        <button type="submit" class="action-btn orange">Từ chối</button>
+                                    </form>
+                                    <form th:action="@{/admin/attendances/delete/{id}(id=${att.id})}" method="post" class="inline-form" onsubmit="return confirm('Bạn có chắc chắn muốn xóa lượt điểm danh này?');">
+                                        <button type="submit" class="action-btn gray">Xóa</button>
                                     </form>
                                 </div>
                             </td>
@@ -81,8 +92,26 @@
                         </tr>
                     </tbody>
                 </table>
+
+                <!-- THANH PHÂN TRANG CỐ ĐỊNH Ở ĐÁY KHUNG CARD -->
+                <div class="pagination-bar" th:if="${pageObj != null and pageObj.totalElements > 0}">
+                    <span class="page-info" th:text="'Trang ' + (${pageObj.number + 1}) + ' / ' + ${pageObj.totalPages} + ' (Tổng số ' + ${pageObj.totalElements} + ' bản ghi điểm danh)'"></span>
+                    <div class="pagination-controls">
+                        <a th:href="${pageObj.first} ? 'javascript:void(0)' : @{/admin/attendances(page=${pageObj.number - 1})}" 
+                           class="page-btn no-underline" th:classappend="${pageObj.first} ? 'disabled' : ''">❮ Trước</a>
+                        <th:block th:each="i : ${#numbers.sequence(0, pageObj.totalPages - 1)}">
+                            <a th:href="@{/admin/attendances(page=${i})}" 
+                               class="page-btn no-underline" th:classappend="${i == pageObj.number} ? 'active' : ''" 
+                               th:text="${i + 1}">1</a>
+                        </th:block>
+                        <a th:href="${pageObj.last} ? 'javascript:void(0)' : @{/admin/attendances(page=${pageObj.number + 1})}" 
+                           class="page-btn no-underline" th:classappend="${pageObj.last} ? 'disabled' : ''">Sau ❯</a>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
+    <script th:src="@{/js/smooth-pagination.js}"></script>
+    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

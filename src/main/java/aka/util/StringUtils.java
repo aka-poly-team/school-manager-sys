@@ -58,4 +58,21 @@ public class StringUtils {
     public static boolean isEmpty(String str) {
         return isBlank(str);
     }
+
+    /**
+     * Làm sạch URL Referer bằng cách loại bỏ các query param chỉ định (ví dụ các param edit mode như editScheduleId, editAdminId...)
+     */
+    public static String cleanReferer(String referer, String fallbackPath, String... paramsToRemove) {
+        if (isBlank(referer)) {
+            return fallbackPath;
+        }
+        String cleanUrl = referer;
+        if (paramsToRemove != null) {
+            for (String param : paramsToRemove) {
+                cleanUrl = cleanUrl.replaceAll("([?&])" + param + "=[^&]*(&|$)", "$1");
+            }
+        }
+        cleanUrl = cleanUrl.replaceAll("[?&]$", "");
+        return cleanUrl;
+    }
 }

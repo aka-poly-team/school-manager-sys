@@ -17,22 +17,25 @@
                 <div>
                     <h1 class="page-title" th:text="${editSchedule != null ? 'Chỉnh Sửa Phân Công Lịch Dạy' : 'Phân Công Ca Dạy Mới'}">Phân Công Ca Dạy Mới</h1>
                     <p class="page-subtitle" th:text="${editSchedule != null ? 'Cập nhật Giáo viên, Lớp học, Thứ hoặc Ca giảng dạy' : 'Phân công Giáo viên phụ trách Trường, Lớp và Ca giảng dạy'}">Phân công Giáo viên phụ trách Trường, Lớp và Ca giảng dạy</p>
-                </div>
-            </div>
+            <!-- ALERT NOTIFICATIONS -->
+            <div th:if="${error}" class="alert-box alert-error" th:text="${error}"></div>
+            <div th:if="${success}" class="alert-box alert-success" th:text="${success}"></div>
 
             <div class="card-box card-box-md margin-center">
                 <div class="box-header">
                     <h2 class="box-title" th:text="${editSchedule != null ? 'Chỉnh Sửa Thông Tin Lịch Dạy #' + editSchedule.id : 'Thông Tin Phân Công Lịch Dạy Mới'}">Thông Tin Phân Công Lịch Dạy</h2>
                 </div>
 
-                <form th:action="${editSchedule != null ? '/admin/schedules/edit/' + editSchedule.id : '/admin/schedules/new'}" method="post" class="form-layout">
-                    
+                <form th:action="${editSchedule != null ? '/admin/schedules/edit/' + editSchedule.id : '/admin/schedules/new'}"
+                      method="post" class="form-layout" data-aka-validate>
+
                     <!-- 1. CHỌN GIÁO VIÊN -->
                     <div class="form-group">
                         <label class="form-label">Giáo viên phụ trách *</label>
-                        <select name="teacherId" class="form-control">
-                            <option th:each="t : ${teachers}" 
-                                    th:value="${t.id}" 
+                        <select name="teacherId" class="form-control" required data-aka-required="true">
+                            <option value="" disabled th:unless="${editSchedule != null}">-- Chọn Giáo viên --</option>
+                            <option th:each="t : ${teachers}"
+                                    th:value="${t.id}"
                                     th:selected="${editSchedule != null and editSchedule.teacher != null and editSchedule.teacher.id == t.id}"
                                     th:text="${t.name + ' (Mã GV: #' + t.id + (t.phone != null and !#strings.isEmpty(t.phone) ? ' - SĐT: ' + t.phone : '') + ')'}">
                                 GV Nguyễn Thị Mai (Mã GV: #1)
@@ -43,9 +46,10 @@
                     <!-- 2. CHỌN TRƯỜNG -->
                     <div class="form-group">
                         <label class="form-label">Trường mầm non *</label>
-                        <select name="schoolId" class="form-control">
-                            <option th:each="s : ${schools}" 
-                                    th:value="${s.id}" 
+                        <select name="schoolId" class="form-control" required data-aka-required="true">
+                            <option value="" disabled th:unless="${editSchedule != null}">-- Chọn Trường Mầm Non --</option>
+                            <option th:each="s : ${schools}"
+                                    th:value="${s.id}"
                                     th:selected="${editSchedule != null and editSchedule.school != null and editSchedule.school.id == s.id}"
                                     th:text="${s.name}">Trường Mầm Non Hoa Mai</option>
                         </select>
@@ -54,9 +58,10 @@
                     <!-- 3. CHỌN LỚP HỌC -->
                     <div class="form-group">
                         <label class="form-label">Lớp học *</label>
-                        <select name="classId" class="form-control">
-                            <option th:each="c : ${classes}" 
-                                    th:value="${c.id}" 
+                        <select name="classId" class="form-control" required data-aka-required="true">
+                            <option value="" disabled th:unless="${editSchedule != null}">-- Chọn Lớp Học --</option>
+                            <option th:each="c : ${classes}"
+                                    th:value="${c.id}"
                                     th:selected="${editSchedule != null and editSchedule.schoolClass != null and editSchedule.schoolClass.id == c.id}"
                                     th:text="${c.name}">Lớp Aerobic Chồi 1</option>
                         </select>
@@ -65,7 +70,7 @@
                     <!-- 4. CHỌN THỨ -->
                     <div class="form-group">
                         <label class="form-label">Thứ trong tuần *</label>
-                        <select name="dayOfWeek" class="form-control">
+                        <select name="dayOfWeek" class="form-control" required>
                             <option value="2" th:selected="${editSchedule != null and editSchedule.dayOfWeek == 2}">Thứ 2</option>
                             <option value="3" th:selected="${editSchedule != null and editSchedule.dayOfWeek == 3}">Thứ 3</option>
                             <option value="4" th:selected="${editSchedule != null and editSchedule.dayOfWeek == 4}">Thứ 4</option>
@@ -79,7 +84,7 @@
                     <!-- 5. CHỌN CA DẠY -->
                     <div class="form-group">
                         <label class="form-label">Ca dạy *</label>
-                        <select name="session" class="form-control">
+                        <select name="session" class="form-control" required>
                             <option value="Ca 1" th:selected="${editSchedule != null and editSchedule.session == 'Ca 1'}">Ca 1</option>
                             <option value="Ca 2" th:selected="${editSchedule != null and editSchedule.session == 'Ca 2'}">Ca 2</option>
                             <option value="Ca 3" th:selected="${editSchedule != null and editSchedule.session == 'Ca 3'}">Ca 3</option>
@@ -90,16 +95,19 @@
                     <!-- 6. SỐ TIẾT -->
                     <div class="form-group">
                         <label class="form-label">Số tiết chuẩn</label>
-                        <input type="number" name="periods" th:value="${editSchedule != null ? editSchedule.periods : 2}" min="1" max="10" class="form-control">
+                        <input type="number" name="periods" th:value="${editSchedule != null ? editSchedule.periods : 2}"
+                               min="1" max="10" class="form-control">
                     </div>
 
                     <div class="form-actions modal-actions">
                         <a th:href="@{/admin/schedules}" class="action-btn gray">Hủy bỏ</a>
-                        <button type="submit" class="action-btn blue" th:text="${editSchedule != null ? 'Cập Nhật Lịch Dạy' : 'Lưu Phân Công Lịch Dạy'}">Lưu Phân Công Lịch Dạy</button>
+                        <button type="submit" class="action-btn blue"
+                                th:text="${editSchedule != null ? 'Cập Nhật Lịch Dạy' : 'Lưu Phân Công Lịch Dạy'}">Lưu Phân Công Lịch Dạy</button>
                     </div>
                 </form>
             </div>
         </main>
     </div>
+    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

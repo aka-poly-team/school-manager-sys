@@ -1,32 +1,35 @@
 package aka.admin.controller;
 
 import java.time.LocalTime;
-import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ModelAttribute;
 
 import aka.dto.admin.ScheduleForm;
 import aka.model.Schedule;
 import aka.model.School;
 import aka.model.SchoolClass;
 import aka.model.Teacher;
-import aka.service.NotificationService;
+import aka.repository.ScheduleRepository;
 import aka.service.ScheduleService;
 import aka.service.SchoolClassService;
 import aka.service.SchoolService;
 import aka.service.TeacherService;
 import aka.util.DateUtils;
-import aka.util.SecurityUtils;
+import aka.util.StringUtils;
 import aka.util.ValidationUtils;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -43,18 +46,74 @@ public class AdminScheduleController {
     TeacherService teacherService;
     SchoolService schoolService;
     SchoolClassService schoolClassService;
-    NotificationService notificationService;
-
+    ScheduleRepository scheduleRepository;
     @GetMapping("/schedules")
-    public String list(Model model) {
-        List<Schedule> schedules = scheduleService.findAllByOrderByIdDesc();
+    public String list(@RequestParam(value = "page", defaultValue = "0") int page,
+                       @RequestParam(value = "editScheduleId", required = false) Integer editScheduleId,
+                       Model model) {
+        Pageable pageable = PageRequest.of(page, 10, Sort.by("id").descending());
+        Page<Schedule> pageResult = scheduleRepository.findAll(pageable);
         
-        model.addAttribute("schedules", schedules);
+        model.addAttribute("schedules", pageResult.getContent());
+        model.addAttribute("pageObj", pageResult);
+        model.addAttribute("editScheduleId", editScheduleId);
         model.addAttribute("teachers", teacherService.findAll());
         model.addAttribute("schools", schoolService.findAll());
         model.addAttribute("classes", schoolClassService.findAll());
 
         return "admin/schedule/list";
+    }
+
+    @PostMapping("/schedules/edit-inline/{id}")
+    public String editInline(@PathVariable("id") Integer id,
+                             @RequestParam("teacherId") Integer teacherId,
+                             @RequestParam("schoolId") Integer schoolId,
+                             @RequestParam("classId") Integer classId,
+                             @RequestParam("dayOfWeek") Integer dayOfWeek,
+                             @RequestParam("session") String session,
+                             @RequestParam(value = "periods", required = false, defaultValue = "2") Integer periods,
+                             @RequestHeader(value = "Referer", required = false) String referer,
+                             RedirectAttributes redirectAttributes) {
+        try {
+            Schedule schedule = scheduleService.findById(id).orElse(null);
+            if (schedule != null) {
+                // 1. Kiểm tra TRÙNG LỊCH GIÁO VIÊN
+                boolean teacherConflict = scheduleService.existsByTeacherIdAndDayOfWeekAndSessionAndIdNot(teacherId, dayOfWeek, session, id);
+                if (teacherConflict) {
+                    Teacher t = teacherService.findById(teacherId).orElse(null);
+                    String teacherName = t != null ? t.getName() : "Giáo viên";
+                    redirectAttributes.addFlashAttribute("error", 
+                        "TRÙNG LỊCH GIÁO VIÊN: Giáo viên '" + teacherName + "' đã có ca dạy vào " + DateUtils.dayText(dayOfWeek) + " (" + session + ")!");
+                    return "redirect:" + StringUtils.cleanReferer(referer, "/admin/schedules", "editScheduleId");
+                }
+
+                // 2. Kiểm tra TRÙNG LỊCH LỚP HỌC
+                boolean classConflict = scheduleService.existsBySchoolClassIdAndDayOfWeekAndSessionAndIdNot(classId, dayOfWeek, session, id);
+                if (classConflict) {
+                    SchoolClass c = schoolClassService.findById(classId).orElse(null);
+                    String className = c != null ? c.getName() : "Lớp học";
+                    redirectAttributes.addFlashAttribute("error", 
+                        "TRÙNG LỊCH LỚP HỌC: Lớp '" + className + "' đã được xếp lịch dạy vào " + DateUtils.dayText(dayOfWeek) + " (" + session + ")!");
+                    return "redirect:" + StringUtils.cleanReferer(referer, "/admin/schedules", "editScheduleId");
+                }
+
+                Teacher teacher = teacherService.findById(teacherId).orElse(null);
+                School school = schoolService.findById(schoolId).orElse(null);
+                SchoolClass schoolClass = schoolClassService.findById(classId).orElse(null);
+                
+                schedule.setTeacher(teacher);
+                schedule.setSchool(school);
+                schedule.setSchoolClass(schoolClass);
+                schedule.setDayOfWeek(dayOfWeek);
+                schedule.setSession(session);
+                schedule.setPeriods(periods != null && periods > 0 ? periods : 2);
+                scheduleService.save(schedule);
+                redirectAttributes.addFlashAttribute("success", "Cập nhật lịch dạy #" + id + " thành công!");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Lỗi khi cập nhật lịch dạy: " + e.getMessage());
+        }
+        return "redirect:" + StringUtils.cleanReferer(referer, "/admin/schedules", "editScheduleId");
     }
 
     @GetMapping("/schedules/new")
@@ -219,7 +278,9 @@ public class AdminScheduleController {
     }
 
     @PostMapping("/schedules/delete/{id}")
-    public String delete(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) {
+    public String delete(@PathVariable("id") Integer id,
+                         @RequestHeader(value = "Referer", required = false) String referer,
+                         RedirectAttributes redirectAttributes) {
         try {
             if (scheduleService.existsById(id)) {
                 scheduleService.deleteById(id);
@@ -230,7 +291,7 @@ public class AdminScheduleController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Không thể xóa lịch dạy này vì đã có dữ liệu điểm danh!");
         }
-        return "redirect:/admin/schedules";
+        return "redirect:" + StringUtils.cleanReferer(referer, "/admin/schedules", "editScheduleId");
     }
 
     private LocalTime startTime(String session) {

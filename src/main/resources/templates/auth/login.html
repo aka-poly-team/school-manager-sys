@@ -71,8 +71,8 @@
                     Đặt lại mật khẩu thành công! Vui lòng đăng nhập bằng mật khẩu mới.
                 </div>
 
-                <!-- FORM -->
-                <form th:action="@{/auth/login}" method="post" class="auth-form">
+                <!-- FORM (PURE BACKEND AUTHENTICATION — NO FRONTEND JS VALIDATION) -->
+                <form th:action="@{/auth/login}" method="post" class="auth-form" novalidate>
                     <div class="form-group">
                         <label class="form-label">Tên đăng nhập</label>
                         <input type="text" name="username" class="form-input" th:value="${rememberedUsername}" placeholder="Nhập tên đăng nhập..." autofocus>
@@ -102,5 +102,6 @@
         </div>
     </div>
 
+    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

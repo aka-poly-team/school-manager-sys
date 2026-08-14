@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thêm Lớp Học Mới - Admin AKA</title>
+    <title th:text="${schoolClass != null ? 'Chỉnh Sửa Lớp Học - Admin AKA' : 'Thêm Lớp Học Mới - Admin AKA'}">Thêm Lớp Học Mới - Admin AKA</title>
     <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
     <link rel="stylesheet" th:href="@{/css/teacher-dashboard.css}">
 </head>
@@ -15,43 +15,56 @@
         <main class="main-content">
             <div class="top-bar">
                 <div>
-                    <h1 class="page-title">Thêm Lớp Học Mới</h1>
+                    <h1 class="page-title" th:text="${schoolClass != null ? 'Chỉnh Sửa Lớp Học' : 'Thêm Lớp Học Mới'}">Thêm Lớp Học Mới</h1>
                     <p class="page-subtitle">Khai báo danh mục Lớp học giảng dạy cho Trường Mầm Non</p>
                 </div>
             </div>
 
             <div class="card-box card-box-md margin-center">
                 <div class="box-header">
-                    <h2 class="box-title">Thông Tin Lớp Học</h2>
+                    <h2 class="box-title" th:text="${schoolClass != null ? 'Cập Nhật Lớp Học #' + schoolClass.id : 'Thông Tin Lớp Học'}">Thông Tin Lớp Học</h2>
                 </div>
 
-                <form th:action="@{/admin/classes/new}" method="post" class="form-layout">
+                <form th:action="${schoolClass != null} ? @{/admin/classes/edit/{id}(id=${schoolClass.id})} : @{/admin/classes/new}"
+                      method="post" class="form-layout" data-aka-validate>
                     <div class="form-group">
                         <label class="form-label">Thuộc Trường Mầm Non *</label>
-                        <select name="schoolId" class="form-control">
-                            <option th:each="s : ${schools}" th:value="${s.id}" th:text="${s.name}">Trường Mầm Non Hoa Mai</option>
+                        <select name="schoolId" class="form-control" required data-aka-required="true">
+                            <option value="" disabled th:unless="${schoolClass != null}">-- Chọn Trường Mầm Non --</option>
+                            <option th:each="s : ${schools}"
+                                    th:value="${s.id}"
+                                    th:text="${s.name}"
+                                    th:selected="${schoolClass != null and schoolClass.school != null and schoolClass.school.id == s.id}">Trường Mầm Non Hoa Mai</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Tên Lớp Học *</label>
-                        <input type="text" name="name" placeholder="Ví dụ: Lớp Aerobic Chồi 1..." class="form-control">
+                        <input type="text" name="name" th:value="${schoolClass != null ? schoolClass.name : ''}"
+                               required minlength="3"
+                               placeholder="Ví dụ: Lớp Aerobic Chồi 1..." class="form-control">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Sĩ số học sinh</label>
-                        <input type="number" name="studentCount" value="25" min="1" class="form-control">
+                        <input type="number" name="studentCount"
+                               th:value="${schoolClass != null ? schoolClass.studentCount : 25}"
+                               min="1" max="100" class="form-control">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Số tiết chuẩn / buổi</label>
-                        <input type="number" name="standardPeriods" value="2" min="1" class="form-control">
+                        <input type="number" name="standardPeriods"
+                               th:value="${schoolClass != null ? schoolClass.standardPeriods : 2}"
+                               min="1" max="10" class="form-control">
                     </div>
 
                     <div class="form-actions modal-actions">
                         <a th:href="@{/admin/schools}" class="action-btn gray">Hủy bỏ</a>
-                        <button type="submit" class="action-btn blue">Lưu Lớp Học</button>
+                        <button type="submit" class="action-btn blue"
+                                th:text="${schoolClass != null ? 'Cập Nhật Lớp Học' : 'Lưu Lớp Học'}">Lưu Lớp Học</button>
                     </div>
                 </form>
             </div>
         </main>
     </div>
+    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

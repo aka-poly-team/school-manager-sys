@@ -1,10 +1,17 @@
 package aka.admin.controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import aka.model.Attendance;
+import aka.repository.AttendanceRepository;
 import aka.service.AttendanceService;
 import aka.service.ChangeRequestService;
 import aka.service.ComplaintService;
@@ -28,11 +35,14 @@ public class AdminDashboardController {
     SchoolClassService schoolClassService;
     ScheduleService scheduleService;
     AttendanceService attendanceService;
+    AttendanceRepository attendanceRepository;
     ComplaintService complaintService;
     ChangeRequestService changeRequestService;
 
     @GetMapping({"", "/", "/dashboard"})
-    public String index(Model model) {
+    public String index(@RequestParam(value = "page", defaultValue = "0") int page,
+                       @RequestParam(value = "keyword", required = false) String keyword,
+                       Model model) {
 
         model.addAttribute("totalTeachers", teacherService.count());
         model.addAttribute("totalSchools", schoolService.count());
@@ -42,7 +52,15 @@ public class AdminDashboardController {
         model.addAttribute("pendingComplaintsCount", complaintService.countByStatus(0));
         model.addAttribute("pendingRequestsCount", changeRequestService.countByStatus("pending"));
 
-        model.addAttribute("recentAttendances", attendanceService.findAllByOrderByIdDesc());
+        Pageable pageable = PageRequest.of(page, 5, Sort.by("id").descending());
+        Page<Attendance> pageResult = (keyword != null && !keyword.isBlank())
+                ? attendanceRepository.searchAttendances(keyword.trim(), pageable)
+                : attendanceRepository.findAll(pageable);
+
+        model.addAttribute("recentAttendances", pageResult.getContent());
+        model.addAttribute("pageObj", pageResult);
+        model.addAttribute("keyword", keyword);
+
         model.addAttribute("recentComplaints", complaintService.findAllByOrderByIdDesc());
         model.addAttribute("recentRequests", changeRequestService.findAllByOrderByIdDesc());
         model.addAttribute("todayFormatted", DateUtils.today());

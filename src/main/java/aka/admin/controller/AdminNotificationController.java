@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import aka.model.Notification;
 import aka.service.NotificationService;
@@ -39,8 +40,9 @@ public class AdminNotificationController {
     }
 
     @PostMapping("/notifications/read-all")
-    public String markAllRead() {
+    public String markAllRead(RedirectAttributes redirectAttributes) {
         notificationService.markAllAsReadForAdmin();
+        redirectAttributes.addFlashAttribute("success", "Đã đánh dấu tất cả thông báo là ĐÃ ĐỌC!");
         return "redirect:/admin/notifications";
     }
 
