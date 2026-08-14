@@ -8,7 +8,7 @@ services:
       - SA_PASSWORD=AkaSystem@123456
       - MSSQL_PID=Developer
     ports:
-      - "1433:1433"
+      - "14333:1433" # Cổng 14333 bên ngoài chống xung đột 100% với SQL Server sẵn có trên máy
     volumes:
       - mssql_data:/var/opt/mssql
 
