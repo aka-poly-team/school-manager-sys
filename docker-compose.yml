@@ -28,6 +28,9 @@ services:
       - SPRING_DATASOURCE_PASSWORD=AkaSystem@123456
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_DATASOURCE_HIKARI_INITIALIZATION_FAIL_TIMEOUT=0
+      - SPRING_SQL_INIT_MODE=always
+      - SPRING_SQL_INIT_DATA_LOCATIONS=classpath:seed_data_20_records.sql
+      - SPRING_SQL_INIT_CONTINUE_ON_ERROR=true
 
 volumes:
   mssql_data:
