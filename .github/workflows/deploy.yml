@@ -7,49 +7,58 @@ on:
     branches: [ "main", "master" ]
 
 jobs:
-  build-and-deploy:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
     # 1. Checkout mã nguồn dự án từ GitHub
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     # 2. Cấu hình môi trường Java 17 Temurin
     - name: Set up JDK 17
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
 
-    # 3. Biên dịch và Đóng gói file JAR bằng Maven (Bỏ qua Unit Test để build nhanh)
+    # 3. Cấp quyền thực thi cho Maven Wrapper
+    - name: Make ./mvnw executable
+      run: chmod +x ./mvnw
+
+    # 4. Biên dịch và Đóng gói file JAR bằng Maven (Bỏ qua Unit Test để build nhanh)
     - name: Build Executable JAR with Maven
       run: ./mvnw clean package -DskipTests
 
-    # 4. Đăng nhập vào kho lưu trữ Docker Hub (Tự động nạp Secret credentials)
+    # 5. Kiểm tra Build Docker Image
+    - name: Build Docker Image
+      run: docker build -t aka-system:latest .
+
+    # 6. Đăng nhập vào Docker Hub (Nếu có cài đặt Secrets DOCKER_USERNAME)
     - name: Log in to Docker Hub
-      if: github.event_name != 'pull_request'
-      uses: docker/login-action@v2
+      if: github.event_name == 'push' && secrets.DOCKER_USERNAME != ''
+      uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    # 5. Tự động Build Docker Image và Đẩy (Push) lên Server/Docker Hub
-    - name: Build & Push Docker Image
-      uses: docker/build-push-action@v4
+    # 7. Đẩy Docker Image lên Docker Hub (Nếu có Secrets DOCKER_USERNAME)
+    - name: Build & Push Docker Image to Docker Hub
+      if: github.event_name == 'push' && secrets.DOCKER_USERNAME != ''
+      uses: docker/build-push-action@v5
       with:
         context: .
         file: ./Dockerfile
-        push: ${{ github.event_name != 'pull_request' }}
+        push: true
         tags: |
           ${{ secrets.DOCKER_USERNAME }}/aka-system:latest
           ${{ secrets.DOCKER_USERNAME }}/aka-system:${{ github.sha }}
 
-    # 6. Triển khai tự động (Auto-deploy) lên Server thông qua Docker Compose
+    # 8. Triển khai tự động (Auto-deploy) lên Server qua SSH (Nếu có Secrets SERVER_HOST)
     - name: Deploy to Server via SSH
-      if: github.event_name != 'pull_request' && secrets.SERVER_HOST != ''
-      uses: appleboy/ssh-action@v0.1.10
+      if: github.event_name == 'push' && secrets.SERVER_HOST != ''
+      uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.SERVER_HOST }}
         username: ${{ secrets.SERVER_USER }}
