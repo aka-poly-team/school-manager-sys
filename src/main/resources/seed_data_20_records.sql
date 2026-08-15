@@ -296,8 +296,47 @@ BEGIN
 END
 GO
 
+-- 10. BẢNG GIÁO VIÊN (DỮ LIỆU MẪU BAN ĐẦU)
+IF OBJECT_ID('dbo.Teachers', 'U') IS NOT NULL
+BEGIN
+    IF (SELECT COUNT(*) FROM dbo.Teachers) = 0
+    BEGIN
+        SET IDENTITY_INSERT dbo.Teachers ON;
+        INSERT INTO dbo.Teachers (id, name, phone, email, status) VALUES
+        (1, N'Lê Thị Kim Anh',   '0977888999', 'kimanhle@gmail.com', 'active'),
+        (2, N'Phạm Thanh Thảo',  '0905111222', 'thaopham@gmail.com', 'active'),
+        (3, N'Trần Minh Hoàng',  '0987654321', 'hoangtran@gmail.com', 'active'),
+        (4, N'Vũ Hoàng Long',   '0944556666', 'admin.long@gmail.com', 'active'),
+        (5, N'Đặng Hồng Hạnh',  '0933444555', 'both.hanh@gmail.com', 'active');
+        SET IDENTITY_INSERT dbo.Teachers OFF;
+    END
+END
+GO
+
+-- 11. BẢNG TÀI KHOẢN NGƯỜI DÙNG USERS (MẬT KHẨU MẶC ĐỊNH LÀ 123456 MÃ HÓA BCRYPT)
+IF OBJECT_ID('dbo.Users', 'U') IS NOT NULL
+BEGIN
+    IF (SELECT COUNT(*) FROM dbo.Users) = 0
+    BEGIN
+        SET IDENTITY_INSERT dbo.Users ON;
+        INSERT INTO dbo.Users (id, username, password, role, enabled, teacherId) VALUES
+        (1, 'admin.long@gmail.com',     '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07Xd00DMxs.AQvq4aO', 'ROLE_ADMIN', 1, 4),
+        (2, 'both.hanh@gmail.com',      '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07Xd00DMxs.AQvq4aO', 'ROLE_ADMIN', 1, 5),
+        (3, 'admin.trungtam@gmail.com', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07Xd00DMxs.AQvq4aO', 'ROLE_ADMIN', 1, NULL),
+        (4, 'canhthang457@gmail.com',   '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07Xd00DMxs.AQvq4aO', 'ROLE_TEACHER', 1, 1),
+        (5, 'teacher.thao@gmail.com',   '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07Xd00DMxs.AQvq4aO', 'ROLE_TEACHER', 1, 2),
+        (6, 'teacher.hoang@gmail.com',  '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07Xd00DMxs.AQvq4aO', 'ROLE_TEACHER', 1, 3);
+        SET IDENTITY_INSERT dbo.Users OFF;
+    END
+
+    -- Tự động mã hóa BCrypt cho các tài khoản cũ nếu đang lưu mật khẩu thô
+    UPDATE dbo.Users 
+    SET password = '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07Xd00DMxs.AQvq4aO' 
+    WHERE password NOT LIKE '$2a$%' AND password NOT LIKE '$2b$%';
+END
+GO
+
 PRINT N'====================================================================='
-PRINT N'ĐÃ BỔ SUNG 20 BẢN GHI DỮ LIỆU MẪU CHO MỖI BẢNG THÀNH CÔNG!'
-PRINT N'TOÀN BỘ TÀI KHOẢN NGƯỜI DÙNG (USERS) CỦA BẠN ĐÃ ĐƯỢC GIỮ NGUYÊN 100%!'
+PRINT N'ĐÃ BỔ SUNG NẠP DỮ LIỆU TÀI KHOẢN NGƯỜI DÙNG VÀ DỮ LIỆU MẪU THÀNH CÔNG!'
 PRINT N'====================================================================='
 GO
