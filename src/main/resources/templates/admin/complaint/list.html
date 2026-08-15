@@ -18,6 +18,9 @@
                 <div>
                     <h1 class="page-title">Giải Quyết Khiếu Nại Tiết Dạy</h1>
                     <p class="page-subtitle">Duyệt yêu cầu điều chỉnh số tiết thực tế của giáo viên</p>
+                </div>
+            </div>
+
             <!-- ALERT NOTIFICATIONS -->
             <div th:if="${success}" class="alert-box alert-success" th:text="${success}"></div>
             <div th:if="${error}" class="alert-box alert-error" th:text="${error}"></div>
@@ -41,7 +44,7 @@
                             <th class="w-110 text-center">SỐ TIẾT YÊU CẦU</th>
                             <th class="max-w-220">NỘI DUNG KHIẾU NẠI</th>
                             <th class="w-100 text-center">TRẠNG THÁI</th>
-                            <th class="w-140 text-center">HÀNH ĐỘNG</th>
+                            <th class="text-center action-column">HÀNH ĐỘNG</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -53,16 +56,16 @@
                                 <br>
                                 <small class="text-blue font-semibold" th:text="${cmp.attendance != null and cmp.attendance.teacher != null ? 'Mã GV: #' + cmp.attendance.teacher.id : ''}">Mã GV: #1</small>
                             </td>
-                            <td th:text="${cmp.attendance != null and cmp.attendance.school != null ? cmp.attendance.school.name : 'N/A'}">Trường Hoa Mai</td>
+                            <td class="cell-wrap-180" th:text="${cmp.attendance != null and cmp.attendance.school != null ? cmp.attendance.school.name : 'N/A'}">Trường Hoa Mai</td>
                             <td class="text-center" th:text="${cmp.attendance != null ? cmp.attendance.session : 'N/A'}">Ca 1</td>
                             <td class="text-center"><strong th:text="${cmp.expectedPeriods}">3</strong> tiết</td>
-                            <td class="cell-wrap-220" th:text="${cmp.content}">Nội dung khiếu nại</td>
+                            <td class="cell-wrap-200" th:text="${cmp.content}">Nội dung khiếu nại</td>
                             <td class="text-center">
                                 <span class="status-badge" 
                                       th:classappend="${cmp.status == 1 ? 'approved' : (cmp.status == 2 ? 'rejected' : 'pending')}" 
                                       th:text="${cmp.status == 1 ? 'Đã duyệt' : (cmp.status == 2 ? 'Từ chối' : 'Chờ duyệt')}">Chờ duyệt</span>
                             </td>
-                            <td class="text-center">
+                            <td class="text-center action-column">
                                 <div class="form-actions form-actions-reset justify-center">
                                     <form th:action="@{/admin/complaints/approve/{id}(id=${cmp.id})}" method="post" class="inline-form">
                                         <button type="submit" class="action-btn green">Duyệt</button>

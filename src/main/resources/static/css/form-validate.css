@@ -3,15 +3,51 @@
    (100% RIÊNG BIỆT VỚI JAVASCRIPT - TÁCH BIỆT CSS VÀ JS HOÀN TOÀN)
    ========================================================================== */
 
-/* 1. Trạng thái lỗi và hợp lệ của Form Input */
-.field-has-error {
-    border-color: #0f172a !important;
-    background-color: #f8fafc !important;
-    box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.15) !important;
+/* 1. Trạng thái lỗi (ĐỎ) và hợp lệ (XANH LÁ) của Form Input khi Validate */
+.field-has-error,
+.is-invalid,
+input.error,
+select.error,
+textarea.error {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+    color: #991b1b !important;
 }
 
-.field-is-valid {
-    border-color: #334155 !important;
+.field-has-error:focus,
+.is-invalid:focus {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.25) !important;
+}
+
+.field-is-valid,
+.is-valid {
+    border-color: #22c55e !important;
+    background-color: #f0fdf4 !important;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15) !important;
+}
+
+.field-is-valid:focus,
+.is-valid:focus {
+    border-color: #16a34a !important;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.25) !important;
+}
+
+/* Thông báo lỗi bên dưới ô input (Màu Đỏ nổi bật) */
+.validation-error-msg,
+.invalid-feedback,
+.form-error-text {
+    color: #dc2626 !important;
+    font-size: 0.78rem !important;
+    margin-top: 4px !important;
+    font-weight: 600 !important;
+    display: block !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 /* Flexbox ô nhập kèm nút bấm Send OTP */
@@ -37,19 +73,6 @@
     gap: 6px !important;
     font-size: 0.85rem !important;
     text-align: center !important;
-}
-
-.validation-error-msg {
-    color: #0f172a;
-    font-size: 0.75rem;
-    margin-top: 3px;
-    font-weight: 600;
-    display: block;
-    white-space: normal !important;
-    word-break: break-word !important;
-    overflow-wrap: anywhere !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
 }
 
 .alert-box {
@@ -131,9 +154,11 @@
     display: inline-flex !important;
     align-items: center !important;
     width: auto !important;
+    max-width: 100% !important;
 }
 
-.search-icon-inside {
+.search-icon-inside,
+.iphone-search-svg {
     position: absolute !important;
     left: 12px !important;
     top: 50% !important;
@@ -143,13 +168,16 @@
     pointer-events: none !important;
     z-index: 2 !important;
     display: inline-block !important;
-    opacity: 0.6 !important;
+    stroke: #8e8e93 !important;
 }
 
 .table-search-input-ios,
 .table-search-bar {
     padding-left: 36px !important;
+    padding-right: 12px !important;
+    box-sizing: border-box !important;
     height: 38px !important;
+    line-height: 38px !important;
     border-radius: 10px !important;
     border: 1px solid #cbd5e1 !important;
     background-color: #ffffff !important;
@@ -386,12 +414,29 @@
     white-space: nowrap !important;
 }
 
+/* 6.1 AN DONG KHI TIM KIEM REALTIME */
+.search-row-hidden {
+    display: none !important;
+}
+
 /* 7. DASHBOARD TABLE CONTAINER EXPANSION FOR VISIBLE PAGINATION BAR & HORIZONTAL SCROLL */
 .card-box,
 .card-box-2table,
 .card-box-dashboard,
 .card-box-1table {
     overflow-x: auto !important;
+    max-width: 100%;
+    box-sizing: border-box !important;
+}
+
+.card-box-sm {
+    max-width: 540px !important;
+    width: 100% !important;
+}
+
+.card-box-md {
+    max-width: 680px !important;
+    width: 100% !important;
 }
 
 .card-box-2table,
@@ -405,6 +450,20 @@
     min-height: 660px !important;
     height: auto !important;
     padding-bottom: 1.25rem !important;
+}
+
+.data-table td.cell-wrap-200,
+.data-table td.cell-wrap-180,
+.data-table td.cell-wrap-150 {
+    white-space: normal !important;
+    word-break: break-word !important;
+    max-width: 220px !important;
+}
+
+.data-table td.action-column,
+.data-table th.action-column {
+    white-space: nowrap !important;
+    width: 1% !important;
 }
 
 /* 8. IPHONE MINIMALIST MONOCHROME DESIGN SYSTEM */

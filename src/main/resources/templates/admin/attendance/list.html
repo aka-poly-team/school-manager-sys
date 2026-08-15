@@ -18,16 +18,19 @@
                 <div>
                     <h1 class="page-title">Duyệt Chấm Công & Điểm Danh</h1>
                     <p class="page-subtitle">Xác minh ảnh Selfie và duyệt số tiết thực tế của giáo viên</p>
+                </div>
+            </div>
+
             <!-- ALERT NOTIFICATIONS -->
             <div th:if="${success}" class="alert-box alert-success" th:text="${success}"></div>
             <div th:if="${error}" class="alert-box alert-error" th:text="${error}"></div>
 
             <!-- TABLE OF ATTENDANCES -->
-            <div class="card-box">
+            <div class="card-box card-box-1table">
                 <div class="box-header box-header-flex">
                     <h2 class="box-title">Lịch Sử Điểm Danh & Chấm Công</h2>
                     <div class="flex-gap-sm">
-                        <input type="text" placeholder="Tìm kiếm điểm danh & chấm công..." class="table-search-bar w-260" data-aka-search="true">
+                        <input type="text" placeholder="Tìm kiếm điểm danh..." class="table-search-bar w-260" data-aka-search="true">
                     </div>
                 </div>
                 <table class="data-table">
@@ -42,7 +45,7 @@
                             <th>CA DẠY</th>
                             <th>SỐ TIẾT</th>
                             <th>TRẠNG THÁI</th>
-                            <th class="text-center">HÀNH ĐỘNG</th>
+                            <th class="text-center action-column">HÀNH ĐỘNG</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -64,7 +67,7 @@
                                 </a>
                                 <span th:unless="${att.selfieImage != null}" class="empty-table-cell">Không có</span>
                             </td>
-                            <td th:text="${att.school != null ? att.school.name : 'N/A'}">Trường Hoa Mai</td>
+                            <td class="cell-wrap-180" th:text="${att.school != null ? att.school.name : 'N/A'}">Trường Hoa Mai</td>
                             <td th:text="${att.schoolClass != null ? att.schoolClass.name : 'N/A'}">Lớp 8A</td>
                             <td th:text="${att.session}">Ca 1</td>
                             <td th:text="${att.periods}">2</td>
@@ -73,16 +76,13 @@
                                       th:classappend="${att.status == 'APPROVED' ? 'approved' : (att.status == 'LATE' ? 'rejected' : (att.status == 'REJECTED' ? 'rejected' : 'pending'))}" 
                                       th:text="${att.status == 'APPROVED' ? 'Đã duyệt' : (att.status == 'LATE' ? 'Vào muộn' : (att.status == 'REJECTED' ? 'Từ chối' : 'Chờ duyệt'))}">Chờ duyệt</span>
                             </td>
-                            <td class="text-center">
+                            <td class="text-center action-column">
                                 <div class="form-actions form-actions-reset">
                                     <form th:action="@{/admin/attendances/approve/{id}(id=${att.id})}" method="post" class="inline-form">
                                         <button type="submit" class="action-btn green">Duyệt</button>
                                     </form>
                                     <form th:action="@{/admin/attendances/reject/{id}(id=${att.id})}" method="post" class="inline-form">
                                         <button type="submit" class="action-btn orange">Từ chối</button>
-                                    </form>
-                                    <form th:action="@{/admin/attendances/delete/{id}(id=${att.id})}" method="post" class="inline-form" onsubmit="return confirm('Bạn có chắc chắn muốn xóa lượt điểm danh này?');">
-                                        <button type="submit" class="action-btn gray">Xóa</button>
                                     </form>
                                 </div>
                             </td>

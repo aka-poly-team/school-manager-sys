@@ -177,8 +177,11 @@ public class AdminSchoolController {
                                @RequestHeader(value = "Referer", required = false) String referer,
                                RedirectAttributes redirectAttributes) {
         try {
+            School targetSchool = schoolService.findById(id).orElse(null);
+            String schoolName = targetSchool != null ? targetSchool.getName() : ("#" + id);
+
             schoolService.deleteById(id);
-            redirectAttributes.addFlashAttribute("success", "Đã xóa trường mầm non #" + id + " thành công!");
+            redirectAttributes.addFlashAttribute("success", "Đã xóa trường mầm non '" + schoolName + "' thành công!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Không thể xóa trường #" + id + " (Có thể đang chứa Lớp học hoặc Lịch dạy).");
         }
@@ -196,7 +199,7 @@ public class AdminSchoolController {
     public String showEditClassForm(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
         SchoolClass schoolClass = schoolClassService.findById(id).orElse(null);
         if (schoolClass == null) {
-            redirectAttributes.addFlashAttribute("error", "Không tìm thấy lớp học #" + id);
+            redirectAttributes.addFlashAttribute("error", "Không tìm thấy lớp học!");
             return "redirect:/admin/schools";
         }
         model.addAttribute("schoolClass", schoolClass);
@@ -246,7 +249,7 @@ public class AdminSchoolController {
                               RedirectAttributes redirectAttributes) {
         SchoolClass schoolClass = schoolClassService.findById(id).orElse(null);
         if (schoolClass == null) {
-            redirectAttributes.addFlashAttribute("error", "Không tìm thấy lớp học #" + id);
+            redirectAttributes.addFlashAttribute("error", "Không tìm thấy lớp học!");
             return "redirect:" + StringUtils.cleanReferer(referer, "/admin/schools", "editClassId");
         }
 
@@ -272,8 +275,11 @@ public class AdminSchoolController {
                               @RequestHeader(value = "Referer", required = false) String referer,
                               RedirectAttributes redirectAttributes) {
         try {
+            SchoolClass targetClass = schoolClassService.findById(id).orElse(null);
+            String className = targetClass != null ? targetClass.getName() : ("#" + id);
+
             schoolClassService.deleteById(id);
-            redirectAttributes.addFlashAttribute("success", "Đã xóa lớp học #" + id + " thành công!");
+            redirectAttributes.addFlashAttribute("success", "Đã xóa lớp học '" + className + "' thành công!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Không thể xóa lớp #" + id + " (Có thể đang chứa Lịch dạy).");
         }

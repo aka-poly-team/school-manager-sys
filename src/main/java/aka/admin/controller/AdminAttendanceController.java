@@ -93,18 +93,4 @@ public class AdminAttendanceController {
         }
         return "redirect:" + (referer != null && !referer.isBlank() ? referer : "/admin/attendances");
     }
-
-    @PostMapping("/attendances/delete/{id}")
-    public String delete(@PathVariable("id") Long id,
-                         @RequestHeader(value = "Referer", required = false) String referer,
-                         RedirectAttributes redirectAttributes) {
-        try {
-            attendanceService.deleteById(id);
-            systemLogService.log(SecurityUtils.getUser(), "XÓA CHẤM CÔNG", "Admin vừa XÓA lượt điểm danh #" + id);
-            redirectAttributes.addFlashAttribute("success", "Đã XÓA lượt điểm danh #" + id + " thành công!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Không thể xóa lượt điểm danh #" + id + ": " + e.getMessage());
-        }
-        return "redirect:" + (referer != null && !referer.isBlank() ? referer : "/admin/attendances");
-    }
 }

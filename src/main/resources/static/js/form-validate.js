@@ -289,8 +289,10 @@ function initRealtimeSearch() {
             const text = (row.textContent || '').toLowerCase();
             if (query === '' || text.indexOf(query) !== -1) {
                 row.classList.remove('search-row-hidden');
+                row.style.display = '';
             } else {
                 row.classList.add('search-row-hidden');
+                row.style.display = 'none';
             }
         });
     }, true);

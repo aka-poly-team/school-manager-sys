@@ -58,7 +58,7 @@
                             <td>
                                 <strong th:text="${req.requestType == 'LEAVE' ? 'Xin nghỉ phép' : 'Dạy thay / Đổi ca'}">Xin nghỉ phép</strong>
                             </td>
-                            <td th:text="${req.schedule != null and req.schedule.school != null ? req.schedule.school.name : 'N/A'}">Trường Hoa Mai</td>
+                            <td class="cell-wrap-180" th:text="${req.schedule != null and req.schedule.school != null ? req.schedule.school.name : 'N/A'}">Trường Hoa Mai</td>
                             <td th:text="${req.date != null ? #temporals.format(req.date, 'dd/MM/yyyy') : 'N/A'}">29/07/2026</td>
                             <td th:text="${req.session}">Ca 1</td>
                             <td class="cell-wrap-200" th:text="${req.reason}">Lý do nghỉ</td>
@@ -67,7 +67,7 @@
                                       th:classappend="${req.status == 'approved' ? 'approved' : (req.status == 'rejected' ? 'rejected' : 'pending')}" 
                                       th:text="${req.status == 'approved' ? 'Đã duyệt' : (req.status == 'rejected' ? 'Từ chối' : 'Chờ duyệt')}">Chờ duyệt</span>
                             </td>
-                            <td class="text-center">
+                            <td class="text-center action-column">
                                 <div class="form-actions form-actions-reset">
                                     <form th:action="@{/admin/change-requests/approve/{id}(id=${req.id})}" method="post" class="inline-form">
                                         <button type="submit" class="action-btn green">Duyệt</button>

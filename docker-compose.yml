@@ -9,11 +9,26 @@ services:
       - SA_PASSWORD=AkaSystem@123456
       - MSSQL_PID=Developer
     ports:
-      - "14333:1433" # Cổng 14333 bên ngoài chống xung đột 100% với SQL Server sẵn có trên máy
+      - "1433:1433"
     volumes:
       - mssql_data:/var/opt/mssql
 
-  # Container 2: Ứng dụng Web Spring Boot AKA-SYSTEM
+  # Container 2: Khởi tạo tự động Database aka
+  init-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: aka-init-db
+    depends_on:
+      - sqlserver
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        echo "Waiting for SQL Server..."
+        sleep 12
+        /opt/mssql-tools18/bin/sqlcmd -S sqlserver,1433 -U sa -P AkaSystem@123456 -C -Q "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'aka') CREATE DATABASE [aka];"
+        echo "Database aka created successfully!"
+
+  # Container 3: Ứng dụng Web Spring Boot AKA-SYSTEM
   aka-app:
     build: .
     container_name: aka-system-web
@@ -22,14 +37,16 @@ services:
       - "8081:8081"
     depends_on:
       - sqlserver
+      - init-db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:sqlserver://sqlserver:1433;databaseName=aka;encrypt=true;trustServerCertificate=true;createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_URL=jdbc:sqlserver://sqlserver:1433;databaseName=aka;encrypt=true;trustServerCertificate=true;
       - SPRING_DATASOURCE_USERNAME=sa
       - SPRING_DATASOURCE_PASSWORD=AkaSystem@123456
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_DATASOURCE_HIKARI_INITIALIZATION_FAIL_TIMEOUT=0
+      - SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION=true
       - SPRING_SQL_INIT_MODE=always
-      - SPRING_SQL_INIT_DATA_LOCATIONS=classpath:seed_data_20_records.sql
+      - SPRING_SQL_INIT_DATA_LOCATIONS=classpath:data.sql
       - SPRING_SQL_INIT_CONTINUE_ON_ERROR=true
 
 volumes:
