@@ -18,7 +18,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import aka.dto.admin.TeacherForm;
+import java.time.LocalDate;
+import aka.util.StringUtils;
 import aka.model.RoleName;
 import aka.model.Teacher;
 import aka.model.User;
@@ -27,7 +28,6 @@ import aka.service.TeacherService;
 import aka.service.UserService;
 import aka.util.FileUploadUtils;
 import aka.util.ValidationUtils;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -79,50 +79,54 @@ public class AdminTeacherController {
     }
 
     @PostMapping("/teachers/new")
-    public String create(@Valid @ModelAttribute("teacherForm") TeacherForm form,
-                         BindingResult bindingResult,
+    public String create(@RequestParam("username") String username,
+                         @RequestParam(value = "name", required = false) String name,
+                         @RequestParam(value = "email", required = false) String email,
+                         @RequestParam(value = "phone", required = false) String phone,
+                         @RequestParam(value = "dob", required = false) String dob,
+                         @RequestParam(value = "address", required = false) String address,
+                         @RequestParam("password") String password,
+                         @RequestParam(value = "role", defaultValue = "ROLE_TEACHER") String role,
+                         @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile,
                          RedirectAttributes redirectAttributes) {
-        if (bindingResult.hasErrors()) {
-            String errorMsg = bindingResult.getAllErrors().get(0).getDefaultMessage();
-            redirectAttributes.addFlashAttribute("error", errorMsg);
-            return "redirect:/admin/teachers";
-        }
 
         try {
-            if (form.getPassword() == null || form.getPassword().trim().length() < 6) {
+            if (password == null || password.trim().length() < 6) {
                 redirectAttributes.addFlashAttribute("error", "Mật khẩu là bắt buộc và phải từ 6 ký tự trở lên!");
                 return "redirect:/admin/teachers";
             }
-            if (userService.existsByUsername(form.getUsername())) {
-                redirectAttributes.addFlashAttribute("error", "Tên đăng nhập '" + form.getUsername() + "' đã tồn tại!");
+            if (userService.existsByUsername(username)) {
+                redirectAttributes.addFlashAttribute("error", "Tên đăng nhập '" + username + "' đã tồn tại!");
                 return "redirect:/admin/teachers";
             }
 
+            LocalDate dobDate = (dob != null && !dob.isBlank()) ? LocalDate.parse(dob) : null;
+
             Teacher teacher = Teacher.builder()
-                    .name(form.getName() != null && !form.getName().isBlank() ? form.getName().trim() : form.getUsername())
-                    .email(form.getEmail())
-                    .phone(form.getPhone())
-                    .dob(form.getDob())
-                    .address(form.getAddress())
+                    .name(name != null && !name.isBlank() ? StringUtils.toTitleCase(name) : username)
+                    .email(email)
+                    .phone(phone)
+                    .dob(dobDate)
+                    .address(address)
                     .status("active")
                     .build();
             teacher = teacherService.save(teacher);
 
             // Upload ảnh lên Cloudinary nếu có
             String avatarUrl = null;
-            if (form.getAvatarFile() != null && !form.getAvatarFile().isEmpty()) {
+            if (avatarFile != null && !avatarFile.isEmpty()) {
                 try {
-                    avatarUrl = cloudinaryService.uploadImage(form.getAvatarFile(), "avatars");
+                    avatarUrl = cloudinaryService.uploadImage(avatarFile, "avatars");
                 } catch (Exception e) {
-                    avatarUrl = FileUploadUtils.save(form.getAvatarFile(), "avatars", "avatar");
+                    avatarUrl = FileUploadUtils.save(avatarFile, "avatars", "avatar");
                 }
             }
 
-            RoleName role = RoleName.of(form.getRole(), RoleName.ROLE_TEACHER);
+            RoleName roleName = RoleName.of(role, RoleName.ROLE_TEACHER);
             User user = User.builder()
-                    .username(form.getUsername().trim())
-                    .password(passwordEncoder.encode(form.getPassword().trim()))
-                    .role(role)
+                    .username(username.trim())
+                    .password(passwordEncoder.encode(password.trim()))
+                    .role(roleName)
                     .teacher(teacher)
                     .avatarUrl(avatarUrl)
                     .enabled(true)
@@ -148,12 +152,12 @@ public class AdminTeacherController {
         try {
             if (!ValidationUtils.isValidName(name)) {
                 redirectAttributes.addFlashAttribute("error", ValidationUtils.MSG_NAME);
-                return "redirect:" + aka.util.StringUtils.cleanReferer(referer, "/admin/teachers", "editAdminId", "editTeacherId");
+                return "redirect:" + StringUtils.cleanReferer(referer, "/admin/teachers", "editAdminId", "editTeacherId");
             }
 
             if (!ValidationUtils.isValidGmail(email)) {
                 redirectAttributes.addFlashAttribute("error", ValidationUtils.MSG_GMAIL);
-                return "redirect:" + aka.util.StringUtils.cleanReferer(referer, "/admin/teachers", "editAdminId", "editTeacherId");
+                return "redirect:" + StringUtils.cleanReferer(referer, "/admin/teachers", "editAdminId", "editTeacherId");
             }
 
             if (phone != null && !phone.isBlank()) {
@@ -163,7 +167,7 @@ public class AdminTeacherController {
                 }
                 if (!ValidationUtils.isValidPhone(phone)) {
                     redirectAttributes.addFlashAttribute("error", ValidationUtils.MSG_PHONE);
-                    return "redirect:" + aka.util.StringUtils.cleanReferer(referer, "/admin/teachers", "editAdminId", "editTeacherId");
+                    return "redirect:" + StringUtils.cleanReferer(referer, "/admin/teachers", "editAdminId", "editTeacherId");
                 }
             }
 
@@ -172,7 +176,7 @@ public class AdminTeacherController {
                 Teacher teacher = user.getTeacher();
                 if (teacher == null) {
                     teacher = Teacher.builder()
-                            .name(name != null && !name.isBlank() ? name.trim() : user.getUsername())
+                            .name(name != null && !name.isBlank() ? StringUtils.toTitleCase(name) : user.getUsername())
                             .email(email)
                             .phone(phone)
                             .status("active")
@@ -182,7 +186,7 @@ public class AdminTeacherController {
                     userService.save(user);
                 } else {
                     if (name != null && !name.isBlank()) {
-                        teacher.setName(name.trim());
+                        teacher.setName(StringUtils.toTitleCase(name));
                     }
                     teacher.setEmail(email);
                     teacher.setPhone(phone);
@@ -195,7 +199,7 @@ public class AdminTeacherController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi khi cập nhật: " + e.getMessage());
         }
-        return "redirect:" + aka.util.StringUtils.cleanReferer(referer, "/admin/teachers", "editAdminId", "editTeacherId");
+        return "redirect:" + StringUtils.cleanReferer(referer, "/admin/teachers", "editAdminId", "editTeacherId");
     }
 
     @PostMapping("/teachers/delete/{id}")
@@ -211,6 +215,6 @@ public class AdminTeacherController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi khi xóa tài khoản: " + e.getMessage());
         }
-        return "redirect:" + aka.util.StringUtils.cleanReferer(referer, "/admin/teachers", "editAdminId", "editTeacherId");
+        return "redirect:" + StringUtils.cleanReferer(referer, "/admin/teachers", "editAdminId", "editTeacherId");
     }
 }

@@ -36,7 +36,12 @@
                         <!-- THANH TÌM KIẾM REAL-TIME PURE VANILLA JS (KHÔNG ICON, KHÔNG NÚT TÌM) -->
                         <div style="display: flex; gap: 0.5rem;">
                             <div class="search-input-wrapper">
-                                <input type="text" name="schoolKeyword" th:value="${schoolKeyword}" placeholder="Tìm kiếm trường..." class="table-search-bar w-220" data-aka-search="true">
+                                <svg class="iphone-search-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input type="text" name="schoolKeyword" th:value="${schoolKeyword}" placeholder="Tìm kiếm trường..." class="table-search-bar w-220"
+                                       oninput="const q=this.value.toLowerCase(); this.closest('.card-box').querySelectorAll('tbody tr').forEach(r => r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none')">
                             </div>
                         </div>
 
@@ -82,16 +87,16 @@
 
                                 <td th:text="${'#' + s.id}">#1</td>
                                 <td>
-                                    <input type="text" name="name" th:value="${s.name}" th:form="${'editSchoolForm_' + s.id}" required placeholder="Tên trường..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
+                                    <input type="text" name="name" th:value="${s.name}" th:form="${'editSchoolForm_' + s.id}" required pattern="^[a-zA-Z\u00C0-\u024F\u1EA0-\u1EF9].*" title="Tên trường mầm non phải bắt đầu bằng chữ cái (không được bắt đầu bằng chữ số)!" placeholder="Tên trường..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
                                 </td>
                                 <td>
                                     <input type="text" name="address" th:value="${s.address}" th:form="${'editSchoolForm_' + s.id}" placeholder="Địa chỉ..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
                                 </td>
                                 <td>
-                                    <input type="text" name="contactPerson" th:value="${s.contactPerson}" th:form="${'editSchoolForm_' + s.id}" placeholder="Người liên hệ..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
+                                    <input type="text" name="contactPerson" th:value="${s.contactPerson}" th:form="${'editSchoolForm_' + s.id}" pattern="^([a-zA-Z\u00C0-\u024F\u1EA0-\u1EF9\s]+)?$" title="Tên người đại diện không được chứa chữ số!" placeholder="Người liên hệ..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
                                 </td>
                                 <td>
-                                    <input type="tel" name="phone" th:value="${s.phone}" th:form="${'editSchoolForm_' + s.id}" data-aka-type="phone" maxlength="11" pattern="0[0-9]{9,10}" inputmode="numeric" placeholder="Số ĐT..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
+                                    <input type="text" name="phone" th:value="${s.phone}" th:form="${'editSchoolForm_' + s.id}" placeholder="Số ĐT..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
                                 </td>
                                 <td class="text-center">
                                     <div class="form-actions form-actions-reset justify-center">
@@ -140,7 +145,12 @@
                         <!-- THANH TÌM KIẾM REAL-TIME PURE VANILLA JS (KHÔNG ICON, KHÔNG NÚT TÌM) -->
                         <div style="display: flex; gap: 0.5rem;">
                             <div class="search-input-wrapper">
-                                <input type="text" name="classKeyword" th:value="${classKeyword}" placeholder="Tìm kiếm lớp học..." class="table-search-bar w-220" data-aka-search="true">
+                                <svg class="iphone-search-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input type="text" name="classKeyword" th:value="${classKeyword}" placeholder="Tìm kiếm lớp học..." class="table-search-bar w-220"
+                                       oninput="const q=this.value.toLowerCase(); this.closest('.card-box').querySelectorAll('tbody tr').forEach(r => r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none')">
                             </div>
                         </div>
 
@@ -185,7 +195,7 @@
 
                                 <td th:text="${'#' + c.id}">#1</td>
                                 <td>
-                                    <input type="text" name="name" th:value="${c.name}" th:form="${'editClassForm_' + c.id}" required placeholder="Tên lớp..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
+                                    <input type="text" name="name" th:value="${c.name}" th:form="${'editClassForm_' + c.id}" required pattern="^[a-zA-Z\u00C0-\u024F\u1EA0-\u1EF9].*" title="Tên lớp học phải bắt đầu bằng chữ cái (không được bắt đầu bằng chữ số)!" placeholder="Tên lớp..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
                                 </td>
                                 <td>
                                     <select name="schoolId" th:form="${'editClassForm_' + c.id}" class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;" required>
@@ -240,7 +250,5 @@
             </div>
         </main>
     </div>
-    <script th:src="@{/js/smooth-pagination.js}"></script>
-    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

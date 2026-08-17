@@ -3,7 +3,20 @@
    (100% RIÊNG BIỆT VỚI JAVASCRIPT - TÁCH BIỆT CSS VÀ JS HOÀN TOÀN)
    ========================================================================== */
 
-/* 1. Trạng thái lỗi (ĐỎ) và hợp lệ (XANH LÁ) của Form Input khi Validate */
+/* 1. Trạng thái mặc định khi mới mở trang (Placeholder đang hiện): Giữ màu trung tính bình thường */
+input:placeholder-shown {
+    border-color: #cbd5e1 !important;
+    background-color: #ffffff !important;
+    box-shadow: none !important;
+    color: #0f172a !important;
+}
+
+/* Chỉ khi người dùng BẮT ĐẦU NHẬP (không còn placeholder) mà bị SAI -> Mới đổi màu ĐỎ */
+input:not(:placeholder-shown):invalid,
+textarea:not(:placeholder-shown):invalid,
+input:user-invalid,
+select:user-invalid,
+textarea:user-invalid,
 .field-has-error,
 .is-invalid,
 input.error,
@@ -15,12 +28,21 @@ textarea.error {
     color: #991b1b !important;
 }
 
+input:not(:placeholder-shown):invalid:focus,
+textarea:not(:placeholder-shown):invalid:focus,
+input:user-invalid:focus,
 .field-has-error:focus,
 .is-invalid:focus {
     border-color: #dc2626 !important;
     box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.25) !important;
 }
 
+/* Chỉ khi người dùng BẮT ĐẦU NHẬP (không còn placeholder) mà ĐÚNG -> Mới đổi màu XANH LÁ */
+input:not(:placeholder-shown):valid,
+textarea:not(:placeholder-shown):valid,
+input:user-valid,
+select:user-valid,
+textarea:user-valid,
 .field-is-valid,
 .is-valid {
     border-color: #22c55e !important;
@@ -28,6 +50,9 @@ textarea.error {
     box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15) !important;
 }
 
+input:not(:placeholder-shown):valid:focus,
+textarea:not(:placeholder-shown):valid:focus,
+input:user-valid:focus,
 .field-is-valid:focus,
 .is-valid:focus {
     border-color: #16a34a !important;
@@ -730,4 +755,39 @@ img[data-aka-preview="true"]:hover {
     font-size: 1.25rem;
     opacity: 0;
     transition: opacity 0.2s ease;
+}
+
+/* 8. MODERN IPHONE-STYLE BLACK & WHITE SEARCH INPUT CONTAINER */
+.search-input-wrapper {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+
+.iphone-search-svg {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    pointer-events: none !important;
+    color: #475569 !important;
+    z-index: 2 !important;
+}
+
+.table-search-bar {
+    padding-left: 36px !important;
+    height: 38px !important;
+    border-radius: 20px !important;
+    border: 1px solid #cbd5e1 !important;
+    background-color: #f8fafc !important;
+    font-size: 0.875rem !important;
+    color: #0f172a !important;
+    transition: all 0.2s ease !important;
+}
+
+.table-search-bar:focus {
+    border-color: #0f172a !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1) !important;
+    outline: none !important;
 }

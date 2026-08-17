@@ -57,11 +57,6 @@
 
                 <div class="form-layout margin-top-15">
                     <div class="form-group">
-                        <label class="form-label">Tài khoản / Email đăng nhập</label>
-                        <input type="text" th:value="${currentUser != null ? currentUser.username : ''}" disabled class="form-control form-control-disabled">
-                    </div>
-
-                    <div class="form-group">
                         <label class="form-label">Họ và tên Giáo viên</label>
                         <input type="text" th:value="${teacher != null ? teacher.name : 'Chưa cập nhật'}" disabled class="form-control form-control-disabled">
                     </div>
@@ -88,12 +83,11 @@
 
                     <div class="form-group">
                         <label class="form-label">Trạng thái công tác</label>
-                        <input type="text" th:value="${teacher != null and teacher.status != null ? (teacher.status == 'ACTIVE' ? 'Đang giảng dạy' : teacher.status) : 'Đang giảng dạy'}" disabled class="form-control form-control-disabled">
+                        <input type="text" th:value="${teacher != null and teacher.status != null ? (teacher.status == 'active' or teacher.status == 'ACTIVE' ? 'Đang giảng dạy' : (teacher.status == 'inactive' or teacher.status == 'INACTIVE' ? 'Tạm ngưng' : 'Đang giảng dạy')) : 'Đang giảng dạy'}" disabled class="form-control form-control-disabled">
                     </div>
                 </div>
             </div>
         </main>
     </div>
-    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

@@ -37,12 +37,10 @@ public class TeacherProfileController {
         Teacher teacher = SecurityUtils.getTeacher();
 
         String teacherName = (teacher != null && teacher.getName() != null) ? teacher.getName() : "Giáo viên";
-        String maskedEmail = StringUtils.mask(currentUser != null ? currentUser.getUsername() : "");
 
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("teacher", teacher);
         model.addAttribute("teacherName", teacherName);
-        model.addAttribute("maskedEmail", maskedEmail);
         return "teacher/profile/index";
     }
 

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import aka.dto.teacher.AttendanceForm;
+import aka.util.StringUtils;
 import aka.model.Attendance;
 import aka.model.Schedule;
 import aka.model.School;
@@ -38,7 +38,6 @@ import aka.service.SystemLogService;
 import aka.util.FileUploadUtils;
 import aka.util.SecurityUtils;
 import aka.util.ValidationUtils;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -81,8 +80,12 @@ public class TeacherAttendanceController {
     }
 
     @PostMapping("/attendance/new")
-    public String submit(@Valid @ModelAttribute("attendanceForm") AttendanceForm form,
-                         BindingResult bindingResult,
+    public String submit(@RequestParam("schoolId") Integer schoolId,
+                         @RequestParam("classId") Integer classId,
+                         @RequestParam("session") String session,
+                         @RequestParam(value = "periods", defaultValue = "1") Integer periods,
+                         @RequestParam(value = "notes", required = false) String notes,
+                         @RequestParam(value = "selfieFile", required = false) MultipartFile selfieFile,
                          Model model,
                          RedirectAttributes redirectAttributes) {
         Teacher teacher = SecurityUtils.getTeacher();
@@ -93,25 +96,12 @@ public class TeacherAttendanceController {
             return "teacher/attendance/form";
         }
 
-        String errorMsg = ValidationUtils.getFirstError(bindingResult);
-        if (errorMsg != null) {
-            model.addAttribute("error", errorMsg);
-            populateForm(model);
-            return "teacher/attendance/form";
-        }
-
-        MultipartFile selfieFile = form.getSelfieFile();
         if (selfieFile == null || selfieFile.isEmpty()) {
             model.addAttribute("error", "Vui lòng đính kèm ảnh xác minh điểm danh!");
             populateForm(model);
             return "teacher/attendance/form";
         }
-
-        Integer schoolId = form.getSchoolId();
-        Integer classId = form.getClassId();
-        String session = form.getSession();
-        Integer periods = form.getPeriods() != null ? form.getPeriods() : 2;
-        String notes = form.getNotes();
+        periods = periods != null ? periods : 1;
 
         LocalDate today = LocalDate.now();
 
@@ -193,7 +183,7 @@ public class TeacherAttendanceController {
                 .checkInTime(now)
                 .periods(periods != null ? periods : 1)
                 .selfieImage(selfiePath)
-                .notes(notes)
+                .notes(StringUtils.toTitleCase(notes))
                 .status(status)
                 .build();
 

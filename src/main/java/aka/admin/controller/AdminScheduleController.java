@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import aka.dto.admin.ScheduleForm;
 import aka.model.Schedule;
 import aka.model.School;
 import aka.model.SchoolClass;
@@ -31,7 +30,6 @@ import aka.service.TeacherService;
 import aka.util.DateUtils;
 import aka.util.StringUtils;
 import aka.util.ValidationUtils;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -47,6 +45,7 @@ public class AdminScheduleController {
     SchoolService schoolService;
     SchoolClassService schoolClassService;
     ScheduleRepository scheduleRepository;
+
     @GetMapping("/schedules")
     public String list(@RequestParam(value = "page", defaultValue = "0") int page,
                        @RequestParam(value = "editScheduleId", required = false) Integer editScheduleId,
@@ -71,7 +70,7 @@ public class AdminScheduleController {
                              @RequestParam("classId") Integer classId,
                              @RequestParam("dayOfWeek") Integer dayOfWeek,
                              @RequestParam("session") String session,
-                             @RequestParam(value = "periods", required = false, defaultValue = "2") Integer periods,
+                             @RequestParam(value = "periods", required = false, defaultValue = "1") Integer periods,
                              @RequestHeader(value = "Referer", required = false) String referer,
                              RedirectAttributes redirectAttributes) {
         try {
@@ -106,7 +105,7 @@ public class AdminScheduleController {
                 schedule.setSchoolClass(schoolClass);
                 schedule.setDayOfWeek(dayOfWeek);
                 schedule.setSession(session);
-                schedule.setPeriods(periods != null && periods > 0 ? periods : 2);
+                schedule.setPeriods(periods != null && periods > 0 ? periods : 1);
                 scheduleService.save(schedule);
                 redirectAttributes.addFlashAttribute("success", "Cập nhật lịch dạy #" + id + " thành công!");
             }
@@ -125,22 +124,15 @@ public class AdminScheduleController {
     }
 
     @PostMapping("/schedules/new")
-    public String create(@Valid @ModelAttribute("scheduleForm") ScheduleForm form,
-                         BindingResult bindingResult,
+    public String create(@RequestParam("teacherId") Integer teacherId,
+                         @RequestParam("schoolId") Integer schoolId,
+                         @RequestParam("classId") Integer classId,
+                         @RequestParam("dayOfWeek") Integer dayOfWeek,
+                         @RequestParam("session") String session,
+                         @RequestParam(value = "periods", defaultValue = "1") Integer periods,
                          RedirectAttributes redirectAttributes) {
 
-        String errorMsg = ValidationUtils.getFirstError(bindingResult);
-        if (errorMsg != null) {
-            redirectAttributes.addFlashAttribute("error", errorMsg);
-            return "redirect:/admin/schedules";
-        }
-
-        Integer teacherId = form.getTeacherId();
-        Integer schoolId = form.getSchoolId();
-        Integer classId = form.getClassId();
-        Integer dayOfWeek = form.getDayOfWeek();
-        String session = form.getSession();
-        Integer periods = form.getPeriods() != null ? form.getPeriods() : 2;
+        periods = periods != null ? periods : 1;
 
         // 1. Kiểm tra TRÙNG LỊCH GIÁO VIÊN: 1 Giáo viên không thể dạy 2 nơi/lớp cùng 1 Thứ & Ca dạy
         boolean teacherConflict = scheduleService.existsByTeacherIdAndDayOfWeekAndSession(teacherId, dayOfWeek, session);
@@ -195,16 +187,7 @@ public class AdminScheduleController {
             return "redirect:/admin/schedules";
         }
 
-        ScheduleForm form = new ScheduleForm();
-        form.setTeacherId(schedule.getTeacher() != null ? schedule.getTeacher().getId() : null);
-        form.setSchoolId(schedule.getSchool() != null ? schedule.getSchool().getId() : null);
-        form.setClassId(schedule.getSchoolClass() != null ? schedule.getSchoolClass().getId() : null);
-        form.setDayOfWeek(schedule.getDayOfWeek());
-        form.setSession(schedule.getSession());
-        form.setPeriods(schedule.getPeriods());
-
         model.addAttribute("editSchedule", schedule);
-        model.addAttribute("scheduleForm", form);
         model.addAttribute("teachers", teacherService.findAll());
         model.addAttribute("schools", schoolService.findAll());
         model.addAttribute("classes", schoolClassService.findAll());
@@ -213,15 +196,13 @@ public class AdminScheduleController {
 
     @PostMapping("/schedules/edit/{id}")
     public String update(@PathVariable("id") Integer id,
-                         @Valid @ModelAttribute("scheduleForm") ScheduleForm form,
-                         BindingResult bindingResult,
+                         @RequestParam("teacherId") Integer teacherId,
+                         @RequestParam("schoolId") Integer schoolId,
+                         @RequestParam("classId") Integer classId,
+                         @RequestParam("dayOfWeek") Integer dayOfWeek,
+                         @RequestParam("session") String session,
+                         @RequestParam(value = "periods", defaultValue = "1") Integer periods,
                          RedirectAttributes redirectAttributes) {
-
-        String errorMsg = ValidationUtils.getFirstError(bindingResult);
-        if (errorMsg != null) {
-            redirectAttributes.addFlashAttribute("error", errorMsg);
-            return "redirect:/admin/schedules";
-        }
 
         Schedule schedule = scheduleService.findById(id).orElse(null);
         if (schedule == null) {
@@ -229,12 +210,7 @@ public class AdminScheduleController {
             return "redirect:/admin/schedules";
         }
 
-        Integer teacherId = form.getTeacherId();
-        Integer schoolId = form.getSchoolId();
-        Integer classId = form.getClassId();
-        Integer dayOfWeek = form.getDayOfWeek();
-        String session = form.getSession();
-        Integer periods = form.getPeriods() != null ? form.getPeriods() : 2;
+        periods = periods != null ? periods : 1;
 
         boolean teacherConflict = scheduleService.existsByTeacherIdAndDayOfWeekAndSessionAndIdNot(teacherId, dayOfWeek, session, id);
         if (teacherConflict) {

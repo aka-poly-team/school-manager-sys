@@ -46,51 +46,37 @@ public class AdminAttendanceController {
         return "admin/attendance/list";
     }
 
-    @PostMapping("/attendances/approve/{id}")
-    public String approve(@PathVariable("id") Long id,
-                          @RequestHeader(value = "Referer", required = false) String referer,
-                          RedirectAttributes redirectAttributes) {
+    // GỘP 2 THAO TÁC (PHÊ DUYỆT & TỪ CHỐI) THÀNH 1 PHƯƠNG THỨC DUY NHẤT DÙNG IF-ELSE
+    @PostMapping({"/attendances/approve/{id}", "/attendances/reject/{id}", "/attendances/process/{id}"})
+    public String processAttendance(@PathVariable("id") Long id,
+                                    @RequestParam(value = "action", required = false) String action,
+                                    jakarta.servlet.http.HttpServletRequest request,
+                                    @RequestHeader(value = "Referer", required = false) String referer,
+                                    RedirectAttributes redirectAttributes) {
         Attendance attendance = attendanceService.findById(id).orElse(null);
-        if (attendance != null) {
-            attendance.setStatus("APPROVED");
-            attendanceService.save(attendance);
-
-            String teacherName = (attendance.getTeacher() != null && attendance.getTeacher().getName() != null) ? attendance.getTeacher().getName() : "Giáo viên";
-            systemLogService.log(SecurityUtils.getUser(), "DUYỆT CHẤM CÔNG", 
-                    "Admin vừa PHÊ DUYỆT lượt điểm danh #" + id + " của giáo viên " + teacherName + " (Ngày: " + attendance.getDate() + ")");
-
-            if (attendance.getTeacher() != null) {
-                String msg = "Lượt điểm danh ngày " + attendance.getDate() + " (" + attendance.getSession() + ") đã được Admin PHÊ DUYỆT.";
-                notificationService.notifyTeacher(attendance.getTeacher(), msg, "/teacher/dashboard");
-            }
-            redirectAttributes.addFlashAttribute("success", "Đã PHÊ DUYỆT lượt điểm danh #" + id + " thành công!");
-        } else {
+        if (attendance == null) {
             redirectAttributes.addFlashAttribute("error", "Không tìm thấy lượt điểm danh #" + id);
+            return "redirect:" + aka.util.StringUtils.defaultIfBlank(referer, "/admin/attendances");
         }
-        return "redirect:" + (referer != null && !referer.isBlank() ? referer : "/admin/attendances");
-    }
 
-    @PostMapping("/attendances/reject/{id}")
-    public String reject(@PathVariable("id") Long id,
-                         @RequestHeader(value = "Referer", required = false) String referer,
-                         RedirectAttributes redirectAttributes) {
-        Attendance attendance = attendanceService.findById(id).orElse(null);
-        if (attendance != null) {
-            attendance.setStatus("REJECTED");
-            attendanceService.save(attendance);
+        // Dùng IF-ELSE để phân biệt Duyệt hay Từ chối
+        boolean isApprove = "approve".equalsIgnoreCase(action) || request.getRequestURI().contains("/approve");
+        String newStatus = isApprove ? "APPROVED" : "REJECTED";
+        String actionText = isApprove ? "PHÊ DUYỆT" : "TỪ CHỐI";
 
-            String teacherName = (attendance.getTeacher() != null && attendance.getTeacher().getName() != null) ? attendance.getTeacher().getName() : "Giáo viên";
-            systemLogService.log(SecurityUtils.getUser(), "TỪ CHỐI CHẤM CÔNG", 
-                    "Admin vừa TỪ CHỐI lượt điểm danh #" + id + " của giáo viên " + teacherName + " (Ngày: " + attendance.getDate() + ")");
+        attendance.setStatus(newStatus);
+        attendanceService.save(attendance);
 
-            if (attendance.getTeacher() != null) {
-                String msg = "Lượt điểm danh ngày " + attendance.getDate() + " (" + attendance.getSession() + ") đã bị Admin TỪ CHỐI.";
-                notificationService.notifyTeacher(attendance.getTeacher(), msg, "/teacher/dashboard");
-            }
-            redirectAttributes.addFlashAttribute("success", "Đã TỪ CHỐI lượt điểm danh #" + id + " thành công!");
-        } else {
-            redirectAttributes.addFlashAttribute("error", "Không tìm thấy lượt điểm danh #" + id);
+        String teacherName = (attendance.getTeacher() != null && attendance.getTeacher().getName() != null) ? attendance.getTeacher().getName() : "Giáo viên";
+        systemLogService.log(SecurityUtils.getUser(), actionText + " CHẤM CÔNG", 
+                "Admin vừa " + actionText + " lượt điểm danh #" + id + " của giáo viên " + teacherName + " (Ngày: " + attendance.getDate() + ")");
+
+        if (attendance.getTeacher() != null) {
+            String msg = "Lượt điểm danh ngày " + attendance.getDate() + " (" + attendance.getSession() + ") đã được Admin " + actionText + ".";
+            notificationService.notifyTeacher(attendance.getTeacher(), msg, "/teacher/dashboard");
         }
-        return "redirect:" + (referer != null && !referer.isBlank() ? referer : "/admin/attendances");
+
+        redirectAttributes.addFlashAttribute("success", "Đã " + actionText + " lượt điểm danh #" + id + " thành công!");
+        return "redirect:" + aka.util.StringUtils.defaultIfBlank(referer, "/admin/attendances");
     }
 }

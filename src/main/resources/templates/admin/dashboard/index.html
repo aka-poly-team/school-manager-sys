@@ -135,10 +135,10 @@
                             </td>
                             <td class="text-center">
                                 <div class="form-actions form-actions-reset justify-center">
-                                    <form th:action="@{/admin/attendances/approve/{id}(id=${att.id})}" method="post" class="inline-form">
+                                    <form th:action="@{/admin/attendances/process/{id}(id=${att.id}, action='approve')}" method="post" class="inline-form">
                                         <button type="submit" class="action-btn green">Duyệt</button>
                                     </form>
-                                    <form th:action="@{/admin/attendances/reject/{id}(id=${att.id})}" method="post" class="inline-form">
+                                    <form th:action="@{/admin/attendances/process/{id}(id=${att.id}, action='reject')}" method="post" class="inline-form">
                                         <button type="submit" class="action-btn orange">Từ chối</button>
                                     </form>
                                 </div>
@@ -173,7 +173,5 @@
             </div>
         </main>
     </div>
-    <script th:src="@{/js/smooth-pagination.js}"></script>
-    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

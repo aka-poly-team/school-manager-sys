@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import aka.dto.admin.SchoolClassForm;
-import aka.dto.admin.SchoolForm;
 import aka.model.School;
 import aka.model.SchoolClass;
 import aka.repository.SchoolClassRepository;
@@ -26,7 +24,6 @@ import aka.service.SchoolClassService;
 import aka.service.SchoolService;
 import aka.util.StringUtils;
 import aka.util.ValidationUtils;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -95,21 +92,27 @@ public class AdminSchoolController {
     }
 
     @PostMapping("/schools/new")
-    public String createSchool(@Valid @ModelAttribute("schoolForm") SchoolForm form,
-                               BindingResult bindingResult,
+    public String createSchool(@RequestParam("name") String name,
+                               @RequestParam(value = "address", required = false) String address,
+                               @RequestParam(value = "contactPerson", required = false) String contactPerson,
+                               @RequestParam(value = "phone", required = false) String phone,
                                RedirectAttributes redirectAttributes) {
-        String errorMsg = ValidationUtils.getFirstError(bindingResult);
-        if (errorMsg != null) {
-            redirectAttributes.addFlashAttribute("error", errorMsg);
-            return "redirect:/admin/schools";
-        }
 
         try {
+            if (name != null && name.trim().matches("^\\d.*")) {
+                redirectAttributes.addFlashAttribute("error", "Tên trường mầm non phải bắt đầu bằng chữ cái (không được bắt đầu bằng chữ số)!");
+                return "redirect:/admin/schools";
+            }
+            if (contactPerson != null && contactPerson.matches(".*\\d.*")) {
+                redirectAttributes.addFlashAttribute("error", "Tên người liên hệ không được chứa chữ số!");
+                return "redirect:/admin/schools";
+            }
+
             School school = School.builder()
-                    .name(form.getName().trim())
-                    .address(form.getAddress())
-                    .contactPerson(form.getContactPerson())
-                    .phone(form.getPhone())
+                    .name(StringUtils.toTitleCase(name))
+                    .address(StringUtils.toTitleCase(address))
+                    .contactPerson(StringUtils.toTitleCase(contactPerson))
+                    .phone(phone)
                     .build();
             schoolService.save(school);
             redirectAttributes.addFlashAttribute("success", "Thêm trường mầm non '" + school.getName() + "' thành công!");
@@ -140,6 +143,10 @@ public class AdminSchoolController {
                 redirectAttributes.addFlashAttribute("error", "Tên trường mầm non không được để trống!");
                 return "redirect:" + StringUtils.cleanReferer(referer, "/admin/schools", "editSchoolId");
             }
+            if (name.trim().matches("^\\d.*")) {
+                redirectAttributes.addFlashAttribute("error", "Tên trường mầm non phải bắt đầu bằng chữ cái (không được bắt đầu bằng chữ số)!");
+                return "redirect:" + StringUtils.cleanReferer(referer, "/admin/schools", "editSchoolId");
+            }
 
             // 2. Validate Người đại diện
             if (contactPerson != null && contactPerson.matches(".*\\d.*")) {
@@ -159,9 +166,9 @@ public class AdminSchoolController {
                 return "redirect:" + StringUtils.cleanReferer(referer, "/admin/schools", "editSchoolId");
             }
 
-            school.setName(name.trim());
-            school.setAddress(address);
-            school.setContactPerson(contactPerson);
+            school.setName(StringUtils.toTitleCase(name));
+            school.setAddress(StringUtils.toTitleCase(address));
+            school.setContactPerson(StringUtils.toTitleCase(contactPerson));
             school.setPhone(phone);
             schoolService.save(school);
             redirectAttributes.addFlashAttribute("success", "Cập nhật thông tin trường '" + school.getName() + "' thành công!");
@@ -208,27 +215,29 @@ public class AdminSchoolController {
     }
 
     @PostMapping("/classes/new")
-    public String createClass(@Valid @ModelAttribute("classForm") SchoolClassForm form,
-                               BindingResult bindingResult,
+    public String createClass(@RequestParam("schoolId") Integer schoolId,
+                               @RequestParam("name") String name,
+                               @RequestParam(value = "studentCount", defaultValue = "25") Integer studentCount,
+                               @RequestParam(value = "standardPeriods", defaultValue = "1") Integer standardPeriods,
                                RedirectAttributes redirectAttributes) {
-        String errorMsg = ValidationUtils.getFirstError(bindingResult);
-        if (errorMsg != null) {
-            redirectAttributes.addFlashAttribute("error", errorMsg);
-            return "redirect:/admin/schools";
-        }
 
         try {
-            School school = schoolService.findById(form.getSchoolId()).orElse(null);
+            if (name != null && name.trim().matches("^\\d.*")) {
+                redirectAttributes.addFlashAttribute("error", "Tên lớp học phải bắt đầu bằng chữ cái (không được bắt đầu bằng chữ số)!");
+                return "redirect:/admin/schools";
+            }
+
+            School school = schoolService.findById(schoolId).orElse(null);
             if (school == null) {
                 redirectAttributes.addFlashAttribute("error", "Vui lòng chọn Trường mầm non hợp lệ!");
                 return "redirect:/admin/schools";
             }
 
             SchoolClass schoolClass = SchoolClass.builder()
-                    .name(form.getName().trim())
+                    .name(StringUtils.toTitleCase(name))
                     .school(school)
-                    .studentCount(form.getStudentCount() != null ? form.getStudentCount() : 0)
-                    .standardPeriods(form.getStandardPeriods() != null ? form.getStandardPeriods() : 2)
+                    .studentCount(studentCount != null ? studentCount : 0)
+                    .standardPeriods(standardPeriods != null ? standardPeriods : 1)
                     .build();
             schoolClassService.save(schoolClass);
             redirectAttributes.addFlashAttribute("success", "Thêm lớp học '" + schoolClass.getName() + "' cho trường '" + school.getName() + "' thành công!");
@@ -244,7 +253,7 @@ public class AdminSchoolController {
                               @RequestParam("schoolId") Integer schoolId,
                               @RequestParam("name") String name,
                               @RequestParam(value = "studentCount", defaultValue = "25") Integer studentCount,
-                              @RequestParam(value = "standardPeriods", defaultValue = "2") Integer standardPeriods,
+                              @RequestParam(value = "standardPeriods", defaultValue = "1") Integer standardPeriods,
                               @RequestHeader(value = "Referer", required = false) String referer,
                               RedirectAttributes redirectAttributes) {
         SchoolClass schoolClass = schoolClassService.findById(id).orElse(null);
@@ -254,11 +263,15 @@ public class AdminSchoolController {
         }
 
         try {
+            if (name != null && name.trim().matches("^\\d.*")) {
+                redirectAttributes.addFlashAttribute("error", "Tên lớp học phải bắt đầu bằng chữ cái (không được bắt đầu bằng chữ số)!");
+                return "redirect:" + StringUtils.cleanReferer(referer, "/admin/schools", "editClassId");
+            }
             School school = schoolService.findById(schoolId).orElse(null);
             if (school != null) {
                 schoolClass.setSchool(school);
             }
-            schoolClass.setName(name.trim());
+            schoolClass.setName(StringUtils.toTitleCase(name));
             schoolClass.setStudentCount(studentCount);
             schoolClass.setStandardPeriods(standardPeriods);
             schoolClassService.save(schoolClass);

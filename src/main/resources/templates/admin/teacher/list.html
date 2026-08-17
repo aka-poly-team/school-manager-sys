@@ -35,7 +35,12 @@
                         <!-- THANH TÌM KIẾM REAL-TIME PURE VANILLA JS (KHÔNG ICON, KHÔNG NÚT TÌM) -->
                         <div style="display: flex; gap: 0.5rem;">
                             <div class="search-input-wrapper">
-                                <input type="text" name="adminKeyword" th:value="${adminKeyword}" placeholder="Tìm kiếm Admin..." class="table-search-bar w-220" data-aka-search="true">
+                                <svg class="iphone-search-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input type="text" name="adminKeyword" th:value="${adminKeyword}" placeholder="Tìm kiếm Admin..." class="table-search-bar w-220"
+                                       oninput="const q=this.value.toLowerCase(); this.closest('.card-box').querySelectorAll('tbody tr').forEach(r => r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none')">
                             </div>
                         </div>
 
@@ -143,7 +148,12 @@
                         <!-- THANH TÌM KIẾM REAL-TIME PURE VANILLA JS (KHÔNG ICON, KHÔNG NÚT TÌM) -->
                         <div style="display: flex; gap: 0.5rem;">
                             <div class="search-input-wrapper">
-                                <input type="text" name="teacherKeyword" th:value="${teacherKeyword}" placeholder="Tìm kiếm Giáo viên..." class="table-search-bar w-240" data-aka-search="true">
+                                <svg class="iphone-search-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input type="text" name="teacherKeyword" th:value="${teacherKeyword}" placeholder="Tìm kiếm Giáo viên..." class="table-search-bar w-240"
+                                       oninput="const q=this.value.toLowerCase(); this.closest('.card-box').querySelectorAll('tbody tr').forEach(r => r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none')">
                             </div>
                         </div>
 
@@ -181,9 +191,11 @@
                                 </td>
                                 <td th:text="${u.teacher != null and u.teacher.email != null ? u.teacher.email : 'N/A'}">email@gmail.com</td>
                                 <td th:text="${u.teacher != null and u.teacher.phone != null ? u.teacher.phone : 'N/A'}">0901234567</td>
-                                <td th:text="${u.username}">username</td>
-                                <td><span class="status-badge pending" style="background: #e0f2fe; color: #0369a1;">Giáo viên</span></td>
-                                <td><span class="status-badge approved">Hoạt động</span></td>
+                                <td>
+                                    <span class="status-badge" 
+                                          th:classappend="${u.teacher == null or u.teacher.status == 'active' or u.teacher.status == 'ACTIVE' ? 'approved' : 'rejected'}"
+                                          th:text="${u.teacher == null or u.teacher.status == 'active' or u.teacher.status == 'ACTIVE' ? 'Hoạt động' : 'Tạm ngưng'}">Hoạt động</span>
+                                </td>
                                 <td class="text-center">
                                     <div class="form-actions form-actions-reset justify-center">
                                         <a th:href="@{/admin/teachers(teacherPage=${teacherPageObj.number}, teacherKeyword=${teacherKeyword}, editTeacherId=${u.id})}" class="action-btn orange no-underline">Sửa</a>
@@ -212,9 +224,11 @@
                                 <td>
                                     <input type="tel" name="phone" th:value="${u.teacher != null ? u.teacher.phone : ''}" th:form="${'editTeacherForm_' + u.id}" data-aka-type="phone" maxlength="11" pattern="0[0-9]{9,10}" inputmode="numeric" placeholder="Số ĐT..." class="form-control form-control-sm" style="height: 32px; font-size: 0.82rem; width: 100%;">
                                 </td>
-                                <td th:text="${u.username}">username</td>
-                                <td><span class="status-badge pending" style="background: #e0f2fe; color: #0369a1;">Giáo viên</span></td>
-                                <td><span class="status-badge approved">Hoạt động</span></td>
+                                <td>
+                                    <span class="status-badge" 
+                                          th:classappend="${u.teacher == null or u.teacher.status == 'active' or u.teacher.status == 'ACTIVE' ? 'approved' : 'rejected'}"
+                                          th:text="${u.teacher == null or u.teacher.status == 'active' or u.teacher.status == 'ACTIVE' ? 'Hoạt động' : 'Tạm ngưng'}">Hoạt động</span>
+                                </td>
                                 <td class="text-center">
                                     <div class="form-actions form-actions-reset justify-center">
                                         <button type="submit" th:form="${'editTeacherForm_' + u.id}" class="action-btn green">Lưu</button>
@@ -253,7 +267,5 @@
             </div>
         </main>
     </div>
-    <script th:src="@{/js/smooth-pagination.js}"></script>
-    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

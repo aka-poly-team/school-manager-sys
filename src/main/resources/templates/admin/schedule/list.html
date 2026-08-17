@@ -35,8 +35,13 @@
             <div class="card-box card-box-1table">
                 <div class="box-header" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
                     <h2 class="box-title">Danh Sách Phân Công Lịch Dạy Hàng Tuần</h2>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <input type="text" placeholder="Tìm kiếm phân công lịch dạy..." class="table-search-bar" data-aka-search="true">
+                    <div class="search-input-wrapper" style="display: flex; gap: 0.5rem;">
+                        <svg class="iphone-search-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" placeholder="Tìm kiếm phân công lịch dạy..." class="table-search-bar"
+                               oninput="const q=this.value.toLowerCase(); this.closest('.card-box, main').querySelectorAll('tbody tr').forEach(r => r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none')">
                     </div>
                 </div>
                 
@@ -148,7 +153,5 @@
             </div>
         </main>
     </div>
-    <script th:src="@{/js/smooth-pagination.js}"></script>
-    <script th:src="@{/js/form-validate.js}"></script>
 </body>
 </html>

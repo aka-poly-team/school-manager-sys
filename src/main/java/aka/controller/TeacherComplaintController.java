@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import aka.dto.teacher.ComplaintForm;
+import aka.util.StringUtils;
 import aka.model.Attendance;
 import aka.model.Complaint;
 import aka.model.Teacher;
@@ -23,7 +23,6 @@ import aka.service.NotificationService;
 import aka.service.SystemLogService;
 import aka.util.SecurityUtils;
 import aka.util.ValidationUtils;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -72,8 +71,9 @@ public class TeacherComplaintController {
     }
 
     @PostMapping("/complaints/new")
-    public String submit(@Valid @ModelAttribute("complaintForm") ComplaintForm form,
-                         BindingResult bindingResult,
+    public String submit(@RequestParam("attendanceId") Long attendanceId,
+                         @RequestParam("content") String content,
+                         @RequestParam(value = "expectedPeriods", defaultValue = "1") Integer expectedPeriods,
                          Model model,
                          RedirectAttributes redirectAttributes) {
         Teacher teacher = SecurityUtils.getTeacher();
@@ -83,16 +83,7 @@ public class TeacherComplaintController {
             return "redirect:/teacher/complaints";
         }
 
-        String errorMsg = ValidationUtils.getFirstError(bindingResult);
-        if (errorMsg != null) {
-            model.addAttribute("error", errorMsg);
-            model.addAttribute("attendances", attendanceService.findByTeacherIdOrderByIdDesc(teacher.getId()));
-            return "teacher/complaint/form";
-        }
-
-        Long attendanceId = form.getAttendanceId();
-        String content = form.getContent();
-        Integer expectedPeriods = form.getExpectedPeriods() != null ? form.getExpectedPeriods() : 2;
+        expectedPeriods = expectedPeriods != null ? expectedPeriods : 1;
 
         // Kiểm tra CHỐNG TRÙNG KHIẾU NẠI: Buổi dạy này đã được gửi khiếu nại trước đó chưa
         if (attendanceId != null && complaintService.existsByAttendanceId(attendanceId)) {
@@ -105,7 +96,7 @@ public class TeacherComplaintController {
 
         Complaint complaint = Complaint.builder()
                 .attendance(attendance)
-                .content(content)
+                .content(StringUtils.toTitleCase(content))
                 .expectedPeriods(expectedPeriods)
                 .status(0)
                 .build();

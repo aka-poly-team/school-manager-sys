@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import aka.dto.teacher.ChangeRequestForm;
+import aka.util.StringUtils;
 import aka.model.ChangeRequest;
 import aka.model.Schedule;
 import aka.model.School;
@@ -33,7 +33,6 @@ import aka.service.TeacherService;
 import aka.util.DateUtils;
 import aka.util.SecurityUtils;
 import aka.util.ValidationUtils;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -81,8 +80,11 @@ public class TeacherChangeRequestController {
     }
 
     @PostMapping("/change-requests/new")
-    public String submit(@Valid @ModelAttribute("changeRequestForm") ChangeRequestForm form,
-                         BindingResult bindingResult,
+    public String submit(@RequestParam("requestType") String requestType,
+                         @RequestParam(value = "schoolId", required = false) String schoolIdStr,
+                         @RequestParam(value = "date", required = false) String dateStr,
+                         @RequestParam("session") String session,
+                         @RequestParam("reason") String reason,
                          Model model,
                          RedirectAttributes redirectAttributes) {
         Teacher teacher = SecurityUtils.getTeacher();
@@ -91,20 +93,6 @@ public class TeacherChangeRequestController {
             redirectAttributes.addFlashAttribute("error", "Tài khoản chưa liên kết với hồ sơ Giáo viên!");
             return "redirect:/teacher/change-requests";
         }
-
-        String errorMsg = ValidationUtils.getFirstError(bindingResult);
-        if (errorMsg != null) {
-            model.addAttribute("error", errorMsg);
-            model.addAttribute("schools", schoolService.findAll());
-            model.addAttribute("teachers", teacherService.findAll());
-            return "teacher/change-request/form";
-        }
-
-        String requestType = form.getRequestType();
-        String schoolIdStr = form.getSchoolId();
-        String dateStr = form.getDate();
-        String session = form.getSession();
-        String reason = form.getReason();
 
         Integer schoolId = (schoolIdStr != null && !schoolIdStr.isBlank()) ? Integer.parseInt(schoolIdStr) : null;
         LocalDate reqDate = (dateStr != null && !dateStr.isBlank()) ? LocalDate.parse(dateStr) : LocalDate.now();
@@ -137,7 +125,7 @@ public class TeacherChangeRequestController {
                 .date(reqDate)
                 .session(session)
                 .schedule(matchedSchedule)
-                .reason(reason)
+                .reason(StringUtils.toTitleCase(reason))
                 .status("pending")
                 .build();
 

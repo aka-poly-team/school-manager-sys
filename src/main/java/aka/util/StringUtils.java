@@ -39,21 +39,7 @@ public class StringUtils {
         return Objects.requireNonNullElse(value, defaultValue);
     }
 
-    /**
-     * Anonymize email cá nhân
-     */
-    public static String mask(String email) {
-        if (isBlank(email) || !email.contains("@")) {
-            return email;
-        }
-        String[] parts = email.split("@");
-        String name = parts[0];
-        String domain = parts[1];
 
-        return name.length() <= 2 
-                ? name.charAt(0) + "****@" + domain 
-                : name.substring(0, 2) + "****@" + domain;
-    }
 
     public static boolean isEmpty(String str) {
         return isBlank(str);
@@ -74,5 +60,24 @@ public class StringUtils {
         }
         cleanUrl = cleanUrl.replaceAll("[?&]$", "");
         return cleanUrl;
+    }
+
+    /**
+     * Chuyển đổi chuỗi thành dạng Title Case chuẩn viết hoa chữ cái đầu từng từ (Ví dụ: "nguyen Canh thang" -> "Nguyen Canh Thang")
+     */
+    public static String toTitleCase(String input) {
+        if (isBlank(input)) {
+            return input;
+        }
+        String[] words = input.trim().replaceAll("\\s+", " ").split(" ");
+        StringBuilder sb = new StringBuilder();
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                sb.append(Character.toUpperCase(word.charAt(0)))
+                  .append(word.substring(1).toLowerCase())
+                  .append(" ");
+            }
+        }
+        return sb.toString().trim();
     }
 }

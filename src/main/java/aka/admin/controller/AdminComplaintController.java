@@ -48,57 +48,44 @@ public class AdminComplaintController {
         return "admin/complaint/list";
     }
 
-    @PostMapping("/complaints/approve/{id}")
-    public String approve(@PathVariable("id") Integer id,
-                          @RequestHeader(value = "Referer", required = false) String referer,
-                          RedirectAttributes redirectAttributes) {
+    // GỘP CHẤP NHẬN & TỪ CHỐI KHIẾU NẠI THÀNH 1 PHƯƠNG THỨC DUY NHẤT DÙNG IF-ELSE
+    @PostMapping({"/complaints/approve/{id}", "/complaints/reject/{id}", "/complaints/process/{id}"})
+    public String processComplaint(@PathVariable("id") Integer id,
+                                   @RequestParam(value = "action", required = false) String action,
+                                   jakarta.servlet.http.HttpServletRequest request,
+                                   @RequestHeader(value = "Referer", required = false) String referer,
+                                   RedirectAttributes redirectAttributes) {
         Complaint complaint = complaintService.findById(id).orElse(null);
-        if (complaint != null) {
-            complaint.setStatus(1);
-            complaintService.save(complaint);
-
-            Attendance attendance = complaint.getAttendance();
-            if (attendance != null) {
-                attendance.setStatus("APPROVED");
-                attendanceService.save(attendance);
-            }
-
-            systemLogService.log(SecurityUtils.getUser(), "DUYỆT KHIẾU NẠI", 
-                    "Admin vừa CHẤP NHẬN đơn khiếu nại #" + id + " của giáo viên " + (complaint.getAttendance() != null && complaint.getAttendance().getTeacher() != null ? complaint.getAttendance().getTeacher().getName() : ""));
-
-            if (attendance != null && attendance.getTeacher() != null) {
-                String msg = "Khiếu nại #" + id + " cho ca dạy ngày " + attendance.getDate() + " của bạn đã được CHẤP NHẬN. Ca dạy đã được cập nhật thành ĐÃ DUYỆT.";
-                notificationService.notifyTeacher(attendance.getTeacher(), msg, "/teacher/complaints");
-            }
-            redirectAttributes.addFlashAttribute("success", "Đã CHẤP NHẬN đơn khiếu nại #" + id + " thành công!");
-        } else {
+        if (complaint == null) {
             redirectAttributes.addFlashAttribute("error", "Không tìm thấy đơn khiếu nại #" + id);
+            return "redirect:" + aka.util.StringUtils.defaultIfBlank(referer, "/admin/complaints");
         }
-        return "redirect:" + (referer != null && !referer.isBlank() ? referer : "/admin/complaints");
-    }
 
-    @PostMapping("/complaints/reject/{id}")
-    public String reject(@PathVariable("id") Integer id,
-                         @RequestHeader(value = "Referer", required = false) String referer,
-                         RedirectAttributes redirectAttributes) {
-        Complaint complaint = complaintService.findById(id).orElse(null);
-        if (complaint != null) {
-            complaint.setStatus(2);
-            complaintService.save(complaint);
+        boolean isApprove = "approve".equalsIgnoreCase(action) || request.getRequestURI().contains("/approve");
+        int newStatus = isApprove ? 1 : 2;
+        String actionText = isApprove ? "CHẤP NHẬN" : "TỪ CHỐI";
 
-            Attendance attendance = complaint.getAttendance();
+        complaint.setStatus(newStatus);
+        complaintService.save(complaint);
 
-            systemLogService.log(SecurityUtils.getUser(), "TỪ CHỐI KHIẾU NẠI", 
-                    "Admin vừa TỪ CHỐI đơn khiếu nại #" + id + " của giáo viên " + (attendance != null && attendance.getTeacher() != null ? attendance.getTeacher().getName() : ""));
-
-            if (attendance != null && attendance.getTeacher() != null) {
-                String msg = "Khiếu nại #" + id + " cho ca dạy ngày " + attendance.getDate() + " của bạn đã bị TỪ CHỐI.";
-                notificationService.notifyTeacher(attendance.getTeacher(), msg, "/teacher/complaints");
-            }
-            redirectAttributes.addFlashAttribute("success", "Đã TỪ CHỐI đơn khiếu nại #" + id + " thành công!");
-        } else {
-            redirectAttributes.addFlashAttribute("error", "Không tìm thấy đơn khiếu nại #" + id);
+        Attendance attendance = complaint.getAttendance();
+        if (isApprove && attendance != null) {
+            attendance.setStatus("APPROVED");
+            attendanceService.save(attendance);
         }
-        return "redirect:" + (referer != null && !referer.isBlank() ? referer : "/admin/complaints");
+
+        String teacherName = (attendance != null && attendance.getTeacher() != null) ? attendance.getTeacher().getName() : "";
+        systemLogService.log(SecurityUtils.getUser(), actionText + " KHIẾU NẠI", 
+                "Admin vừa " + actionText + " đơn khiếu nại #" + id + " của giáo viên " + teacherName);
+
+        if (attendance != null && attendance.getTeacher() != null) {
+            String msg = isApprove 
+                    ? "Khiếu nại #" + id + " cho ca dạy ngày " + attendance.getDate() + " của bạn đã được CHẤP NHẬN. Ca dạy đã được cập nhật thành ĐÃ DUYỆT."
+                    : "Khiếu nại #" + id + " cho ca dạy ngày " + attendance.getDate() + " của bạn đã bị TỪ CHỐI.";
+            notificationService.notifyTeacher(attendance.getTeacher(), msg, "/teacher/complaints");
+        }
+
+        redirectAttributes.addFlashAttribute("success", "Đã " + actionText + " đơn khiếu nại #" + id + " thành công!");
+        return "redirect:" + aka.util.StringUtils.defaultIfBlank(referer, "/admin/complaints");
     }
 }

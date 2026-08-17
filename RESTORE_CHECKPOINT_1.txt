@@ -1,0 +1,17 @@
+===================================================================
+CHECKPOINT 1 - LƯU VỚI TÊN NỐI MA (COMMIT: 6980fb0 / TAG: checkpoint-1)
+===================================================================
+Trạng thái bản lưu:
+1. Đăng nhập BCrypt 100% tài khoản Admin & Teacher thành công với mật khẩu 123456.
+2. Form validate có hiệu ứng viền ĐỎ (Lỗi) và XANH LÁ (Hợp lệ).
+3. Form Đổi mật khẩu thu nhỏ gọn 540px.
+4. Tìm kiếm Realtime hoạt động ẩn/hiện dòng tự động.
+5. Kính lúp 🔍 nằm gọn bên trong ô tìm kiếm.
+6. Bảng dữ liệu không bị tràn sang phải, ngắt dòng thông minh.
+7. Đã bỏ chức năng xóa ở trang admin/attendances.
+
+Lệnh Restore khi nhấn 1:
+git checkout main
+git reset --hard checkpoint-1
+./mvnw clean package -DskipTests
+===================================================================

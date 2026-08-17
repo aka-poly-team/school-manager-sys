@@ -39,9 +39,11 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Tên Lớp Học *</label>
+                        <label class="form-label">Tên Lớp Học * (Bắt đầu bằng chữ cái)</label>
                         <input type="text" name="name" th:value="${schoolClass != null ? schoolClass.name : ''}"
                                required minlength="3"
+                               pattern="^[a-zA-Z\u00C0-\u024F\u1EA0-\u1EF9].*"
+                               title="Tên lớp học phải bắt đầu bằng chữ cái (không được bắt đầu bằng chữ số)!"
                                placeholder="Ví dụ: Lớp Aerobic Chồi 1..." class="form-control">
                     </div>
                     <div class="form-group">
@@ -53,8 +55,8 @@
                     <div class="form-group">
                         <label class="form-label">Số tiết chuẩn / buổi</label>
                         <input type="number" name="standardPeriods"
-                               th:value="${schoolClass != null ? schoolClass.standardPeriods : 2}"
-                               min="1" max="10" class="form-control">
+                               th:value="${schoolClass != null ? schoolClass.standardPeriods : 1}"
+                               min="1" max="10" placeholder="Nhập số tiết chuẩn..." class="form-control" required>
                     </div>
 
                     <div class="form-actions modal-actions">

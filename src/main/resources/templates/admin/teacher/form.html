@@ -67,10 +67,9 @@
                         <!-- CÁC TRƯỜNG DÀNH RIÊNG CHO HỒ SƠ GIÁO VIÊN -->
                         <th:block th:if="${(editUser != null and editUser.role != null and editUser.role.name() == 'ROLE_TEACHER') or (editUser == null and targetRole != 'ROLE_ADMIN')}">
                             <div class="form-group">
-                                <label class="form-label" style="font-weight: 600; margin-bottom: 0.25rem;">Ngày sinh *</label>
+                                <label class="form-label" style="font-weight: 600; margin-bottom: 0.25rem;">Ngày sinh (Không bắt buộc)</label>
                                 <input type="date" name="dob"
                                        th:value="${editUser != null and editUser.teacher != null and editUser.teacher.dob != null ? editUser.teacher.dob : ''}"
-                                       required data-aka-required="true" data-aka-type="dob"
                                        class="form-control">
                             </div>
 
@@ -82,10 +81,10 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" style="font-weight: 600; margin-bottom: 0.25rem;">Trạng thái Hồ sơ (Teacher.status)</label>
+                                <label class="form-label" style="font-weight: 600; margin-bottom: 0.25rem;">Trạng thái Hồ sơ</label>
                                 <select name="status" class="form-control">
-                                    <option value="active" th:selected="${editUser != null and editUser.teacher != null and editUser.teacher.status == 'active'}">Đang hoạt động (active)</option>
-                                    <option value="inactive" th:selected="${editUser != null and editUser.teacher != null and editUser.teacher.status == 'inactive'}">Tạm ngưng (inactive)</option>
+                                    <option value="active" th:selected="${editUser != null and editUser.teacher != null and (editUser.teacher.status == 'active' or editUser.teacher.status == 'ACTIVE')}">Đang hoạt động</option>
+                                    <option value="inactive" th:selected="${editUser != null and editUser.teacher != null and (editUser.teacher.status == 'inactive' or editUser.teacher.status == 'INACTIVE')}">Tạm ngưng</option>
                                 </select>
                             </div>
                         </th:block>
@@ -100,12 +99,8 @@
 
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; margin-bottom: 0.25rem;">Số điện thoại (Tối đa 11 số)</label>
-                            <input type="tel" name="phone"
+                            <input type="text" name="phone"
                                    th:value="${editUser != null and editUser.teacher != null ? editUser.teacher.phone : ''}"
-                                   data-aka-type="phone"
-                                   maxlength="11"
-                                   pattern="0[0-9]{9,10}"
-                                   inputmode="numeric"
                                    placeholder="Nhập số điện thoại (tối đa 11 số)..." class="form-control">
                         </div>
 
